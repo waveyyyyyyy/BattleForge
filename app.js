@@ -121,18 +121,42 @@ async function showHistory() {
     if (!rooms.error) roomRows = rooms.data ?? [];
     if (!results.error) resultRows = results.data ?? [];
   }
+  const rosterRows = {};
+  if (currentUser && roomRows.length) {
+    await Promise.all(roomRows.map(async room => {
+      const { data: roster, error: rosterError } = await supabase.rpc('get_tournament_roster', { p_tournament_id: Number(room.tournament_id) });
+      if (!rosterError) rosterRows[String(room.tournament_id)] = roster ?? [];
+    }));
+  }
   const roomFor = id => roomRows.find(r => String(r.tournament_id) === String(id));
   const resultFor = id => resultRows.find(r => String(r.tournament_id) === String(id));
-  modal(`<h2>Activity history</h2><p>Your online registrations, published match rooms and results.</p>` +
+  modal('<h2>Activity history</h2><p>Your registrations, match-room details and verified results.</p>' +
     (rows.length ? rows.map(e => {
       const room = roomFor(e.tournament_id);
       const result = resultFor(e.tournament_id);
-      return `<div class="entry"><div>Registered as ${esc(e.in_game_name)}<small>${esc(new Date(e.created_at).toLocaleString())}</small>` +
-        (room ? `<small>ROOM ID: ${esc(room.room_id || 'Not set')} · PASSWORD: ${esc(room.room_password || 'Not set')}</small>` : '') +
-        (result ? `<small>RESULT: ${result.placement ? 'Place #' + Number(result.placement) + ' · ' : ''}${Number(result.kills)} kills${result.note ? ' · ' + esc(result.note) : ''}</small>` : '') +
-        `</div><b>JOINED</b></div>`;
-    }).join('') : '<p>No online registrations yet.</p>') +
+      const roster = rosterRows[String(e.tournament_id)] ?? [];
+      return '<div class="entry history-entry"><div><strong>' + esc(e.in_game_name) + '</strong><small>Registered ' + esc(new Date(e.created_at).toLocaleString()) + '</small>' +
+        (room ? '<div class="room-card"><small class="room-label">MATCH ROOM</small><div class="room-value">ID <b>' + esc(room.room_id || 'Not set') + '</b></div><div class="room-value">Password <b>' + esc(room.room_password || 'Not set') + '</b></div><small>Room details are shared with registered players.</small></div>' : '') +
+        (room && roster.length ? '<div class="roster"><strong>PLAYER LOBBY · ' + roster.length + '</strong><div class="roster-chips">' + roster.map((p, i) => '<span class="player-chip"><i>' + (i + 1) + '</i>' + esc(p.in_game_name) + '</span>').join('') + '</div></div>' : '') +
+        (result ? '<small class="result-line">RESULT: ' + (result.placement ? 'Place #' + Number(result.placement) + ' · ' : '') + Number(result.kills) + ' kills' + (result.note ? ' · ' + esc(result.note) : '') + '</small>' : '') +
+        '</div><b class="joined-label">JOINED</b></div>';
+    }).join('') : '<p class="notice">No online registrations yet. Join a tournament to see your match details here.</p>') +
     '<p class="notice">Wallet points and prizes are still demo-only. Published results do not move money or points.</p>');
+}
+
+async function loadAdminRoom() {
+  if (!isAdmin) return;
+  const id = Number($('#adminTournament')?.value);
+  const roomId = $('#adminRoomId');
+  const roomPassword = $('#adminRoomPassword');
+  const published = $('#adminRoomPublished');
+  if (!id || !roomId || !roomPassword || !published) return;
+  const { data, error } = await supabase.from('tournament_rooms')
+    .select('room_id,room_password,published').eq('tournament_id', id).maybeSingle();
+  if (error) { console.warn('Could not load saved room details', error); return; }
+  roomId.value = data?.room_id ?? '';
+  roomPassword.value = data?.room_password ?? '';
+  published.checked = data?.published ?? false;
 }
 
 async function showAdmin() {
@@ -158,7 +182,8 @@ async function showAdmin() {
     <button id="adminSaveRoom" class="join full">Save match room</button>
     <button id="adminLoadEntries" class="join full">Load players / record results</button>
     <div id="adminEntries"></div>
-    <p class="notice">Room details are restricted to registered players. Results are published only to the player concerned. No wallet credit or payout is triggered.</p>`);
+    <p class="notice">Choose a tournament to load its saved room. You can change the room ID or password anytime; saving replaces the previous details. Players see the room and roster after publishing.</p>`);
+  await loadAdminRoom();
 }
 
 async function loadAdminEntries() {
@@ -224,6 +249,9 @@ $('#modalContent').addEventListener('click', async e => {
     toast('Signed out.');
   }
 });
+$('#modalContent').addEventListener('change', async e => {
+  if (e.target.id === 'adminTournament') await loadAdminRoom();
+});
 $('#modalContent').addEventListener('click', async e => {
   const button = e.target.closest('button');
   if (!button) return;
@@ -254,7 +282,8 @@ $('#modalContent').addEventListener('click', async e => {
     button.disabled = true;
     const { error } = await supabase.rpc('admin_set_tournament_room', { p_tournament_id:id, p_room_id:$('#adminRoomId').value.trim(), p_room_password:$('#adminRoomPassword').value.trim(), p_published:$('#adminRoomPublished').checked });
     button.disabled = false; if (error) return toast(error.message);
-    toast('Match room saved.');
+    toast('Match room saved. You can update it anytime.');
+    await loadAdminEntries();
   }
   if (button.id === 'adminLoadEntries') await loadAdminEntries();
   if (button.dataset.resultEntry) showResultForm(button.dataset.resultEntry, button.dataset.ign || 'Player');
