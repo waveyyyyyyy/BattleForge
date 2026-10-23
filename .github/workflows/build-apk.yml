@@ -26,6 +26,27 @@ jobs:
         run: npm run build
       - name: Add Android platform
         run: npx cap add android
+      - name: Prepare BattleForge launcher icon
+        run: |
+          python -m pip install --user Pillow
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+
+          source = Path("IMG_20261023_162105_815.jpg")
+          if not source.exists():
+              raise SystemExit("Uploaded BattleForge icon image was not found in the repository root.")
+          image = Image.open(source).convert("RGB")
+          width, height = image.size
+          side = min(width, height)
+          left = (width - side) // 2
+          top = (height - side) // 2
+          image = image.crop((left, top, left + side, top + side))
+          image = image.resize((1024, 1024), Image.Resampling.LANCZOS)
+          Path("assets").mkdir(exist_ok=True)
+          image.save("assets/icon.png", optimize=True)
+          PY
+          npx --yes @capacitor/assets generate --android
       - name: Sync app
         run: npx cap sync android
       - name: Build debug APK
