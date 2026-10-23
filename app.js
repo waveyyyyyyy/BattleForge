@@ -125,10 +125,20 @@ async function handleAdminPaymentAction(button) {
   }
   const confirmation = action==='verify-deposit' ? 'Confirm you checked the actual bank/UPI transaction and want to credit this deposit?' : action==='paid-withdrawal' ? 'Confirm you have already sent the net payout to the player?' : 'Confirm this action?';
   if(!window.confirm(confirmation)) return;
-  button.disabled=true; const {error}=await supabase.rpc(rpc,args); button.disabled=false;
-  if(error){console.error(error);return toast(error.message||'Could not process request.');}
-  toast(action==='verify-deposit'?'Deposit verified; coins credited to deposited balance.':action==='reject-deposit'?'Deposit request rejected.':action==='paid-withdrawal'?'Withdrawal marked paid.':'Withdrawal rejected; earned coins returned.');
-  await loadAdminPaymentRequests(); await loadPaymentRequests(); await loadWalletSummary();
+  button.disabled=true;
+  try {
+    const {error}=await supabase.rpc(rpc,args);
+    if(error){
+      console.error('BattleForge payment action failed', {rpc,args,error});
+      toast('Could not process request: '+(error.message||error.details||'Supabase error')+(error.code?' ('+error.code+')':''));
+      return;
+    }
+    toast(action==='verify-deposit'?'Deposit verified; coins credited to deposited balance.':action==='reject-deposit'?'Deposit request rejected.':action==='paid-withdrawal'?'Withdrawal marked paid.':'Withdrawal rejected; earned coins returned.');
+    await loadAdminPaymentRequests(); await loadPaymentRequests(); await loadWalletSummary();
+  } catch (error) {
+    console.error('BattleForge payment action threw an exception', error);
+    toast('Payment action failed: '+(error?.message||'Unexpected error. Please reload and retry.'));
+  } finally { button.disabled=false; }
 }
 async function loadWalletSummary() {
   if(!currentUser) return;
