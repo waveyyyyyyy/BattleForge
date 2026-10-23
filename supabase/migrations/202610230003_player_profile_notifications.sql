@@ -40,3 +40,17 @@ end; $$;
 revoke all on function public.update_player_profile(text,text) from public,anon;
 grant execute on function public.update_player_profile(text,text) to authenticated;
 notify pgrst,'reload schema';
+
+
+create or replace function public.get_my_referral_stats()
+returns jsonb language plpgsql security definer set search_path=public,auth,pg_temp as $$
+declare uid uuid:=auth.uid(); total_count integer; rewarded_count integer; latest timestamptz;
+begin
+ if uid is null then raise exception 'Please sign in first'; end if;
+ select count(*),count(*) filter(where referral_rewarded_at is not null),max(created_at)
+ into total_count,rewarded_count,latest from public.player_accounts where referred_by=uid;
+ return jsonb_build_object('invited_count',coalesce(total_count,0),'rewarded_count',coalesce(rewarded_count,0),'pending_count',coalesce(total_count,0)-coalesce(rewarded_count,0),'reward_amount',coalesce(rewarded_count,0)*5,'latest_referral_at',latest);
+end; $$;
+revoke all on function public.get_my_referral_stats() from public,anon;
+grant execute on function public.get_my_referral_stats() to authenticated;
+notify pgrst,'reload schema';
