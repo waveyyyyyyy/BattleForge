@@ -1,15 +1,16 @@
 {
   "name": "battleforge",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "BattleForge tournament app prototype",
+  "description": "BattleForge tournament app with Supabase auth and online registrations",
   "scripts": {
     "start": "vite --host 0.0.0.0",
     "build": "vite build"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
-    "@capacitor/core": "^7.4.3"
+    "@capacitor/core": "^7.4.3",
+    "@supabase/supabase-js": "^2.57.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",
