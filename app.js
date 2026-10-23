@@ -14,6 +14,8 @@ let tournaments = [];
 let joined = [];
 let currentUser = null;
 let isAdmin = false;
+let playerProfile = null;
+let playerProfile = null;
 let pendingResultEntry = null;
 let counts = {};
 
@@ -100,6 +102,42 @@ async function loadPaymentRequests() {
 }
 
 
+async function adminFindPlayer() {
+  if (!isAdmin) return toast('Admin access required.');
+  const number=Number($('#adminPlayerNumber')?.value), target=$('#adminPlayerDetails');
+  if (!Number.isSafeInteger(number)||number<1) return toast('Enter a valid unique player ID.');
+  target.innerHTML='<p class="notice">Loading player…</p>';
+  const {data,error}=await supabase.rpc('admin_get_player_by_number',{p_player_number:number});
+  if(error||!data) { target.innerHTML='<p class="notice">'+esc(error?.message||'Player not found.')+'</p>'; return; }
+  const p=data.profile||{}, w=data.wallet||{}, stats=data.stats||{}, ledger=data.ledger||[], deposits=data.deposits||[], withdrawals=data.withdrawals||[];
+  target.innerHTML='<article class="panel"><h3>Player #'+esc(p.player_number)+'</h3><p>'+esc(p.email||'No email')+'</p><p>Registered: '+esc(p.created_at||'—')+'</p><div class="admin-metrics"><div><small>DEPOSITED</small><b>₹'+Number(w.deposited_balance||0).toFixed(2)+'</b></div><div><small>EARNED</small><b>₹'+Number(w.earned_balance||0).toFixed(2)+'</b></div><div><small>ENTRY / MATCHES</small><b>'+Number(stats.entries||0)+' / '+Number(stats.results||0)+'</b></div><div><small>REFERRALS</small><b>'+Number(stats.referrals||0)+'</b></div></div><h4>Adjust wallet</h4><label class="field">BUCKET<select id="adminAdjustBucket"><option value="deposited">Deposited / entry-fee points</option><option value="earned">Match earnings / withdrawable</option></select></label><label class="field">ACTION<select id="adminAdjustAction"><option value="add">Add points</option><option value="remove">Remove points</option></select></label><label class="field">AMOUNT<input id="adminAdjustAmount" type="number" min="1" step="1" placeholder="5"></label><label class="field">REASON<input id="adminAdjustNote" maxlength="200" placeholder="Reason for adjustment"></label><button id="adminAdjustWallet" class="join full" data-player-number="'+esc(p.player_number)+'">Apply adjustment</button><h4>Deposit history</h4>'+adminHistoryRows(deposits,'deposit')+'<h4>Withdrawal history</h4>'+adminHistoryRows(withdrawals,'withdrawal')+'<h4>Wallet ledger</h4>'+adminHistoryRows(ledger,'ledger')+'</article>';
+}
+function adminHistoryRows(rows,kind) {
+  if(!rows.length) return '<p class="notice">No records.</p>';
+  return '<div class="activity-list">'+rows.slice(0,100).map(x=>'<div class="activity-row"><div><b>'+esc(x.entry_type||kind)+' · ₹'+Number(x.amount||0).toFixed(2)+'</b><small>'+esc(x.status||x.bucket||'')+' · '+esc(x.created_at||'')+'</small><small>'+esc(x.id||x.note||'')+'</small></div></div>').join('')+'</div>';
+}
+async function adminAdjustWallet(button) {
+  if(!isAdmin) return toast('Admin access required.');
+  const amount=Number($('#adminAdjustAmount')?.value), bucket=$('#adminAdjustBucket')?.value, action=$('#adminAdjustAction')?.value, note=$('#adminAdjustNote')?.value.trim();
+  if(!Number.isSafeInteger(amount)||amount<1||amount>1000000||!note) return toast('Enter a whole amount and a reason.');
+  if(!window.confirm((action==='add'?'Add ':'Remove ')+amount+' points from player #'+button.dataset.playerNumber+'?')) return;
+  button.disabled=true;
+  const {error}=await supabase.rpc('admin_adjust_player_wallet',{p_player_number:Number(button.dataset.playerNumber),p_bucket:bucket,p_action:action,p_amount:amount,p_note:note});
+  button.disabled=false;
+  if(error) return toast(error.message);
+  toast('Wallet adjustment recorded.'); await adminFindPlayer();
+}
+async function adminDeletePayment(button) {
+  if(!isAdmin) return toast('Admin access required.');
+  const kind=button.dataset.deletePayment, id=button.dataset.requestId;
+  if(!window.confirm('Delete this '+kind+' request permanently? Pending withdrawal funds will be returned to the player.')) return;
+  button.disabled=true;
+  const {error}=await supabase.rpc('admin_delete_payment_request',{p_kind:kind,p_request_id:id});
+  button.disabled=false;
+  if(error) return toast(error.message);
+  toast('Request deleted.'); await loadAdminPaymentRequests();
+}
+
 async function loadAdminPaymentRequests() {
   const target = $('#adminPaymentRequests'); if (!target || !isAdmin) return;
   target.innerHTML = '<p class="notice">Loading payment requests…</p>';
@@ -109,7 +147,7 @@ async function loadAdminPaymentRequests() {
   ]);
   if (dep.error || wd.error) { target.innerHTML = '<p class="notice">Could not load requests. Apply Supabase migrations 006, 008 and 009, then reload.</p>'; console.error(dep.error || wd.error); return; }
   const rows = [...(dep.data||[]).map(x=>({...x,kind:'deposit'})), ...(wd.data||[]).map(x=>({...x,kind:'withdrawal'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-  target.innerHTML = rows.length ? rows.map(x => `<article class="panel" style="margin:12px 0;padding:14px"><div class="admin-section-title"><div><h3>${x.kind==='deposit'?'Deposit':'Withdrawal'} · ₹${Number(x.amount).toFixed(2)}</h3><p>${esc(x.status.toUpperCase())} · ${esc(new Date(x.created_at).toLocaleString())}</p></div></div><p><b>Request ID:</b> ${esc(x.id)}</p><p><b>User ID:</b> ${esc(x.user_id)}</p>${x.kind==='deposit'?`<p><b>Player UPI:</b> ${esc(x.payer_upi)}<br><b>Receiving UPI:</b> ${esc(x.receiver_upi||'kjaman@fam')}<br><b>Expires:</b> ${esc(new Date(x.expires_at).toLocaleString())}<br><b>Payment reference:</b> ${esc(x.payment_reference||'Not supplied')}</p>`:`<p><b>Account holder:</b> ${esc(x.account_name)}<br><b>Withdrawal UPI:</b> ${esc(x.payout_upi)}<br><b>Fee (2%):</b> ₹${Number(x.fee_amount).toFixed(2)}<br><b>Send to player:</b> ₹${Number(x.net_amount).toFixed(2)}<br><b>Payout reference:</b> ${esc(x.payout_reference||'Not sent')}</p>`}<p><b>Admin note:</b> ${esc(x.admin_note||'—')}</p>${(['pending','reported_paid'].includes(x.status)&&x.kind==='deposit')?`<label class="field">UPI transaction reference<input id="depRef-${esc(x.id)}" placeholder="Reference / UTR (optional)"></label><label class="field">Admin note<input id="depNote-${esc(x.id)}" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="verify-deposit" data-request-id="${esc(x.id)}">Verify & credit wallet</button><button class="outline" data-payment-action="reject-deposit" data-request-id="${esc(x.id)}">Reject</button></div>`:''}${x.kind==='withdrawal'&&['pending','approved'].includes(x.status)?`<label class="field">Payout UPI reference / UTR<input id="wdRef-${esc(x.id)}" placeholder="Required after you send payment"></label><label class="field">Admin note<input id="wdNote-${esc(x.id)}" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="paid-withdrawal" data-request-id="${esc(x.id)}">Mark paid</button><button class="outline" data-payment-action="reject-withdrawal" data-request-id="${esc(x.id)}">Reject & refund earned coins</button></div>`:''}</article>`).join('') : '<div class="empty-state"><b>No payment requests</b><p>New requests will appear here.</p></div>';
+  target.innerHTML = rows.length ? rows.map(x => `<article class="panel" style="margin:12px 0;padding:14px"><div class="admin-section-title"><div><h3>${x.kind==='deposit'?'Deposit':'Withdrawal'} · ₹${Number(x.amount).toFixed(2)}</h3><p>${esc(x.status.toUpperCase())} · ${esc(new Date(x.created_at).toLocaleString())}</p></div></div><p><b>Request ID:</b> ${esc(x.id)}</p><p><b>User ID:</b> ${esc(x.user_id)}</p>${x.kind==='deposit'?`<p><b>Player UPI:</b> ${esc(x.payer_upi)}<br><b>Receiving UPI:</b> ${esc(x.receiver_upi||'kjaman@fam')}<br><b>Expires:</b> ${esc(new Date(x.expires_at).toLocaleString())}<br><b>Payment reference:</b> ${esc(x.payment_reference||'Not supplied')}</p>`:`<p><b>Account holder:</b> ${esc(x.account_name)}<br><b>Withdrawal UPI:</b> ${esc(x.payout_upi)}<br><b>Fee (2%):</b> ₹${Number(x.fee_amount).toFixed(2)}<br><b>Send to player:</b> ₹${Number(x.net_amount).toFixed(2)}<br><b>Payout reference:</b> ${esc(x.payout_reference||'Not sent')}</p>`}<p><b>Admin note:</b> ${esc(x.admin_note||'—')}</p>${(['pending','reported_paid'].includes(x.status)&&x.kind==='deposit')?`<label class="field">UPI transaction reference<input id="depRef-${esc(x.id)}" placeholder="Reference / UTR (optional)"></label><label class="field">Admin note<input id="depNote-${esc(x.id)}" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="verify-deposit" data-request-id="${esc(x.id)}">Verify & credit wallet</button><button class="outline" data-payment-action="reject-deposit" data-request-id="${esc(x.id)}">Reject</button></div>`:''}${x.kind==='withdrawal'&&['pending','approved'].includes(x.status)?`<label class="field">Payout UPI reference / UTR<input id="wdRef-${esc(x.id)}" placeholder="Required after you send payment"></label><label class="field">Admin note<input id="wdNote-${esc(x.id)}" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="paid-withdrawal" data-request-id="${esc(x.id)}">Mark paid</button><button class="outline" data-payment-action="reject-withdrawal" data-request-id="${esc(x.id)}">Reject & refund earned coins</button></div>`:''}<button class=\"outline full danger-button\" data-delete-payment=\"${x.kind}\" data-request-id=\"${esc(x.id)}\">Delete request</button></article>`).join('') : '<div class="empty-state"><b>No payment requests</b><p>New requests will appear here.</p></div>';
 }
 async function handleAdminPaymentAction(button) {
   if (!isAdmin) return toast('Admin access required.');
@@ -178,6 +216,8 @@ async function refreshData() {
   currentUser = session?.user ?? null;
   isAdmin = false;
   if (currentUser) {
+    const { data: profileData, error: profileError } = await supabase.rpc('get_my_player_profile');
+    if (!profileError) playerProfile = Array.isArray(profileData) ? profileData[0] : profileData;
     const { data: adminFlag, error: adminError } = await supabase.rpc('is_battleforge_admin');
     if (!adminError) isAdmin = adminFlag === true;
   }
@@ -223,7 +263,7 @@ async function refreshData() {
   if (currentUser) await loadWalletSummary();
 }
 function showAuth() {
-  modal('<h2>Log in to BattleForge</h2><p>Use your Google account or email to access tournament registration and match history.</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div><label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label><button id="signInBtn" class="join full">Log in with email</button><button id="signUpBtn" class="outline full">Create account with email</button><p class="notice">If this is your first time, create an account. Email confirmation may be required. Never share your password or OTP.</p>');
+  modal('<h2>Log in to BattleForge</h2><p>Use your Google account or email to access tournament registration and match history.</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div><label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label><label class="field">REFERRAL PLAYER ID (OPTIONAL)<input id="authReferralId" type="number" min="1" placeholder="Friend’s player ID" value="'+esc(new URLSearchParams(location.search).get('ref')||'')+'"></label><button id="signInBtn" class="join full">Log in with email</button><button id="signUpBtn" class="outline full">Create account with email</button><p class="notice">If this is your first time, create an account. Email confirmation may be required. Never share your password or OTP.</p>');
 }
 
 // Google OAuth uses Supabase's authorization-code (PKCE) flow. The web callback
@@ -320,7 +360,7 @@ async function authAction(kind) {
   if (btn) btn.disabled = true;
   const result = kind === 'signin'
     ? await supabase.auth.signInWithPassword({ email, password })
-    : await supabase.auth.signUp({ email, password });
+    : await supabase.auth.signUp({ email, password, options: { data: { referral_player_number: ($('#authReferralId')?.value || '').trim() || null } } });
   if (btn) btn.disabled = false;
   if (result.error) { toast(result.error.message); return; }
   if (kind === 'signup' && !result.data.session) {
@@ -333,7 +373,8 @@ async function authAction(kind) {
 }
 function showProfile() {
   if (!currentUser) { showAuth(); return; }
-  modal('<h2>Player account</h2><p>Signed in as <b>' + esc(currentUser.email || currentUser.user_metadata?.full_name || 'Google account') + '</b></p><p class="notice">Your account and tournament registrations are connected. Your wallet balance comes from verified wallet records.</p><button id="signOutBtn" class="join full">Log out</button><button id="switchAccountBtn" class="outline full">Switch account</button>');
+  const pid = playerProfile?.player_number;
+  modal('<h2>Player account</h2><div class="room-card"><small class="room-label">YOUR UNIQUE PLAYER ID</small><div class="room-value"><b>' + esc(pid || 'Loading…') + '</b></div><p>Share this number with friends so they can enter it during registration.</p><button id="copyReferralLink" class="outline full">Copy referral link</button></div><p>Signed in as <b>' + esc(currentUser.email || currentUser.user_metadata?.full_name || 'Google account') + '</b></p><p class="notice">Your wallet balance comes from verified wallet records.</p><button id="signOutBtn" class="join full">Log out</button><button id="switchAccountBtn" class="outline full">Switch account</button>');
 }
 async function showHistory() {
   const target = $('#historyContent');
@@ -592,6 +633,10 @@ $('#modalContent').addEventListener('click', async e => {
   const button = e.target.closest('button');
   if (!button) return;
   if (button.id === 'adminLoadPayments') { await loadAdminPaymentRequests(); return; }
+  if (button.id === 'copyReferralLink') { const link=location.origin+location.pathname+'?ref='+encodeURIComponent(playerProfile?.player_number||''); try { await navigator.clipboard.writeText(link); toast('Referral link copied.'); } catch { toast('Your referral ID is '+playerProfile?.player_number+'. Share that number manually.'); } return; }
+  if (button.id === 'adminFindPlayer') { await adminFindPlayer(); return; }
+  if (button.dataset.deletePayment) { await adminDeletePayment(button); return; }
+  if (button.id === 'adminAdjustWallet') { await adminAdjustWallet(button); return; }
   if (button.dataset.paymentAction) { await handleAdminPaymentAction(button); return; }
   if (button.id === 'adminCreateTournament') {
     if (!isAdmin) return toast('Admin access required.');
@@ -690,4 +735,4 @@ $('#modalContent').addEventListener('click', async event => {
 });
 supabase.auth.onAuthStateChange(() => { setTimeout(() => refreshData(), 0); });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
-refreshData();
+refreshData();     <div class=\"admin-section\" id=\"adminAccountTools\"><div class=\"admin-section-title\"><span>♙</span><div><h3>Player account & wallet controls</h3><p>Search by unique player number. Inspect balances, stats and histories; adjustments are audited.</p></div></div><label class=\"field\">UNIQUE PLAYER ID<input id=\"adminPlayerNumber\" type=\"number\" min=\"1\" placeholder=\"Player number\"></label><button id=\"adminFindPlayer\" class=\"join full\">Find player</button><div id=\"adminPlayerDetails\"></div></div>\n
