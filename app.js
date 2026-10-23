@@ -1,8 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 
 const SUPABASE_URL = 'https://izyttrbspxrcacwuhwer.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_79ln_ouADVGWi6H5ZTc6Qg_c3ifNfQ7';
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: 'pkce', detectSessionInUrl: false } });
 
 const $ = (s) => document.querySelector(s);
 let balance = read('bf_balance', 250);
@@ -102,17 +105,53 @@ async function refreshData() {
 function showAuth() {
   modal('<h2>Log in to BattleForge</h2><p>Use Google or your email to access tournament registration and match history.</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div><label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label><button id="signInBtn" class="join full">Log in with email</button><button id="signUpBtn" class="outline full">Create account with email</button><p class="notice">If this is your first time, create an account. Email confirmation may be required. Never share your password or OTP.</p>');
 }
+const NATIVE_AUTH_CALLBACK = 'com.battleforge.arena://auth/callback';
+
 async function googleSignIn() {
   const button = $('#googleSignInBtn');
   if (button) { button.disabled = true; button.textContent = 'Opening Google sign-in…'; }
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin }
-  });
-  if (error) {
+  try {
+    const nativeApp = Capacitor.isNativePlatform();
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: nativeApp ? NATIVE_AUTH_CALLBACK : window.location.origin,
+        skipBrowserRedirect: nativeApp
+      }
+    });
+    if (error) throw error;
+    if (nativeApp && data?.url) await Browser.open({ url: data.url });
+  } catch (error) {
     if (button) { button.disabled = false; button.innerHTML = '<span aria-hidden="true">G</span> Continue with Google'; }
-    toast(error.message);
+    toast(error?.message || 'Could not start Google sign-in.');
   }
+}
+
+async function handleNativeAuthCallback(rawUrl) {
+  if (!rawUrl || !rawUrl.startsWith(NATIVE_AUTH_CALLBACK)) return;
+  try {
+    const callback = new URL(rawUrl);
+    const errorDescription = callback.searchParams.get('error_description') || callback.searchParams.get('error');
+    if (errorDescription) throw new Error(errorDescription);
+    const code = callback.searchParams.get('code');
+    if (!code) throw new Error('Google sign-in did not return an authorization code. Please try again.');
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    await Browser.close().catch(() => {});
+    close();
+    await refreshData();
+    toast('Signed in successfully with Google.');
+  } catch (error) {
+    await Browser.close().catch(() => {});
+    const button = $('#googleSignInBtn');
+    if (button) { button.disabled = false; button.innerHTML = '<span aria-hidden="true">G</span> Continue with Google'; }
+    toast(error?.message || 'Google sign-in could not be completed.');
+  }
+}
+
+if (Capacitor.isNativePlatform()) {
+  App.addListener('appUrlOpen', ({ url }) => { void handleNativeAuthCallback(url); });
+  App.getLaunchUrl().then(({ url }) => { if (url) void handleNativeAuthCallback(url); }).catch(() => {});
 }
 async function authAction(kind) {
   const email = $('#authEmail')?.value.trim();

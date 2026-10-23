@@ -26,6 +26,35 @@ jobs:
         run: npm run build
       - name: Add Android platform
         run: npx cap add android
+      - name: Register native OAuth callback deep link
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
+          tree = ET.parse(path)
+          root = tree.getroot()
+          ns = '{http://schemas.android.com/apk/res/android}'
+          activity = None
+          for node in root.iter('activity'):
+              if any(a.get(ns + 'name') == 'android.intent.action.MAIN' for a in node.findall('./intent-filter/action')):
+                  activity = node
+                  break
+          if activity is None:
+              raise SystemExit('Could not find the launcher activity in AndroidManifest.xml')
+          for f in activity.findall('intent-filter'):
+              data = f.find('data')
+              if data is not None and data.get(ns + 'scheme') == 'com.battleforge.arena':
+                  break
+          else:
+              f = ET.SubElement(activity, 'intent-filter')
+              ET.SubElement(f, 'action', {ns + 'name': 'android.intent.action.VIEW'})
+              ET.SubElement(f, 'category', {ns + 'name': 'android.intent.category.DEFAULT'})
+              ET.SubElement(f, 'category', {ns + 'name': 'android.intent.category.BROWSABLE'})
+              ET.SubElement(f, 'data', {ns + 'scheme': 'com.battleforge.arena', ns + 'host': 'auth', ns + 'pathPrefix': '/callback'})
+          tree.write(path, encoding='utf-8', xml_declaration=True)
+          PY
       - name: Prepare BattleForge launcher icon
         run: |
           python -m pip install --user Pillow

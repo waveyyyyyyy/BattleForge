@@ -10,7 +10,9 @@
   "dependencies": {
     "@capacitor/android": "^7.4.3",
     "@capacitor/core": "^7.4.3",
-    "@supabase/supabase-js": "^2.57.0"
+    "@supabase/supabase-js": "^2.57.0",
+    "@capacitor/app": "^7.0.1",
+    "@capacitor/browser": "^7.0.1"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",
