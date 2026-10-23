@@ -62,7 +62,7 @@ begin
  end if;
  if bal is null then raise exception 'Adjustment would make this balance negative'; end if;
  insert into public.admin_wallet_adjustments(user_id,admin_user_id,bucket,amount,note) values(uid,auth.uid(),p_bucket,p_amount,trim(p_note));
- insert into public.wallet_ledger(user_id,entry_type,bucket,amount,reference_type,note) values(uid,'admin_adjustment',p_bucket,p_amount,'admin_adjustment',trim(p_note));
+ insert into public.wallet_ledger(user_id,entry_type,bucket,amount,reference_type,note) values(uid,'admin_adjustment',p_bucket,abs(p_amount),'admin_adjustment',case when p_amount<0 then 'DEDUCTION: ' else 'CREDIT: ' end||trim(p_note));
  return jsonb_build_object('player_number',p_player_number,'bucket',p_bucket,'balance',bal);
 end; $$;
 
@@ -118,7 +118,7 @@ begin
   if referrer is not null and referrer<>new.user_id then
    insert into public.wallet_accounts(user_id) values(referrer) on conflict(user_id) do nothing;
    update public.wallet_accounts set deposited_balance=deposited_balance+5,updated_at=now() where user_id=referrer returning deposited_balance into new_balance;
-   insert into public.wallet_ledger(user_id,entry_type,bucket,amount,reference_type,reference_id,note) values(referrer,'referral_reward','deposited',5,'referral_first_withdrawal',new.id,'₹5 referral reward; entry-fee-only credit');
+   insert into public.wallet_ledger(user_id,entry_type,bucket,amount,reference_type,reference_id,note) values(referrer,'deposit_credit','deposited',5,'referral_first_withdrawal',new.id,'₹5 referral reward; entry-fee-only credit');
    update public.player_accounts set referral_rewarded_at=now() where user_id=new.user_id and referral_rewarded_at is null;
   end if;
  end if;
@@ -134,3 +134,6 @@ grant execute on function public.admin_adjust_player_balance(bigint,text,numeric
 grant execute on function public.admin_get_player_details(bigint) to authenticated;
 grant execute on function public.admin_delete_payment_request(text,uuid,text) to authenticated;
 notify pgrst,'reload schema';
+
+alter table public.wallet_ledger drop constraint if exists wallet_ledger_entry_type_check;
+alter table public.wallet_ledger add constraint wallet_ledger_entry_type_check check (entry_type = any (array['deposit_credit','match_earning','entry_fee','withdrawal_reserve','withdrawal_refund','admin_adjustment']::text[]));
