@@ -1,10 +1,42 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0d12"><meta name="description" content="BattleForge Free Fire community tournaments"><link rel="manifest" href="/manifest.json"><link rel="stylesheet" href="/styles.css"><title>BattleForge Arena</title></head>
-<body><header class="top"><a class="brand" href="#"><span class="mark">BF</span><span>BATTLE<span class="accent">FORGE</span><small>COMMUNITY ARENA</small></span></a><button id="adminBtn" class="admin-button hidden" aria-label="Admin panel">ADMIN</button><button id="profileBtn" class="avatar" aria-label="Player account">G</button></header>
-<main><section class="hero"><div class="eyebrow">● LIVE COMMUNITY ARENA</div><h1>PLAY HARD.<br><span class="accent">WIN TOGETHER.</span></h1><p>Find your squad. Enter the arena. Make every match count.</p><div class="hero-stats"><div><b>03</b><small>FORMATS</small></div><div><b>24/7</b><small>COMMUNITY</small></div><div><b>₹1 = 1</b><small>DEMO POINT</small></div></div></section>
-<section class="wallet panel"><div><div class="muted">DEMO WALLET BALANCE</div><div class="balance"><span id="balance">250</span> <small>PTS</small></div></div><button id="historyBtn" class="outline">History ↗</button></section>
-<div class="section-head"><div><div class="muted">CHOOSE YOUR BATTLE</div><h2>Featured tournaments</h2></div><span class="pill">DEMO MODE</span></div>
-<section id="tournaments" class="tournaments"></section>
-<section class="panel rules"><h3>Before you queue</h3><p>Use your in-game name exactly. Read room instructions before joining and never share your account password or OTP.</p><p class="notice">Demo only: entries, points, prizes and withdrawals are simulated. No real money is accepted or paid.</p></section>
-<nav class="bottom"><button class="navitem active" data-tab="arena">⌂<small>Arena</small></button><button class="navitem" data-tab="wallet">◈<small>Wallet</small></button><button class="navitem" data-tab="history">◷<small>History</small></button><button class="navitem" data-tab="rules">☷<small>Rules</small></button></nav></main>
-<div id="modal" class="modal hidden" role="dialog" aria-modal="true"><div class="modal-card"><button id="closeModal" class="close">×</button><div id="modalContent"></div></div></div><div id="toast" class="toast"></div><script type="module" src="/app.js"></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0d12">
+  <meta name="description" content="BattleForge — Free Fire community tournaments">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+  <title>BattleForge Arena</title>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#arena" data-home><span class="mark">BF</span><span>BATTLE<span class="accent">FORGE</span><small>COMMUNITY ARENA</small></span></a>
+    <div class="top-actions"><button id="adminBtn" class="admin-button hidden" aria-label="Admin panel">ADMIN</button><button id="profileBtn" class="avatar" aria-label="Player account">Sign in</button></div>
+  </header>
+  <main class="app-shell">
+    <section id="page-arena" class="page-view active" data-page="arena">
+      <section class="hero hero-premium"><div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> COMMUNITY ARENA · FREE FIRE</div><p class="hero-kicker">YOUR NEXT MATCH STARTS HERE</p><h1>ENTER THE<br><span class="accent">BATTLEFIELD.</span></h1><p class="hero-sub">Find your lobby. Bring your best. Make your name count.</p><div class="hero-actions"><button class="join" data-go="arena-list">Explore tournaments <span>↗</span></button><span class="trust-note"><span class="trust-mark">✓</span> Skill. Teamwork. Respect.</span></div></div><div class="hero-emblem" aria-hidden="true"><div class="emblem-ring ring-one"></div><div class="emblem-ring ring-two"></div><div class="emblem-core">BF</div><span class="emblem-caption">READY<br>FORGE<br>REPEAT</span></div><div class="hero-stats"><div><b>03</b><small>GAME FORMATS</small></div><div><b>24/7</b><small>COMMUNITY</small></div><div><b>LIVE</b><small>ONLINE LOBBIES</small></div></div></section>
+      <section class="section-head" id="arena-list"><div><div class="muted section-eyebrow">PICK YOUR FIGHT</div><h2>Featured tournaments</h2><p class="section-sub">Your next win is one match away.</p></div><span class="pill"><span class="live-dot"></span> ONLINE</span></section>
+      <section id="tournaments" class="tournaments"></section>
+      <section class="panel tip-panel"><span class="tip-icon">✦</span><div><h3>Play fair. Play smart.</h3><p>Use your exact in-game name, read the match rules, and never share your account password or OTP.</p></div><button class="icon-arrow" data-go="rules" aria-label="Read arena rules">↗</button></section>
+    </section>
+    <section id="page-wallet" class="page-view" data-page="wallet">
+      <div class="page-heading"><div class="eyebrow">YOUR ACCOUNT</div><h1>My <span class="accent">wallet.</span></h1><p>Keep track of your BattleForge demo points.</p></div>
+      <section class="wallet-hero"><div class="wallet-glow"></div><div class="wallet-label"><span class="wallet-icon">◈</span> DEMO WALLET BALANCE <span class="pill">SIMULATED</span></div><div class="wallet-total"><span id="walletBalance">250</span><small>PTS</small></div><p>Points shown here are for testing only. They have no cash value.</p><div class="wallet-actions"><button class="wallet-action" disabled><span>＋</span><b>Deposit</b><small>Not enabled</small></button><button class="wallet-action" disabled><span>↗</span><b>Withdraw</b><small>Not enabled</small></button></div></section>
+      <section class="panel wallet-notice"><span class="notice-icon">ⓘ</span><div><b>Real-money payments are not active</b><p>Deposits, withdrawals, entry-fee collection, and prize payouts are disabled while legal and payment requirements are reviewed.</p></div></section>
+      <section class="section-head compact-head"><div><div class="muted section-eyebrow">ACCOUNT ACTIVITY</div><h2>Recent activity</h2></div><button class="text-button" data-go="history">View all ↗</button></section><div id="walletActivity" class="activity-list"></div>
+    </section>
+    <section id="page-history" class="page-view" data-page="history">
+      <div class="page-heading"><div class="eyebrow">YOUR JOURNEY</div><h1>Match <span class="accent">history.</span></h1><p>Registrations, published lobby details, and verified results.</p></div><div id="historyContent" class="history-list"></div>
+    </section>
+    <section id="page-rules" class="page-view" data-page="rules">
+      <div class="page-heading"><div class="eyebrow">THE CODE OF THE ARENA</div><h1>Play by the <span class="accent">rules.</span></h1><p>Fair matches make a stronger community. Check each tournament's custom instructions before joining.</p></div>
+      <div class="rules-grid"><article class="rule-card"><span>01</span><h3>Correct IGN</h3><p>Register using the exact Free Fire in-game name you will use in the match.</p></article><article class="rule-card"><span>02</span><h3>Respect timing</h3><p>Join the published room on time and follow the organiser's lobby instructions.</p></article><article class="rule-card"><span>03</span><h3>Fair play only</h3><p>No cheats, exploits, teaming outside the format, harassment, or deliberate match disruption.</p></article><article class="rule-card"><span>04</span><h3>Protect your account</h3><p>Never share your password, login codes, or OTP. BattleForge will not ask for them.</p></article><article class="rule-card"><span>05</span><h3>Read match notes</h3><p>Every tournament may have its own map, schedule, scoring, lobby, and disqualification rules.</p></article><article class="rule-card"><span>06</span><h3>Results & disputes</h3><p>Follow the organiser's instructions for screenshots, score reporting, and result review.</p></article></div>
+      <p class="notice rules-disclaimer">BattleForge currently records online registrations and published results. Wallet points and prize amounts are demo-only; no real-money transactions are processed.</p>
+    </section>
+  </main>
+  <nav class="bottom" aria-label="Main navigation"><button class="navitem active" data-tab="arena"><span class="nav-icon">⌂</span><small>Arena</small></button><button class="navitem" data-tab="wallet"><span class="nav-icon">◈</span><small>Wallet</small></button><button class="navitem" data-tab="history"><span class="nav-icon">◷</span><small>History</small></button><button class="navitem" data-tab="rules"><span class="nav-icon">☷</span><small>Rules</small></button></nav>
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true"><div class="modal-card"><button id="closeModal" class="close" aria-label="Close dialog">×</button><div id="modalContent"></div></div></div><div id="toast" class="toast" role="status" aria-live="polite"></div><script type="module" src="/app.js"></script>
+</body>
+</html>

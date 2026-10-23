@@ -35,9 +35,26 @@ function modal(html) {
   $('#modal').classList.remove('hidden');
 }
 function close() { $('#modal').classList.add('hidden'); }
+function setPage(tab) {
+  const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules'].includes(tab) ? tab : 'arena');
+  document.querySelectorAll('.page-view').forEach(page => page.classList.toggle('active', page.dataset.page === target));
+  document.querySelectorAll('[data-tab]').forEach(button => button.classList.toggle('active', button.dataset.tab === target));
+  document.body.dataset.page = target;
+  close();
+  if (target === 'history') showHistory();
+  if (target === 'wallet') renderWallet();
+  if (tab === 'arena-list') $('#arena-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  else window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function renderWallet() {
+  const total = $('#walletBalance'); if (total) total.textContent = String(balance);
+  const activity = $('#walletActivity'); if (!activity) return;
+  activity.innerHTML = history.length ? history.slice().reverse().slice(0,5).map(item => '<div class="activity-row"><span class="activity-mark">◈</span><div><b>' + esc(item.title || item.type || 'Wallet activity') + '</b><small>' + esc(item.date || '') + '</small></div><strong>' + esc(item.amount ?? '') + ' pts</strong></div>').join('') : '<div class="empty-state"><span>◷</span><b>No wallet activity yet</b><p>Demo wallet activity will appear here when available.</p></div>' ;
+}
 
 function render() {
-  $('#balance').textContent = balance;
+  if ($('#walletBalance')) $('#walletBalance').textContent = String(balance);
+  renderWallet();
   $('#tournaments').innerHTML = tournaments.length ? tournaments.map(t => {
     const id = String(t.id);
     const has = joined.some(e => String(e.tournament_id) === id);
@@ -61,7 +78,7 @@ async function refreshData() {
   }
   $('#adminBtn')?.classList.toggle('hidden', !isAdmin);
   const { data, error } = await supabase.from('tournaments')
-    .select('id,title,game_mode,entry_points,prize_pool_points,max_players,status,starts_at')
+    .select('id,title,description,game_mode,entry_points,prize_pool_points,max_players,status,starts_at')
     .order('starts_at', { ascending: true, nullsFirst: false }).order('id');
   if (error) {
     toast('Could not load online tournaments. Check Supabase setup.');
@@ -109,9 +126,10 @@ function showProfile() {
   modal('<h2>Player account</h2><p>Signed in as <b>' + esc(currentUser.email) + '</b></p><p class="notice">Online account and tournament registrations are connected. Points shown in the wallet remain demo-only.</p><button id="signOutBtn" class="join full">Sign out</button>');
 }
 async function showHistory() {
+  const target = $('#historyContent');
+  if (!target) return;
   const rows = currentUser ? joined : [];
-  let roomRows = [];
-  let resultRows = [];
+  let roomRows = [], resultRows = [];
   if (currentUser && rows.length) {
     const ids = rows.map(e => e.tournament_id);
     const [rooms, results] = await Promise.all([
@@ -122,31 +140,26 @@ async function showHistory() {
     if (!results.error) resultRows = results.data ?? [];
   }
   const rosterRows = {};
-  if (currentUser && roomRows.length) {
-    await Promise.all(roomRows.map(async room => {
-      const { data: roster, error: rosterError } = await supabase.rpc('get_tournament_roster', { p_tournament_id: Number(room.tournament_id) });
-      if (!rosterError) rosterRows[String(room.tournament_id)] = roster ?? [];
-    }));
-  }
+  if (currentUser && roomRows.length) await Promise.all(roomRows.map(async room => {
+    const { data, error } = await supabase.rpc('get_tournament_roster', { p_tournament_id: Number(room.tournament_id) });
+    if (!error) rosterRows[String(room.tournament_id)] = data ?? [];
+  }));
   const roomFor = id => roomRows.find(r => String(r.tournament_id) === String(id));
   const resultFor = id => resultRows.find(r => String(r.tournament_id) === String(id));
-  modal('<h2>Activity history</h2><p>Your registrations, match-room details and verified results.</p>' +
-    (rows.length ? rows.map(e => {
-      const room = roomFor(e.tournament_id);
-      const result = resultFor(e.tournament_id);
-      const roster = rosterRows[String(e.tournament_id)] ?? [];
-      return '<div class="entry history-entry"><div><strong>' + esc(e.in_game_name) + '</strong><small>Registered ' + esc(new Date(e.created_at).toLocaleString()) + '</small>' +
-        (room ? '<div class="room-card"><small class="room-label">MATCH ROOM</small><div class="room-value">ID <b>' + esc(room.room_id || 'Not set') + '</b></div><div class="room-value">Password <b>' + esc(room.room_password || 'Not set') + '</b></div><small>Room details are shared with registered players.</small></div>' : '') +
-        (room && roster.length ? '<div class="roster"><strong>PLAYER LOBBY · ' + roster.length + '</strong><div class="roster-chips">' + roster.map((p, i) => '<span class="player-chip"><i>' + (i + 1) + '</i>' + esc(p.in_game_name) + '</span>').join('') + '</div></div>' : '') +
-        (result ? '<small class="result-line">RESULT: ' + (result.placement ? 'Place #' + Number(result.placement) + ' · ' : '') + Number(result.kills) + ' kills' + (result.note ? ' · ' + esc(result.note) : '') + '</small>' : '') +
-        '</div><b class="joined-label">JOINED</b></div>';
-    }).join('') : '<p class="notice">No online registrations yet. Join a tournament to see your match details here.</p>') +
-    '<p class="notice">Wallet points and prizes are still demo-only. Published results do not move money or points.</p>');
+  target.innerHTML = !currentUser ? '<div class="empty-state"><span>◷</span><h3>Your match timeline</h3><p>Sign in to see your registrations, lobby details, and published results.</p><button id="historySignIn" class="join">Sign in</button></div>' : rows.length ? rows.slice().sort((a,b) => new Date(b.created_at)-new Date(a.created_at)).map(e => {
+    const room=roomFor(e.tournament_id), result=resultFor(e.tournament_id), roster=rosterRows[String(e.tournament_id)]??[], t=tournaments.find(x=>String(x.id)===String(e.tournament_id));
+    return '<article class="history-card"><div class="history-card-top"><span class="history-symbol">✦</span><span class="status-chip">REGISTERED</span></div><h3>'+esc(t?.title || 'BattleForge tournament')+'</h3><p class="history-meta">'+esc(e.in_game_name)+' · '+esc(new Date(e.created_at).toLocaleString())+'</p>'+
+    (room ? '<div class="room-card"><small class="room-label">MATCH ROOM</small><div class="room-value">ID <b>'+esc(room.room_id||'Not set')+'</b></div><div class="room-value">Password <b>'+esc(room.room_password||'Not set')+'</b></div>'+(roster.length?'<div class="roster"><strong>PLAYER LOBBY · '+roster.length+'</strong><div class="roster-chips">'+roster.map((x,i)=>'<span class="player-chip"><i>'+(i+1)+'</i>'+esc(x.in_game_name)+'</span>').join('')+'</div></div>':'')+'</div>' : '<p class="history-pending">Room details will appear here after the organiser publishes them.</p>')+
+    (result ? '<div class="result-banner"><small>VERIFIED RESULT</small><b>'+(result.placement?'Place #'+Number(result.placement)+' · ':'')+Number(result.kills)+' kills</b>'+(result.note?'<p>'+esc(result.note)+'</p>':'')+'</div>' : '')+'</article>';
+  }).join('') : '<div class="empty-state"><span>◷</span><h3>No matches yet</h3><p>Join a tournament from the Arena page and your registration will show up here.</p><button class="join" data-go="arena">Explore tournaments</button></div>';
 }
 
 async function loadAdminRoom() {
   if (!isAdmin) return;
   const id = Number($('#adminTournament')?.value);
+  const selectedTournament = tournaments.find(t => Number(t.id) === id);
+  const descriptionEditor = $('#adminEditDescription');
+  if (descriptionEditor) descriptionEditor.value = selectedTournament?.description ?? '';
   const roomId = $('#adminRoomId');
   const roomPassword = $('#adminRoomPassword');
   const published = $('#adminRoomPublished');
@@ -170,10 +183,13 @@ async function showAdmin() {
     <label class="field">DISPLAYED PRIZE POOL (POINTS)<input id="adminPrize" type="number" min="0" value="0"></label>
     <label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label>
     <label class="field">START TIME (OPTIONAL)<input id="adminStarts" type="datetime-local"></label>
+    <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminDescription" maxlength="5000" rows="5" placeholder="Paste lobby instructions, match schedule, scoring, proof requirements, and disqualification rules…"></textarea></label>
     <button id="adminCreateTournament" class="join full">Create tournament</button>
     <hr>
     <h3>Manage tournament</h3>
     <label class="field">TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
+    <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminEditDescription" maxlength="5000" rows="5" placeholder="Custom instructions shown to players on the tournament details page"></textarea></label>
+    <button id="adminSaveDescription" class="join full secondary-action">Save match description</button>
     <label class="field">STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label>
     <button id="adminSetStatus" class="join full">Save entry status</button>
     <button id="adminDeleteTournament" class="join full danger-button">Delete tournament permanently</button>
@@ -232,6 +248,7 @@ async function showTournamentDetails(t) {
   modal('<div class="detail-hero"><span class="tag">' + esc(mode) + ' ARENA</span><h2>' + esc(t.title) + '</h2><p>' + esc((t.status || 'open').toUpperCase()) + ' · Competitive Free Fire tournament</p></div>' +
     '<div class="detail-stats"><div><small>ENTRY FEE</small><b>' + entry + ' <i>PTS</i></b></div><div><small>PRIZE POOL</small><b>' + prize + ' <i>PTS</i></b></div><div><small>PLAYERS</small><b>' + count + '/' + Number(t.max_players) + '</b></div></div>' +
     '<div class="detail-info"><div><span>🕒</span><section><small>START TIME</small><b>' + esc(starts) + '</b></section></div><div><span>🎮</span><section><small>GAME MODE</small><b>' + esc(mode) + '</b></section></div><div><span>👥</span><section><small>REGISTRATION</small><b>' + (has ? 'You are registered' : full ? 'Tournament full' : t.status === 'open' ? 'Open to join' : 'Registration closed') + '</b></section></div></div>' +
+    '<section class="match-rules"><div class="rules-heading"><div><small>ORGANISER NOTES</small><h3>Match description & rules</h3></div><button id="detailsCopyRules" class="outline" '+(t.description ? '' : 'disabled')+'>Copy rules</button></div><div class="match-rules-copy">'+esc(t.description || 'The organiser has not added custom match instructions yet. Please check back before the match.')+'</div></section>' +
     roomHtml +
     (canJoin ? '<button id="detailsJoin" class="join full">Join tournament · ' + entry + ' pts</button>' : has ? '<button class="join full" disabled>REGISTERED ✓</button>' : !currentUser ? '<button id="detailsSignIn" class="join full">Sign in to join</button>' : '<button class="join full" disabled>' + (full ? 'TOURNAMENT FULL' : 'REGISTRATION CLOSED') + '</button>') +
     '<p class="notice">Displayed points are demo-only. No deposits, entry fees, withdrawals, or prize payouts are processed.</p>');
@@ -312,10 +329,20 @@ $('#modalContent').addEventListener('click', async e => {
     const startsRaw = $('#adminStarts').value;
     if (title.length < 3 || !Number.isInteger(entry) || entry < 0 || !Number.isInteger(prize) || prize < 0 || !Number.isInteger(max) || max < 1 || max > 500) return toast('Check tournament fields.');
     button.disabled = true;
-    const { error } = await supabase.rpc('admin_create_tournament', { p_title:title, p_game_mode:mode, p_entry_points:entry, p_prize_pool_points:prize, p_max_players:max, p_starts_at:startsRaw ? new Date(startsRaw).toISOString() : null });
+    const description = $('#adminDescription').value.trim();
+    const { error } = await supabase.rpc('admin_create_tournament_with_description', { p_title:title, p_game_mode:mode, p_entry_points:entry, p_prize_pool_points:prize, p_max_players:max, p_starts_at:startsRaw ? new Date(startsRaw).toISOString() : null, p_description:description });
     button.disabled = false;
     if (error) return toast(error.message);
     await refreshData(); showAdmin(); toast('Tournament created.');
+  }
+  if (button.id === 'adminSaveDescription') {
+    if (!isAdmin) return toast('Admin access required.');
+    const id = Number($('#adminTournament').value); const description = $('#adminEditDescription').value.trim();
+    if (!id) return toast('Choose a tournament.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_set_tournament_description', { p_tournament_id:id, p_description:description });
+    button.disabled = false; if (error) return toast(error.message);
+    await refreshData(); showAdmin(); toast('Match description saved.'); return;
   }
   if (button.id === 'adminSetStatus') {
     const id = Number($('#adminTournament').value); if (!id) return toast('Choose a tournament.');
@@ -362,13 +389,17 @@ $('#modalContent').addEventListener('click', async e => {
     pendingResultEntry = null; close(); toast('Verified result published to player.');
   }
 });
-document.querySelectorAll('[data-tab]').forEach(button => button.onclick = () => {
-  document.querySelectorAll('[data-tab]').forEach(x => x.classList.remove('active'));
-  button.classList.add('active');
-  if (button.dataset.tab === 'wallet') modal('<h2>Demo wallet</h2><p>Your current simulated balance.</p><div class="balance">' + balance + ' <small>PTS</small></div><p class="notice">This is not an online wallet. Deposits, withdrawals, fees and prize payouts are disabled.</p>');
-  if (button.dataset.tab === 'history') showHistory();
-  if (button.dataset.tab === 'rules') modal('<h2>Arena rules</h2><p>1. Use your correct in-game name.</p><p>2. Follow room timing and organizer instructions.</p><p>3. Never share passwords or OTPs.</p><p>4. Tournament registrations are online; results and payouts are not yet automated.</p>');
-  if (button.dataset.tab === 'arena') close();
+document.querySelectorAll('[data-tab]').forEach(button => button.onclick = () => setPage(button.dataset.tab));
+document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => setPage(button.dataset.go)));
+document.querySelector('[data-home]')?.addEventListener('click', event => { event.preventDefault(); setPage('arena'); });
+$('#historySignIn')?.addEventListener('click', showAuth);
+$('#historyContent')?.addEventListener('click', event => { const button = event.target.closest('[data-go]'); if (button) setPage(button.dataset.go); if (event.target.closest('#historySignIn')) showAuth(); });
+$('#modalContent').addEventListener('click', async event => {
+  if (!event.target.closest('#detailsCopyRules')) return;
+  const rules = $('.match-rules-copy')?.textContent ?? '';
+  if (!rules) return;
+  try { await navigator.clipboard.writeText(rules); toast('Match rules copied.'); }
+  catch { const area=document.createElement('textarea'); area.value=rules; area.style.position='fixed'; area.style.opacity='0'; document.body.appendChild(area); area.select(); const ok=document.execCommand('copy'); area.remove(); toast(ok?'Match rules copied.':'Select and copy the rules manually.'); }
 });
 supabase.auth.onAuthStateChange(() => { setTimeout(() => refreshData(), 0); });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
