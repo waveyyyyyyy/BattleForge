@@ -184,7 +184,7 @@ async function showAdmin() {
     <div id="adminCreateSection" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
     <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
     <div class="admin-form-grid"><label class="field">GAME MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label></div>
-    <div class="admin-form-grid"><label class="field">ENTRY POINTS<input id="adminEntry" type="number" min="0" value="0"></label><label class="field">DISPLAYED PRIZE (POINTS)<input id="adminPrize" type="number" min="0" value="0"></label></div>
+    <div class="admin-form-grid"><label class="field">ENTRY COINS<input id="adminEntry" type="number" min="0" value="0"></label><label class="field">DISPLAYED PRIZE (COINS)<input id="adminPrize" type="number" min="0" value="0"></label></div>
     <label class="field">START TIME (OPTIONAL)<input id="adminStarts" type="datetime-local"></label>
     <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminDescription" maxlength="5000" rows="5" placeholder="Paste room instructions, start time, scoring, screenshot proof, and disqualification rules…"></textarea></label>
     <p class="admin-helper">Tip: include the exact start time, room release time, kill scoring, late-entry policy, and what proof players must submit.</p>
@@ -201,7 +201,7 @@ async function showAdmin() {
     <label class="admin-check"><input id="adminRoomPublished" type="checkbox"><span><b>Publish room to registered players</b><small>Players will see room details and the eligible roster.</small></span></label>
     <button id="adminSaveRoom" class="join full">Save room settings</button></div>
     <div id="adminPlayersSection" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Players & results</h3><p>Load registered players and publish verified match results.</p></div></div><button id="adminLoadEntries" class="outline full">Load players / record results</button><div id="adminEntries" class="admin-entries"></div></div>
-    <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Result publishing records results only; it does not transfer prize money or credit wallet points.</p></div>`);
+    <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Result publishing records results only; it does not transfer prize money or credit wallet coins.</p></div>`);
   $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
   document.querySelectorAll('[data-admin-jump]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'})));
   await loadAdminRoom(); syncAdminSelectedSummary();
@@ -215,7 +215,7 @@ function syncAdminSelectedSummary() {
   if (!t) { el.textContent = 'Select a tournament to load its current settings.'; return; }
   const count = Number(counts[String(id)] ?? 0);
   const status = String(t.status || 'open').toUpperCase();
-  el.innerHTML = `<div><b>${esc(t.title)}</b><small>${esc(t.game_mode || 'SOLO')} · ${count}/${Number(t.max_players || 0)} players</small></div><span class="status-chip">${esc(status)}</span><div><small>ENTRY</small><b>${Number(t.entry_points || 0)} pts</b></div><div><small>PRIZE DISPLAY</small><b>${Number(t.prize_pool_points || 0)} pts</b></div>`;
+  el.innerHTML = `<div><b>${esc(t.title)}</b><small>${esc(t.game_mode || 'SOLO')} · ${count}/${Number(t.max_players || 0)} players</small></div><span class="status-chip">${esc(status)}</span><div><small>ENTRY</small><b>${Number(t.entry_points || 0)} coins</b></div><div><small>PRIZE DISPLAY</small><b>${Number(t.prize_pool_points || 0)} coins</b></div>`;
   if ($('#adminEditDescription')) $('#adminEditDescription').value = t.description || '';
   if ($('#adminStatus')) $('#adminStatus').value = ['open','closed','full'].includes(t.status) ? t.status : 'open';
 }
@@ -238,7 +238,7 @@ function showResultForm(entryId, ign) {
     <label class="field">KILLS<input id="resultKills" type="number" min="0" value="0"></label>
     <label class="field">NOTE (OPTIONAL)<input id="resultNote" maxlength="500" placeholder="Verified by screenshot"></label>
     <button id="adminPublishResult" class="join full">Publish verified result</button>
-    <p class="notice">This publishes result details only. It does not pay prize money or credit wallet points.</p>`);
+    <p class="notice">This publishes result details only. It does not pay prize money or credit wallet coins.</p>`);
 }
 
 async function showTournamentDetails(t) {
@@ -268,7 +268,7 @@ async function showTournamentDetails(t) {
     '<section class="match-rules"><div class="rules-heading"><div><small>ORGANISER NOTES</small><h3>Match description & rules</h3></div><button id="detailsCopyRules" class="outline" '+(t.description ? '' : 'disabled')+'>Copy rules</button></div><div class="match-rules-copy">'+esc(t.description || 'The organiser has not added custom match instructions yet. Please check back before the match.')+'</div></section>' +
     roomHtml +
     (canJoin ? '<button id="detailsJoin" class="join full">Join tournament · ' + entry + ' pts</button>' : has ? '<button class="join full" disabled>REGISTERED ✓</button>' : !currentUser ? '<button id="detailsSignIn" class="join full">Sign in to join</button>' : '<button class="join full" disabled>' + (full ? 'TOURNAMENT FULL' : 'REGISTRATION CLOSED') + '</button>') +
-    '<p class="notice">Displayed points are demo-only. No deposits, entry fees, withdrawals, or prize payouts are processed.</p>');
+    '<p class="notice">Displayed coins are demo-only. No deposits, entry fees, withdrawals, or prize payouts are processed.</p>');
   $('#detailsJoin')?.addEventListener('click', () => startJoin(t));
   $('#detailsSignIn')?.addEventListener('click', showAuth);
 }
@@ -276,7 +276,7 @@ function startJoin(tournament) {
   if (!currentUser) { showAuth(); return; }
   const already = joined.some(x => String(x.tournament_id) === String(tournament.id));
   if (already) { toast('You are already registered.'); return; }
-  modal('<h2>Register for ' + esc(tournament.title) + '</h2><p>Registration is saved to the online BattleForge database. No points or real money are charged.</p><label class="field">FREE FIRE IN-GAME NAME<input id="ign" maxlength="24" minlength="2" placeholder="Your IGN"></label><button id="confirmJoin" class="join full">Confirm online registration</button>');
+  modal('<h2>Register for ' + esc(tournament.title) + '</h2><p>Registration is saved to the online BattleForge database. No coins or real money are charged.</p><label class="field">FREE FIRE IN-GAME NAME<input id="ign" maxlength="24" minlength="2" placeholder="Your IGN"></label><button id="confirmJoin" class="join full">Confirm online registration</button>');
   $('#confirmJoin').onclick = async () => {
     const ign = $('#ign').value.trim();
     if (ign.length < 2 || ign.length > 24) { toast('IGN must be 2–24 characters.'); return; }
