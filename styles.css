@@ -55,3 +55,9 @@ html{scroll-behavior:smooth;scroll-padding-top:90px}body{background:radial-gradi
 .modal-card{max-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;overflow-y:auto !important;padding-bottom:calc(112px + env(safe-area-inset-bottom)) !important;}
 .modal-card .join.full{position:sticky !important;bottom:calc(64px + env(safe-area-inset-bottom)) !important;z-index:50 !important;display:block !important;visibility:visible !important;opacity:1 !important;transform:none !important;min-height:54px !important;margin-top:14px !important;margin-bottom:20px !important;flex-shrink:0 !important;scroll-margin-bottom:100px !important;}
 .modal-card form{padding-bottom:calc(80px + env(safe-area-inset-bottom)) !important;}
+
+
+/* Follow-up: center modal vertically; avoid top clipping while keeping submit actions lifted. */
+.modal{align-items:center !important;padding-top:calc(12px + env(safe-area-inset-top)) !important;padding-bottom:calc(12px + env(safe-area-inset-bottom)) !important;}
+.modal-card{max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;}
+.modal-card .join.full{bottom:calc(18px + env(safe-area-inset-bottom)) !important;}
