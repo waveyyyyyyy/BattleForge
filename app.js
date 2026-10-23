@@ -46,7 +46,7 @@ function render() {
     const prize = Number(t.prize_pool_points ?? t.prize ?? 0);
     const count = counts[id] ?? joined.filter(e => String(e.tournament_id) === id).length;
     const full = t.status === 'full' || count >= Number(t.max_players);
-    return '<article class="tour"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>' + esc(t.status || 'open').toUpperCase() + '</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' pts</b><small>DISPLAYED PRIZE POOL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open') ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' PTS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
+    return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>' + esc(t.status || 'open').toUpperCase() + '</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' pts</b><small>DISPLAYED PRIZE POOL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open') ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' PTS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
   }).join('') : '<p class="notice">No tournaments are published yet. The online database is connected; add the starter tournaments using the seed.sql file in the repository.</p>';
   $('#profileBtn').textContent = currentUser ? 'My Account' : 'Sign In';
 }
@@ -176,6 +176,7 @@ async function showAdmin() {
     <label class="field">TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
     <label class="field">STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label>
     <button id="adminSetStatus" class="join full">Save entry status</button>
+    <button id="adminDeleteTournament" class="join full danger-button">Delete tournament permanently</button>
     <label class="field">ROOM ID<input id="adminRoomId" maxlength="80" placeholder="Room ID"></label>
     <label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80" placeholder="Room password"></label>
     <label><input id="adminRoomPublished" type="checkbox"> Publish room details to registered players</label>
@@ -207,14 +208,40 @@ function showResultForm(entryId, ign) {
     <p class="notice">This publishes result details only. It does not pay prize money or credit wallet points.</p>`);
 }
 
-$('#tournaments').addEventListener('click', async e => {
-  const button = e.target.closest('[data-join]');
-  if (!button) return;
+async function showTournamentDetails(t) {
+  if (!t) return;
+  const id = String(t.id);
+  const has = joined.some(e => String(e.tournament_id) === id);
+  const mode = t.game_mode || t.type || 'SOLO';
+  const entry = Number(t.entry_points ?? t.entry ?? 0);
+  const prize = Number(t.prize_pool_points ?? t.prize ?? 0);
+  const count = counts[id] ?? joined.filter(e => String(e.tournament_id) === id).length;
+  const starts = t.starts_at ? new Date(t.starts_at).toLocaleString() : 'To be announced';
+  let roomHtml = '';
+  if (has && currentUser) {
+    const { data: room } = await supabase.from('tournament_rooms')
+      .select('room_id,room_password,published').eq('tournament_id', Number(id)).eq('published', true).maybeSingle();
+    if (room?.published) {
+      const { data: roster } = await supabase.rpc('get_tournament_roster', { p_tournament_id: Number(id) });
+      roomHtml = '<div class="room-card"><small class="room-label">MATCH ROOM</small><div class="room-value">ID <b>' + esc(room.room_id || 'Not set') + '</b></div><div class="room-value">Password <b>' + esc(room.room_password || 'Not set') + '</b></div>' +
+        (roster?.length ? '<div class="roster"><strong>PLAYER LOBBY · ' + roster.length + '</strong><div class="roster-chips">' + roster.map((p, i) => '<span class="player-chip"><i>' + (i + 1) + '</i>' + esc(p.in_game_name) + '</span>').join('') + '</div></div>' : '') + '</div>';
+    }
+  }
+  const full = t.status === 'full' || count >= Number(t.max_players);
+  const canJoin = currentUser && !has && !full && t.status === 'open';
+  modal('<div class="detail-hero"><span class="tag">' + esc(mode) + ' ARENA</span><h2>' + esc(t.title) + '</h2><p>' + esc((t.status || 'open').toUpperCase()) + ' · Competitive Free Fire tournament</p></div>' +
+    '<div class="detail-stats"><div><small>ENTRY FEE</small><b>' + entry + ' <i>PTS</i></b></div><div><small>PRIZE POOL</small><b>' + prize + ' <i>PTS</i></b></div><div><small>PLAYERS</small><b>' + count + '/' + Number(t.max_players) + '</b></div></div>' +
+    '<div class="detail-info"><div><span>🕒</span><section><small>START TIME</small><b>' + esc(starts) + '</b></section></div><div><span>🎮</span><section><small>GAME MODE</small><b>' + esc(mode) + '</b></section></div><div><span>👥</span><section><small>REGISTRATION</small><b>' + (has ? 'You are registered' : full ? 'Tournament full' : t.status === 'open' ? 'Open to join' : 'Registration closed') + '</b></section></div></div>' +
+    roomHtml +
+    (canJoin ? '<button id="detailsJoin" class="join full">Join tournament · ' + entry + ' pts</button>' : has ? '<button class="join full" disabled>REGISTERED ✓</button>' : !currentUser ? '<button id="detailsSignIn" class="join full">Sign in to join</button>' : '<button class="join full" disabled>' + (full ? 'TOURNAMENT FULL' : 'REGISTRATION CLOSED') + '</button>') +
+    '<p class="notice">Displayed points are demo-only. No deposits, entry fees, withdrawals, or prize payouts are processed.</p>');
+  $('#detailsJoin')?.addEventListener('click', () => startJoin(t));
+  $('#detailsSignIn')?.addEventListener('click', showAuth);
+}
+function startJoin(tournament) {
   if (!currentUser) { showAuth(); return; }
-  const tournament = tournaments.find(t => String(t.id) === button.dataset.join);
-  if (!tournament) return;
   const already = joined.some(x => String(x.tournament_id) === String(tournament.id));
-  if (already) return;
+  if (already) { toast('You are already registered.'); return; }
   modal('<h2>Register for ' + esc(tournament.title) + '</h2><p>Registration is saved to the online BattleForge database. No points or real money are charged.</p><label class="field">FREE FIRE IN-GAME NAME<input id="ign" maxlength="24" minlength="2" placeholder="Your IGN"></label><button id="confirmJoin" class="join full">Confirm online registration</button>');
   $('#confirmJoin').onclick = async () => {
     const ign = $('#ign').value.trim();
@@ -231,6 +258,26 @@ $('#tournaments').addEventListener('click', async e => {
     await refreshData();
     toast('Online tournament registration confirmed!');
   };
+}
+$('#tournaments').addEventListener('click', async e => {
+  const joinButton = e.target.closest('[data-join]');
+  if (joinButton) {
+    const tournament = tournaments.find(t => String(t.id) === joinButton.dataset.join);
+    if (tournament) startJoin(tournament);
+    return;
+  }
+  const card = e.target.closest('[data-detail]');
+  if (card) {
+    const tournament = tournaments.find(t => String(t.id) === card.dataset.detail);
+    if (tournament) await showTournamentDetails(tournament);
+  }
+});
+$('#tournaments').addEventListener('keydown', async e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-detail]')) {
+    e.preventDefault();
+    const tournament = tournaments.find(t => String(t.id) === e.target.dataset.detail);
+    if (tournament) await showTournamentDetails(tournament);
+  }
 });
 $('#historyBtn').onclick = showHistory;
 $('#closeModal').onclick = close;
@@ -276,6 +323,21 @@ $('#modalContent').addEventListener('click', async e => {
     const { error } = await supabase.rpc('admin_set_tournament_status', { p_tournament_id:id, p_status:$('#adminStatus').value });
     button.disabled = false; if (error) return toast(error.message);
     await refreshData(); showAdmin(); toast('Tournament status saved.');
+  }
+  if (button.id === 'adminDeleteTournament') {
+    if (!isAdmin) return toast('Admin access required.');
+    const id = Number($('#adminTournament')?.value);
+    const tournament = tournaments.find(t => Number(t.id) === id);
+    if (!id || !tournament) return toast('Choose a tournament.');
+    const confirmed = window.confirm('Permanently delete "' + tournament.title + '" and its registrations, room, and results? This cannot be undone.');
+    if (!confirmed) return;
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_delete_tournament', { p_tournament_id: id });
+    button.disabled = false;
+    if (error) return toast(error.message);
+    await refreshData();
+    showAdmin();
+    toast('Tournament and its records deleted.');
   }
   if (button.id === 'adminSaveRoom') {
     const id = Number($('#adminTournament').value); if (!id) return toast('Choose a tournament.');
