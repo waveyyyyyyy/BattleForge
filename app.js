@@ -10,6 +10,8 @@ let history = read('bf_history', []);
 let tournaments = [];
 let joined = [];
 let currentUser = null;
+let isAdmin = false;
+let pendingResultEntry = null;
 let counts = {};
 
 function read(k, fallback) {
@@ -52,6 +54,12 @@ async function refreshData() {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) console.warn(sessionError);
   currentUser = session?.user ?? null;
+  isAdmin = false;
+  if (currentUser) {
+    const { data: adminFlag, error: adminError } = await supabase.rpc('is_battleforge_admin');
+    if (!adminError) isAdmin = adminFlag === true;
+  }
+  $('#adminBtn')?.classList.toggle('hidden', !isAdmin);
   const { data, error } = await supabase.from('tournaments')
     .select('id,title,game_mode,entry_points,prize_pool_points,max_players,status,starts_at')
     .order('starts_at', { ascending: true, nullsFirst: false }).order('id');
@@ -102,10 +110,78 @@ function showProfile() {
 }
 async function showHistory() {
   const rows = currentUser ? joined : [];
-  modal('<h2>Activity history</h2><p>Online registrations for your signed-in account.</p>' +
-    (rows.length ? rows.map(e => '<div class="entry"><div>Registered as ' + esc(e.in_game_name) + '<small>' + esc(new Date(e.created_at).toLocaleString()) + '</small></div><b>JOINED</b></div>').join('') : '<p>No online registrations yet.</p>') +
-    '<p class="notice">The points balance is still a local demo balance. Deposits, withdrawals and prize payouts are disabled.</p>');
+  let roomRows = [];
+  let resultRows = [];
+  if (currentUser && rows.length) {
+    const ids = rows.map(e => e.tournament_id);
+    const [rooms, results] = await Promise.all([
+      supabase.from('tournament_rooms').select('tournament_id,room_id,room_password').eq('published', true).in('tournament_id', ids),
+      supabase.from('tournament_results').select('tournament_id,placement,kills,note,created_at').eq('user_id', currentUser.id).eq('published', true)
+    ]);
+    if (!rooms.error) roomRows = rooms.data ?? [];
+    if (!results.error) resultRows = results.data ?? [];
+  }
+  const roomFor = id => roomRows.find(r => String(r.tournament_id) === String(id));
+  const resultFor = id => resultRows.find(r => String(r.tournament_id) === String(id));
+  modal(`<h2>Activity history</h2><p>Your online registrations, published match rooms and results.</p>` +
+    (rows.length ? rows.map(e => {
+      const room = roomFor(e.tournament_id);
+      const result = resultFor(e.tournament_id);
+      return `<div class="entry"><div>Registered as ${esc(e.in_game_name)}<small>${esc(new Date(e.created_at).toLocaleString())}</small>` +
+        (room ? `<small>ROOM ID: ${esc(room.room_id || 'Not set')} · PASSWORD: ${esc(room.room_password || 'Not set')}</small>` : '') +
+        (result ? `<small>RESULT: ${result.placement ? 'Place #' + Number(result.placement) + ' · ' : ''}${Number(result.kills)} kills${result.note ? ' · ' + esc(result.note) : ''}</small>` : '') +
+        `</div><b>JOINED</b></div>`;
+    }).join('') : '<p>No online registrations yet.</p>') +
+    '<p class="notice">Wallet points and prizes are still demo-only. Published results do not move money or points.</p>');
 }
+
+async function showAdmin() {
+  if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
+  const options = tournaments.map(t => `<option value="${esc(t.id)}">${esc(t.title)} (${esc(t.game_mode)})</option>`).join('');
+  modal(`<h2>BattleForge Admin</h2><p>Create tournaments, control entry status, publish room details and verify match results.</p>
+    <h3>Create tournament</h3>
+    <label class="field">TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
+    <label class="field">MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label>
+    <label class="field">ENTRY POINTS<input id="adminEntry" type="number" min="0" value="0"></label>
+    <label class="field">DISPLAYED PRIZE POOL (POINTS)<input id="adminPrize" type="number" min="0" value="0"></label>
+    <label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label>
+    <label class="field">START TIME (OPTIONAL)<input id="adminStarts" type="datetime-local"></label>
+    <button id="adminCreateTournament" class="join full">Create tournament</button>
+    <hr>
+    <h3>Manage tournament</h3>
+    <label class="field">TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
+    <label class="field">STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label>
+    <button id="adminSetStatus" class="join full">Save entry status</button>
+    <label class="field">ROOM ID<input id="adminRoomId" maxlength="80" placeholder="Room ID"></label>
+    <label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80" placeholder="Room password"></label>
+    <label><input id="adminRoomPublished" type="checkbox"> Publish room details to registered players</label>
+    <button id="adminSaveRoom" class="join full">Save match room</button>
+    <button id="adminLoadEntries" class="join full">Load players / record results</button>
+    <div id="adminEntries"></div>
+    <p class="notice">Room details are restricted to registered players. Results are published only to the player concerned. No wallet credit or payout is triggered.</p>`);
+}
+
+async function loadAdminEntries() {
+  if (!isAdmin) { toast('Admin access required.'); return; }
+  const id = Number($('#adminTournament')?.value);
+  if (!id) { toast('Choose a tournament first.'); return; }
+  const list = $('#adminEntries');
+  list.textContent = 'Loading players…';
+  const { data, error } = await supabase.rpc('admin_list_tournament_entries', { p_tournament_id: id });
+  if (error) { list.textContent = error.message; return; }
+  list.innerHTML = data?.length ? data.map(e => `<div class="entry"><div>${esc(e.in_game_name)}<small>Registered ${esc(new Date(e.created_at).toLocaleString())}</small></div><button class="outline" data-result-entry="${esc(e.entry_id)}" data-ign="${esc(e.in_game_name)}">Record result</button></div>`).join('') : '<p>No registered players yet.</p>';
+}
+
+function showResultForm(entryId, ign) {
+  pendingResultEntry = entryId;
+  modal(`<h2>Publish result</h2><p>Player: <b>${esc(ign)}</b></p>
+    <label class="field">PLACEMENT (OPTIONAL)<input id="resultPlacement" type="number" min="1" placeholder="1"></label>
+    <label class="field">KILLS<input id="resultKills" type="number" min="0" value="0"></label>
+    <label class="field">NOTE (OPTIONAL)<input id="resultNote" maxlength="500" placeholder="Verified by screenshot"></label>
+    <button id="adminPublishResult" class="join full">Publish verified result</button>
+    <p class="notice">This publishes result details only. It does not pay prize money or credit wallet points.</p>`);
+}
+
 $('#tournaments').addEventListener('click', async e => {
   const button = e.target.closest('[data-join]');
   if (!button) return;
@@ -135,6 +211,7 @@ $('#historyBtn').onclick = showHistory;
 $('#closeModal').onclick = close;
 $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') close(); });
 $('#profileBtn').onclick = showProfile;
+$('#adminBtn').onclick = showAdmin;
 $('#modalContent').addEventListener('click', async e => {
   if (e.target.id === 'signInBtn') await authAction('signin');
   if (e.target.id === 'signUpBtn') await authAction('signup');
@@ -145,6 +222,53 @@ $('#modalContent').addEventListener('click', async e => {
     close();
     await refreshData();
     toast('Signed out.');
+  }
+});
+$('#modalContent').addEventListener('click', async e => {
+  const button = e.target.closest('button');
+  if (!button) return;
+  if (button.id === 'adminCreateTournament') {
+    if (!isAdmin) return toast('Admin access required.');
+    const title = $('#adminTitle').value.trim();
+    const mode = $('#adminMode').value;
+    const entry = Number($('#adminEntry').value);
+    const prize = Number($('#adminPrize').value);
+    const max = Number($('#adminMax').value);
+    const startsRaw = $('#adminStarts').value;
+    if (title.length < 3 || !Number.isInteger(entry) || entry < 0 || !Number.isInteger(prize) || prize < 0 || !Number.isInteger(max) || max < 1 || max > 500) return toast('Check tournament fields.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_create_tournament', { p_title:title, p_game_mode:mode, p_entry_points:entry, p_prize_pool_points:prize, p_max_players:max, p_starts_at:startsRaw ? new Date(startsRaw).toISOString() : null });
+    button.disabled = false;
+    if (error) return toast(error.message);
+    await refreshData(); showAdmin(); toast('Tournament created.');
+  }
+  if (button.id === 'adminSetStatus') {
+    const id = Number($('#adminTournament').value); if (!id) return toast('Choose a tournament.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_set_tournament_status', { p_tournament_id:id, p_status:$('#adminStatus').value });
+    button.disabled = false; if (error) return toast(error.message);
+    await refreshData(); showAdmin(); toast('Tournament status saved.');
+  }
+  if (button.id === 'adminSaveRoom') {
+    const id = Number($('#adminTournament').value); if (!id) return toast('Choose a tournament.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_set_tournament_room', { p_tournament_id:id, p_room_id:$('#adminRoomId').value.trim(), p_room_password:$('#adminRoomPassword').value.trim(), p_published:$('#adminRoomPublished').checked });
+    button.disabled = false; if (error) return toast(error.message);
+    toast('Match room saved.');
+  }
+  if (button.id === 'adminLoadEntries') await loadAdminEntries();
+  if (button.dataset.resultEntry) showResultForm(button.dataset.resultEntry, button.dataset.ign || 'Player');
+  if (button.id === 'adminPublishResult') {
+    if (!pendingResultEntry) return toast('Choose a player first.');
+    const placeRaw = $('#resultPlacement').value;
+    const placement = placeRaw === '' ? null : Number(placeRaw);
+    const kills = Number($('#resultKills').value);
+    const note = $('#resultNote').value.trim();
+    if ((placement !== null && (!Number.isInteger(placement) || placement < 1)) || !Number.isInteger(kills) || kills < 0) return toast('Check placement and kills.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_publish_result', { p_entry_id:pendingResultEntry, p_placement:placement, p_kills:kills, p_note:note });
+    button.disabled = false; if (error) return toast(error.message);
+    pendingResultEntry = null; close(); toast('Verified result published to player.');
   }
 });
 document.querySelectorAll('[data-tab]').forEach(button => button.onclick = () => {
