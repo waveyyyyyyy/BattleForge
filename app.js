@@ -55,11 +55,11 @@ function cleanUpi(value) { return String(value || '').trim().toLowerCase(); }
 function validUpi(value) { return /^[a-z0-9._-]{2,100}@[a-z0-9.-]{2,50}$/i.test(String(value || '').trim()); }
 function showDepositForm() {
   if (!currentUser) { showAuth(); return; }
-  modal('<h2>Deposit request</h2><p>Enter the amount and the UPI ID you will pay from.</p><label class="field">AMOUNT (₹)<input id="depositAmount" type="number" min="1" max="50000" step="1" inputmode="numeric" placeholder="100"></label><label class="field">YOUR PAYING UPI ID<input id="depositPayerUpi" maxlength="100" autocomplete="off" placeholder="yourname@upi"></label><div class="room-card"><small class="room-label">PAY TO THIS UPI ID</small><div class="room-value"><b id="depositReceiverUpi">kjaman@fam</b><button id="copyDepositUpi" class="outline">Copy</button></div><p>Pay the exact amount only after creating the request. Do not share your UPI PIN or OTP.</p></div><p class="notice">A 2-minute timer is for the request window only. It does not verify payment. Late payments must still be checked manually; screenshots alone are not proof.</p><button id="createDepositRequest" class="join full">Create deposit request</button>');
+  modal('<h2>Deposit request</h2><p>Enter the amount and the UPI ID you will pay from.</p><p class="notice">Deposits can take up to 24 hours to verify.</p><label class="field">AMOUNT (₹)<input id="depositAmount" type="number" min="1" max="50000" step="1" inputmode="numeric" placeholder="100"></label><label class="field">YOUR PAYING UPI ID<input id="depositPayerUpi" maxlength="100" autocomplete="off" placeholder="yourname@upi"></label><div class="room-card"><small class="room-label">PAY TO THIS UPI ID</small><div class="room-value"><b id="depositReceiverUpi">kjaman@fam</b><button id="copyDepositUpi" class="outline">Copy</button></div><p>Pay the exact amount only after creating the request. Do not share your UPI PIN or OTP.</p></div><p class="notice">A 2-minute timer is for the request window only. It does not verify payment. Late payments must still be checked manually; screenshots alone are not proof.</p><button id="createDepositRequest" class="join full">Create deposit request</button>');
 }
 function showWithdrawalForm() {
   if (!currentUser) { showAuth(); return; }
-  modal('<h2>Withdrawal request</h2><p>Enter the exact account-holder name and destination UPI ID.</p><label class="field">EXACT ACCOUNT HOLDER NAME<input id="withdrawName" maxlength="120" autocomplete="name" placeholder="Name as shown by your bank/UPI app"></label><label class="field">YOUR RECEIVING UPI ID<input id="withdrawUpi" maxlength="100" autocomplete="off" placeholder="yourname@upi"></label><label class="field">AMOUNT (₹)<input id="withdrawAmount" type="number" min="1" max="50000" step="1" inputmode="numeric" placeholder="100"></label><div class="room-card"><div class="room-value">Planned withdrawal fee <b>2%</b></div><div class="room-value">You receive <b id="withdrawNet">₹0.00</b></div></div><p class="notice">This creates a review request only. It does not transfer money. Never enter your UPI PIN or OTP.</p><button id="createWithdrawalRequest" class="join full">Submit withdrawal request</button>');
+  modal('<h2>Withdrawal request</h2><p>Enter the exact account-holder name and destination UPI ID.</p><p class="notice">Withdrawals can take up to 24 hours to process.</p><label class="field">EXACT ACCOUNT HOLDER NAME<input id="withdrawName" maxlength="120" autocomplete="name" placeholder="Name as shown by your bank/UPI app"></label><label class="field">YOUR RECEIVING UPI ID<input id="withdrawUpi" maxlength="100" autocomplete="off" placeholder="yourname@upi"></label><label class="field">AMOUNT (₹)<input id="withdrawAmount" type="number" min="1" max="50000" step="1" inputmode="numeric" placeholder="100"></label><div class="room-card"><div class="room-value">Planned withdrawal fee <b>2%</b></div><div class="room-value">You receive <b id="withdrawNet">₹0.00</b></div></div><p class="notice">This creates a review request only. It does not transfer money. Never enter your UPI PIN or OTP.</p><button id="createWithdrawalRequest" class="join full">Submit withdrawal request</button>');
   $('#withdrawAmount')?.addEventListener('input', updateWithdrawalNet);
 }
 function updateWithdrawalNet() { const amount = Number($('#withdrawAmount')?.value || 0); const out = $('#withdrawNet'); if (out) out.textContent = '₹' + (Number.isFinite(amount) && amount > 0 ? (amount * .98).toFixed(2) : '0.00'); }
@@ -84,7 +84,7 @@ async function createPaymentRequest(kind) {
 }
 function showDepositTimer(row) {
   const expires = new Date(row.expires_at).getTime();
-  modal('<h2>Deposit request created</h2><p>Request ID: <b>'+esc(row.id)+'</b></p><div class="wallet-total"><span id="depositCountdown">02:00</span></div><div class="room-card"><small class="room-label">SEND EXACT AMOUNT TO</small><div class="room-value"><b>kjaman@fam</b><button id="copyDepositUpiActive" class="outline">Copy UPI</button></div><div class="room-value">Amount <b>₹'+Number(row.amount).toFixed(2)+'</b></div></div><p class="notice">Status: PENDING VERIFICATION. This timer is not payment confirmation. If your payment is late, do not pay again; contact support with the request ID. Your wallet will not be credited until a trusted transaction record is verified.</p><button id="depositPaidNotice" class="join full">I have paid — submit for verification</button><button id="closeDepositTimer" class="outline full">Close</button>');
+  modal('<h2>Deposit request created</h2><p>Request ID: <b>'+esc(row.id)+'</b></p><div class="wallet-total"><span id="depositCountdown">02:00</span></div><div class="room-card"><small class="room-label">SEND EXACT AMOUNT TO</small><div class="room-value"><b>kjaman@fam</b><button id="copyDepositUpiActive" class="outline">Copy UPI</button></div><div class="room-value">Amount <b>₹'+Number(row.amount).toFixed(2)+'</b></div></div><p class="notice">Status: PENDING VERIFICATION. Deposit verification can take up to 24 hours. This timer is not payment confirmation. If your payment is late, do not pay again; contact support with the request ID. Your wallet will not be credited until a trusted transaction record is verified.</p><button id="depositPaidNotice" class="join full">I have paid — submit for verification</button><button id="closeDepositTimer" class="outline full">Close</button>');
   if (depositTimerInterval) clearInterval(depositTimerInterval);
   const tick = () => { const el=$('#depositCountdown'); if (!el) { clearInterval(depositTimerInterval); return; } const left=Math.max(0,Math.ceil((expires-Date.now())/1000)); el.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0'); if (!left) { el.textContent='EXPIRED'; clearInterval(depositTimerInterval); toast('Request timer expired. A payment may still need manual checking.'); } };
   tick(); depositTimerInterval=setInterval(tick,1000);
@@ -116,9 +116,10 @@ function render() {
     const mode = t.game_mode || t.type || 'SOLO';
     const entry = Number(t.entry_points ?? t.entry ?? 0);
     const prize = Number(t.prize_pool_points ?? t.prize ?? 0);
+    const perKill = Number(t.per_kill_points ?? 0);
     const count = counts[id] ?? joined.filter(e => String(e.tournament_id) === id).length;
     const full = t.status === 'full' || count >= Number(t.max_players);
-    return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>' + esc(t.status || 'open').toUpperCase() + '</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' pts</b><small>DISPLAYED PRIZE POOL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open') ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' PTS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
+    return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>' + esc(t.status || 'open').toUpperCase() + '</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' pts</b><small>DISPLAYED PRIZE POOL</small></div><div class="prize"><b>' + perKill + ' pts</b><small>PER KILL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open') ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' PTS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
   }).join('') : '<p class="notice">No tournaments are published yet. The online database is connected; add the starter tournaments using the seed.sql file in the repository.</p>';
   $('#profileBtn').textContent = currentUser ? 'My Account' : 'Log in';
 }
@@ -133,7 +134,7 @@ async function refreshData() {
   }
   $('#adminBtn')?.classList.toggle('hidden', !isAdmin);
   const { data, error } = await supabase.from('tournaments')
-    .select('id,title,description,game_mode,entry_points,prize_pool_points,max_players,status,starts_at')
+    .select('id,title,description,game_mode,entry_points,per_kill_points,prize_pool_points,max_players,status,starts_at')
     .order('starts_at', { ascending: true, nullsFirst: false }).order('id');
   if (error) {
     toast('Could not load online tournaments. Check Supabase setup.');
@@ -327,7 +328,7 @@ async function showAdmin() {
     <div id="adminCreateSection" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
     <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
     <div class="admin-form-grid"><label class="field">GAME MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label></div>
-    <div class="admin-form-grid"><label class="field">ENTRY COINS<input id="adminEntry" type="number" min="0" value="0"></label><label class="field">DISPLAYED PRIZE (COINS)<input id="adminPrize" type="number" min="0" value="0"></label></div>
+    <div class="admin-form-grid"><label class="field">ENTRY FEE (PTS)<input id="adminEntry" type="number" min="0" value="0"></label><label class="field">PER-KILL REWARD (PTS)<input id="adminPerKill" type="number" min="0" value="0"></label><label class="field">DISPLAYED PRIZE POOL (PTS)<input id="adminPrize" type="number" min="0" value="0"></label></div>
     <label class="field">START TIME (OPTIONAL)<input id="adminStarts" type="datetime-local"></label>
     <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminDescription" maxlength="5000" rows="5" placeholder="Paste room instructions, start time, scoring, screenshot proof, and disqualification rules…"></textarea></label>
     <p class="admin-helper">Tip: include the exact start time, room release time, kill scoring, late-entry policy, and what proof players must submit.</p>
@@ -335,6 +336,7 @@ async function showAdmin() {
     <div id="adminManageSection" class="admin-section"><div class="admin-section-title"><span>02</span><div><h3>Manage tournament</h3><p>Select a match first, then edit its settings.</p></div></div>
     <label class="field">SELECT TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
     <div class="admin-current-summary" id="adminSelectedSummary">${tournaments.length ? 'Select a tournament to load its current settings.' : 'No tournaments yet.'}</div>
+    <div class="admin-form-grid"><label class="field">ENTRY FEE (PTS)<input id="adminEditEntry" type="number" min="0" max="1000000"></label><label class="field">PER-KILL REWARD (PTS)<input id="adminEditPerKill" type="number" min="0" max="1000000"></label></div><button id="adminSaveRewards" class="join full">Save entry fee & per-kill reward</button>
     <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminEditDescription" maxlength="5000" rows="5" placeholder="Player-facing rules and match instructions"></textarea></label>
     <button id="adminSaveDescription" class="outline full">Save description</button>
     <div class="admin-form-grid"><label class="field">ENTRY STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label><div class="field"><span>DESTRUCTIVE ACTION</span><button id="adminDeleteTournament" class="outline full danger-button">Delete tournament</button></div></div>
@@ -358,8 +360,10 @@ function syncAdminSelectedSummary() {
   if (!t) { el.textContent = 'Select a tournament to load its current settings.'; return; }
   const count = Number(counts[String(id)] ?? 0);
   const status = String(t.status || 'open').toUpperCase();
-  el.innerHTML = `<div><b>${esc(t.title)}</b><small>${esc(t.game_mode || 'SOLO')} · ${count}/${Number(t.max_players || 0)} players</small></div><span class="status-chip">${esc(status)}</span><div><small>ENTRY</small><b>${Number(t.entry_points || 0)} coins</b></div><div><small>PRIZE DISPLAY</small><b>${Number(t.prize_pool_points || 0)} coins</b></div>`;
+  el.innerHTML = `<div><b>${esc(t.title)}</b><small>${esc(t.game_mode || 'SOLO')} · ${count}/${Number(t.max_players || 0)} players</small></div><span class="status-chip">${esc(status)}</span><div><small>ENTRY FEE</small><b>${Number(t.entry_points || 0)} pts</b></div><div><small>PER KILL</small><b>${Number(t.per_kill_points || 0)} pts</b></div><div><small>PRIZE DISPLAY</small><b>${Number(t.prize_pool_points || 0)} coins</b></div>`;
   if ($('#adminEditDescription')) $('#adminEditDescription').value = t.description || '';
+  if ($('#adminEditEntry')) $('#adminEditEntry').value = Number(t.entry_points || 0);
+  if ($('#adminEditPerKill')) $('#adminEditPerKill').value = Number(t.per_kill_points || 0);
   if ($('#adminStatus')) $('#adminStatus').value = ['open','closed','full'].includes(t.status) ? t.status : 'open';
 }
 
@@ -391,6 +395,7 @@ async function showTournamentDetails(t) {
   const mode = t.game_mode || t.type || 'SOLO';
   const entry = Number(t.entry_points ?? t.entry ?? 0);
   const prize = Number(t.prize_pool_points ?? t.prize ?? 0);
+  const perKill = Number(t.per_kill_points ?? 0);
   const count = counts[id] ?? joined.filter(e => String(e.tournament_id) === id).length;
   const starts = t.starts_at ? new Date(t.starts_at).toLocaleString() : 'To be announced';
   let roomHtml = '';
@@ -406,7 +411,7 @@ async function showTournamentDetails(t) {
   const full = t.status === 'full' || count >= Number(t.max_players);
   const canJoin = currentUser && !has && !full && t.status === 'open';
   modal('<div class="detail-hero"><span class="tag">' + esc(mode) + ' ARENA</span><h2>' + esc(t.title) + '</h2><p>' + esc((t.status || 'open').toUpperCase()) + ' · Competitive Free Fire tournament</p></div>' +
-    '<div class="detail-stats"><div><small>ENTRY FEE</small><b>' + entry + ' <i>PTS</i></b></div><div><small>PRIZE POOL</small><b>' + prize + ' <i>PTS</i></b></div><div><small>PLAYERS</small><b>' + count + '/' + Number(t.max_players) + '</b></div></div>' +
+    '<div class="detail-stats"><div><small>ENTRY FEE</small><b>' + entry + ' <i>PTS</i></b></div><div><small>PER KILL</small><b>' + perKill + ' <i>PTS</i></b></div><div><small>PRIZE POOL</small><b>' + prize + ' <i>PTS</i></b></div><div><small>PLAYERS</small><b>' + count + '/' + Number(t.max_players) + '</b></div></div>' +
     '<div class="detail-info"><div><span>🕒</span><section><small>START TIME</small><b>' + esc(starts) + '</b></section></div><div><span>🎮</span><section><small>GAME MODE</small><b>' + esc(mode) + '</b></section></div><div><span>👥</span><section><small>REGISTRATION</small><b>' + (has ? 'You are registered' : full ? 'Tournament full' : t.status === 'open' ? 'Open to join' : 'Registration closed') + '</b></section></div></div>' +
     '<section class="match-rules"><div class="rules-heading"><div><small>ORGANISER NOTES</small><h3>Match description & rules</h3></div><button id="detailsCopyRules" class="outline" '+(t.description ? '' : 'disabled')+'>Copy rules</button></div><div class="match-rules-copy">'+esc(t.description || 'The organiser has not added custom match instructions yet. Please check back before the match.')+'</div></section>' +
     roomHtml +
@@ -496,16 +501,29 @@ $('#modalContent').addEventListener('click', async e => {
     const title = $('#adminTitle').value.trim();
     const mode = $('#adminMode').value;
     const entry = Number($('#adminEntry').value);
+    const perKill = Number($('#adminPerKill').value);
     const prize = Number($('#adminPrize').value);
     const max = Number($('#adminMax').value);
     const startsRaw = $('#adminStarts').value;
-    if (title.length < 3 || !Number.isInteger(entry) || entry < 0 || !Number.isInteger(prize) || prize < 0 || !Number.isInteger(max) || max < 1 || max > 500) return toast('Check tournament fields.');
+    if (title.length < 3 || !Number.isInteger(entry) || entry < 0 || !Number.isInteger(perKill) || perKill < 0 || !Number.isInteger(prize) || prize < 0 || !Number.isInteger(max) || max < 1 || max > 500) return toast('Check tournament fields.');
     button.disabled = true;
     const description = $('#adminDescription').value.trim();
-    const { error } = await supabase.rpc('admin_create_tournament_with_description', { p_title:title, p_game_mode:mode, p_entry_points:entry, p_prize_pool_points:prize, p_max_players:max, p_starts_at:startsRaw ? new Date(startsRaw).toISOString() : null, p_description:description });
+    const { error } = await supabase.rpc('admin_create_tournament_with_rewards', { p_title:title, p_game_mode:mode, p_entry_points:entry, p_per_kill_points:perKill, p_prize_pool_points:prize, p_max_players:max, p_starts_at:startsRaw ? new Date(startsRaw).toISOString() : null, p_description:description });
     button.disabled = false;
     if (error) return toast(error.message);
     await refreshData(); showAdmin(); toast('Tournament created.');
+  }
+  if (button.id === 'adminSaveRewards') {
+    if (!isAdmin) return toast('Admin access required.');
+    const id = Number($('#adminTournament').value);
+    const entry = Number($('#adminEditEntry').value);
+    const perKill = Number($('#adminEditPerKill').value);
+    if (!id || !Number.isInteger(entry) || entry < 0 || entry > 1000000 || !Number.isInteger(perKill) || perKill < 0 || perKill > 1000000) return toast('Enter valid whole-number amounts.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_update_tournament_rewards', { p_tournament_id:id, p_entry_points:entry, p_per_kill_points:perKill });
+    button.disabled = false;
+    if (error) return toast(error.message);
+    await refreshData(); showAdmin(); toast('Entry fee and per-kill reward updated.'); return;
   }
   if (button.id === 'adminSaveDescription') {
     if (!isAdmin) return toast('Admin access required.');
