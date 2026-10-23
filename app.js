@@ -103,59 +103,87 @@ async function refreshData() {
   render();
 }
 function showAuth() {
-  modal('<h2>Log in to BattleForge</h2><p>Use Google or your email to access tournament registration and match history.</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div><label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label><button id="signInBtn" class="join full">Log in with email</button><button id="signUpBtn" class="outline full">Create account with email</button><p class="notice">If this is your first time, create an account. Email confirmation may be required. Never share your password or OTP.</p>');
+  modal('<h2>Log in to BattleForge</h2><p>Use your Google account or email to access tournament registration and match history.</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div><label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label><button id="signInBtn" class="join full">Log in with email</button><button id="signUpBtn" class="outline full">Create account with email</button><p class="notice">If this is your first time, create an account. Email confirmation may be required. Never share your password or OTP.</p>');
 }
+
+// Google OAuth uses Supabase's authorization-code (PKCE) flow. The web callback
+// stays on the current origin; Android returns through the registered app link.
 const NATIVE_AUTH_CALLBACK = 'com.battleforge.arena://auth/callback';
+const googleAuthCodesInFlight = new Set();
+const googleAuthCodesHandled = new Set();
+
+function resetGoogleButton() {
+  const button = $('#googleSignInBtn');
+  if (button) {
+    button.disabled = false;
+    button.innerHTML = '<span aria-hidden="true">G</span> Continue with Google';
+  }
+}
 
 async function googleSignIn() {
   const button = $('#googleSignInBtn');
   if (button) { button.disabled = true; button.textContent = 'Opening Google sign-in…'; }
   try {
-    const nativeApp = Capacitor.isNativePlatform();
+    const isNative = Capacitor.isNativePlatform();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: nativeApp ? NATIVE_AUTH_CALLBACK : window.location.origin,
-        skipBrowserRedirect: nativeApp
+        redirectTo: isNative ? NATIVE_AUTH_CALLBACK : window.location.origin,
+        skipBrowserRedirect: isNative,
+        queryParams: { access_type: 'offline', prompt: 'select_account' }
       }
     });
     if (error) throw error;
-    if (nativeApp && data?.url) await Browser.open({ url: data.url });
+    if (isNative) {
+      if (!data?.url) throw new Error('Supabase did not return a Google sign-in URL.');
+      await Browser.open({ url: data.url });
+    } else if (data?.url) {
+      window.location.assign(data.url);
+    } else {
+      throw new Error('Supabase did not return a Google sign-in URL.');
+    }
   } catch (error) {
-    if (button) { button.disabled = false; button.innerHTML = '<span aria-hidden="true">G</span> Continue with Google'; }
+    resetGoogleButton();
     toast(error?.message || 'Could not start Google sign-in.');
   }
 }
 
-const nativeAuthCodesInFlight = new Set();
-const nativeAuthCodesHandled = new Set();
-
 async function handleNativeAuthCallback(rawUrl) {
-  if (!rawUrl || !rawUrl.startsWith(NATIVE_AUTH_CALLBACK)) return;
-  const callback = new URL(rawUrl);
+  if (!rawUrl) return;
+  let callback;
+  try { callback = new URL(rawUrl); } catch { return; }
+  if (`${callback.protocol}//${callback.host}${callback.pathname}` !== NATIVE_AUTH_CALLBACK) return;
+
   const code = callback.searchParams.get('code');
-  // Android can deliver the same deep link through both appUrlOpen and getLaunchUrl.
-  // Never try to exchange the same one-time PKCE code twice.
-  if (code && (nativeAuthCodesInFlight.has(code) || nativeAuthCodesHandled.has(code))) return;
-  if (code) nativeAuthCodesInFlight.add(code);
+  const providerError = callback.searchParams.get('error_description') || callback.searchParams.get('error');
+  if (providerError) {
+    await Browser.close().catch(() => {});
+    resetGoogleButton();
+    toast(decodeURIComponent(providerError.replace(/\+/g, ' ')));
+    return;
+  }
+  if (!code) {
+    await Browser.close().catch(() => {});
+    resetGoogleButton();
+    toast('Google did not return an authorization code. Please try again.');
+    return;
+  }
+  if (googleAuthCodesInFlight.has(code) || googleAuthCodesHandled.has(code)) return;
+  googleAuthCodesInFlight.add(code);
   try {
-    const errorDescription = callback.searchParams.get('error_description') || callback.searchParams.get('error');
-    if (errorDescription) throw new Error(errorDescription);
-    if (!code) throw new Error('Google sign-in did not return an authorization code. Please try again.');
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) throw error;
-    nativeAuthCodesHandled.add(code);
+    googleAuthCodesHandled.add(code);
     await Browser.close().catch(() => {});
     close();
     await refreshData();
     toast('Signed in successfully with Google.');
   } catch (error) {
     await Browser.close().catch(() => {});
-    const button = $('#googleSignInBtn');
-    if (button) { button.disabled = false; button.innerHTML = '<span aria-hidden="true">G</span> Continue with Google'; }
+    resetGoogleButton();
     toast(error?.message || 'Google sign-in could not be completed.');
   } finally {
-    if (code) nativeAuthCodesInFlight.delete(code);
+    googleAuthCodesInFlight.delete(code);
   }
 }
 
@@ -163,6 +191,7 @@ if (Capacitor.isNativePlatform()) {
   App.addListener('appUrlOpen', ({ url }) => { void handleNativeAuthCallback(url); });
   App.getLaunchUrl().then(({ url }) => { if (url) void handleNativeAuthCallback(url); }).catch(() => {});
 }
+
 async function authAction(kind) {
   const email = $('#authEmail')?.value.trim();
   const password = $('#authPassword')?.value;
