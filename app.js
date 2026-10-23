@@ -65,7 +65,7 @@ function render() {
     const full = t.status === 'full' || count >= Number(t.max_players);
     return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>' + esc(t.status || 'open').toUpperCase() + '</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' pts</b><small>DISPLAYED PRIZE POOL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open') ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' PTS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
   }).join('') : '<p class="notice">No tournaments are published yet. The online database is connected; add the starter tournaments using the seed.sql file in the repository.</p>';
-  $('#profileBtn').textContent = currentUser ? 'My Account' : 'Sign In';
+  $('#profileBtn').textContent = currentUser ? 'My Account' : 'Log in';
 }
 async function refreshData() {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -100,7 +100,19 @@ async function refreshData() {
   render();
 }
 function showAuth() {
-  modal('<h2>BattleForge account</h2><p>Sign in or create an account to register online. Use an email you can access.</p><label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label><button id="signInBtn" class="join full">Sign in</button><button id="signUpBtn" class="join full">Create account</button><p class="notice">Supabase may email you a confirmation link before your first sign-in. Never share your password or OTP.</p>');
+  modal('<h2>Log in to BattleForge</h2><p>Use Google or your email to access tournament registration and match history.</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div><label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label><button id="signInBtn" class="join full">Log in with email</button><button id="signUpBtn" class="outline full">Create account with email</button><p class="notice">If this is your first time, create an account. Email confirmation may be required. Never share your password or OTP.</p>');
+}
+async function googleSignIn() {
+  const button = $('#googleSignInBtn');
+  if (button) { button.disabled = true; button.textContent = 'Opening Google sign-in…'; }
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin }
+  });
+  if (error) {
+    if (button) { button.disabled = false; button.innerHTML = '<span aria-hidden="true">G</span> Continue with Google'; }
+    toast(error.message);
+  }
 }
 async function authAction(kind) {
   const email = $('#authEmail')?.value.trim();
@@ -123,7 +135,7 @@ async function authAction(kind) {
 }
 function showProfile() {
   if (!currentUser) { showAuth(); return; }
-  modal('<h2>Player account</h2><p>Signed in as <b>' + esc(currentUser.email) + '</b></p><p class="notice">Online account and tournament registrations are connected. Points shown in the wallet remain demo-only.</p><button id="signOutBtn" class="join full">Sign out</button>');
+  modal('<h2>Player account</h2><p>Signed in as <b>' + esc(currentUser.email || currentUser.user_metadata?.full_name || 'Google account') + '</b></p><p class="notice">Your account and tournament registrations are connected. Points shown in the wallet remain demo-only.</p><button id="signOutBtn" class="join full">Log out</button><button id="switchAccountBtn" class="outline full">Switch account</button>');
 }
 async function showHistory() {
   const target = $('#historyContent');
@@ -318,6 +330,7 @@ $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') close(
 $('#profileBtn').onclick = showProfile;
 $('#adminBtn').onclick = showAdmin;
 $('#modalContent').addEventListener('click', async e => {
+  if (e.target.id === 'googleSignInBtn') await googleSignIn();
   if (e.target.id === 'signInBtn') await authAction('signin');
   if (e.target.id === 'signUpBtn') await authAction('signup');
   if (e.target.id === 'backToSignIn') showAuth();
@@ -326,7 +339,13 @@ $('#modalContent').addEventListener('click', async e => {
     if (error) { toast(error.message); return; }
     close();
     await refreshData();
-    toast('Signed out.');
+    toast('Logged out successfully.');
+  }
+  if (e.target.id === 'switchAccountBtn') {
+    const { error } = await supabase.auth.signOut();
+    if (error) { toast(error.message); return; }
+    await refreshData();
+    showAuth();
   }
 });
 $('#modalContent').addEventListener('change', async e => {
