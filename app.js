@@ -181,6 +181,22 @@ async function refreshData() {
     tournaments = [];
   } else tournaments = data ?? [];
 
+  if (currentUser) {
+    try {
+      const { data: notices, error: noticeError } = await supabase.from('notification_broadcasts').select('id,title,message,created_at').order('created_at', { ascending: false }).limit(20);
+      if (!noticeError && Array.isArray(notices) && notices.length) {
+        const latest = notices[0];
+        const seenKey = 'bf_last_broadcast_seen';
+        const seen = Number(localStorage.getItem(seenKey) || 0);
+        if (Number(latest.id) > seen) {
+          toast('📣 ' + latest.title + ': ' + latest.message);
+          localStorage.setItem(seenKey, String(latest.id));
+        }
+        window.battleForgeBroadcasts = notices;
+      }
+    } catch (noticeError) { console.warn('Could not load announcements', noticeError); }
+  }
+
   joined = [];
   counts = {};
   if (currentUser) {
@@ -365,6 +381,7 @@ async function showAdmin() {
   modal(`<div class="admin-dashboard-head"><div class="eyebrow"><span class="live-dot"></span> ORGANISER CONTROL CENTRE</div><h2>Admin dashboard</h2><p>Everything you need to run a match, from one place.</p></div>
     <div class="admin-metrics"><div><small>TOURNAMENTS</small><b>${tournaments.length}</b></div><div><small>OPEN</small><b>${openCount}</b></div><div><small>REGISTRATIONS</small><b>${playerTotal}</b></div><div><small>CLOSED / FULL</small><b>${closedCount}</b></div></div>
     <div class="admin-section"><div class="admin-section-title"><span>₹</span><div><h3>Payments & withdrawals</h3><p>Review full request details, verify UPI deposits, credit deposited coins, and mark manually sent withdrawals as paid.</p></div></div><button id="adminLoadPayments" class="join full">Open payment request queue</button><div id="adminPaymentRequests"></div></div><div class="admin-quick-grid"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div>
+    <div class="admin-section" id="adminBroadcastSection"><div class="admin-section-title"><span>✉</span><div><h3>Notify all users</h3><p>Send a custom announcement to the BattleForge notification feed.</p></div></div><label class="field">NOTIFICATION TITLE<input id="adminBroadcastTitle" maxlength="80" placeholder="Tournament update"></label><label class="field">MESSAGE<textarea id="adminBroadcastMessage" maxlength="1000" rows="4" placeholder="Write your announcement for all players…"></textarea></label><button id="adminSendBroadcast" class="join full">Send to all users</button><div id="adminBroadcastStatus" class="admin-helper" aria-live="polite"></div></div>
     <div id="adminCreateSection" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
     <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
     <div class="admin-form-grid"><label class="field">GAME MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label></div>
@@ -387,9 +404,32 @@ async function showAdmin() {
     <button id="adminSaveRoom" class="join full">Save room settings</button></div>
     <div id="adminPlayersSection" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Players & results</h3><p>Load registered players and publish verified match results.</p></div></div><button id="adminLoadEntries" class="outline full">Load players / record results</button><div id="adminEntries" class="admin-entries"></div></div>
     <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Result publishing records results only; it does not transfer prize money or credit wallet coins.</p></div>`);
+  $('#adminSendBroadcast')?.addEventListener('click', sendAdminBroadcast);
   $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
   document.querySelectorAll('[data-admin-jump]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'})));
   await loadAdminRoom(); syncAdminSelectedSummary();
+}
+
+async function sendAdminBroadcast() {
+  if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
+  const title = ($('#adminBroadcastTitle')?.value || '').trim();
+  const message = ($('#adminBroadcastMessage')?.value || '').trim();
+  const status = $('#adminBroadcastStatus');
+  const button = $('#adminSendBroadcast');
+  if (!title || !message) { toast('Enter a title and message first.'); return; }
+  if (!window.confirm('Send this announcement to every BattleForge user?')) return;
+  button.disabled = true; button.textContent = 'Sending…';
+  try {
+    const { data, error } = await supabase.rpc('admin_broadcast_notification', { p_title: title, p_message: message });
+    if (error) throw error;
+    $('#adminBroadcastTitle').value = ''; $('#adminBroadcastMessage').value = '';
+    if (status) status.textContent = 'Announcement published to all users.';
+    toast('Announcement sent to all users.');
+  } catch (error) {
+    console.error('Broadcast failed', error);
+    if (status) status.textContent = 'Could not send: ' + (error?.message || 'check notification migration');
+    toast('Announcement failed. Check the notification setup.');
+  } finally { button.disabled = false; button.textContent = 'Send to all users'; }
 }
 
 function syncAdminSelectedSummary() {
