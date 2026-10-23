@@ -51,7 +51,11 @@ function cleanUpi(value) { return String(value || '').trim().toLowerCase(); }
 function validUpi(value) { return /^[a-z0-9._-]{2,100}@[a-z0-9.-]{2,50}$/i.test(String(value || '').trim()); }
 function showDepositForm() {
   if (!currentUser) { showAuth(); return; }
-  modal('<h2>Deposit request</h2><p>Enter the amount and the UPI ID you will pay from.</p><p class=\"notice\">Deposits can take up to 24 hours to verify. Minimum deposit: ₹30.</p><form id=\"depositRequestForm\"><label class=\"field\">AMOUNT (₹)<input id=\"depositAmount\" type=\"number\" min=\"30\" max=\"50000\" step=\"1\" inputmode=\"numeric\" placeholder=\"100\" required></label><label class=\"field\">YOUR PAYING UPI ID<input id=\"depositPayerUpi\" maxlength=\"100\" autocomplete=\"off\" placeholder=\"yourname@upi\" required></label><div class=\"room-card\"><small class=\"room-label\">PAY TO THIS UPI ID</small><div class=\"room-value\"><b id=\"depositReceiverUpi\">kjaman@fam</b><button type=\"button\" id=\"copyDepositUpi\" class=\"outline\">Copy</button></div><p>Pay the exact amount only after creating the request. Do not share your UPI PIN or OTP.</p></div><p class=\"notice\">The 2-minute countdown starts after the request is created. It does not verify payment; late payments still need manual checking.</p><button type=\"submit\" id=\"createDepositRequest\" class=\"join full\">Submit deposit request</button></form>');
+  modal('<h2>Deposit</h2><p>1. Enter the amount and your UPI ID. 2. Pay the exact amount to BattleForge. 3. Tick the box and submit.</p><p class="notice">Minimum deposit: ₹30. Deposits are manually verified and may take up to 24 hours to appear in your wallet.</p><form id="depositRequestForm"><label class="field">AMOUNT (₹)<input id="depositAmount" type="number" min="30" max="50000" step="1" inputmode="numeric" placeholder="100" required></label><label class="field">YOUR PAYING UPI ID<input id="depositPayerUpi" maxlength="100" autocomplete="off" placeholder="yourname@upi" required></label><div class="room-card"><small class="room-label">PAY TO THIS UPI ID</small><div class="room-value"><b id="depositReceiverUpi">kjaman@fam</b><button type="button" id="copyDepositUpi" class="outline">Copy UPI ID</button></div><p>Pay the exact amount using your UPI app. Never share your UPI PIN or OTP.</p></div><div class="wallet-total"><span id="depositCountdown">02:00</span></div><p class="notice">Complete your payment within 2 minutes. The countdown is not proof of payment.</p><label class="admin-check" style="display:flex;align-items:flex-start;gap:10px"><input id="depositPaidCheckbox" type="checkbox" required style="width:18px;height:18px;flex-shrink:0;accent-color:var(--lime)"><span><b>I have paid</b><small>I confirm I sent the exact amount to the UPI ID shown above.</small></span></label><button type="submit" id="createDepositRequest" class="join full">Submit payment for verification</button></form>');
+  if (depositTimerInterval) clearInterval(depositTimerInterval);
+  const expires = Date.now() + 120000;
+  const tick = () => { const el=$('#depositCountdown'); if (!el) { clearInterval(depositTimerInterval); return; } const left=Math.max(0,Math.ceil((expires-Date.now())/1000)); el.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0'); if (!left) { el.textContent='00:00'; clearInterval(depositTimerInterval); toast('2-minute timer ended. If you already paid, you can still submit it for manual review.'); } };
+  tick(); depositTimerInterval=setInterval(tick,1000);
 }
 function showWithdrawalForm() {
   if (!currentUser) { showAuth(); return; }
@@ -68,6 +72,7 @@ async function createPaymentRequest(kind) {
   const name = isDeposit ? null : $('#withdrawName')?.value.trim();
   if (!Number.isInteger(amount) || amount < (isDeposit ? 30 : 100) || amount > 50000) return toast(isDeposit ? 'Minimum deposit is ₹30. Enter a whole amount up to ₹50,000.' : 'Minimum withdrawal is ₹100. Enter a whole amount up to ₹50,000.');
   if (!validUpi(upi)) return toast('Enter a valid UPI ID, like name@upi.');
+  if (isDeposit && !$('#depositPaidCheckbox')?.checked) return toast('Tick “I have paid” after sending the payment.');
   if (!isDeposit && (!name || name.length < 2 || name.length > 120)) return toast('Enter the exact account-holder name.');
   if (button) { button.disabled = true; button.textContent = 'Submitting…'; }
   let data, error;
@@ -78,19 +83,12 @@ async function createPaymentRequest(kind) {
   const row = Array.isArray(data) ? data[0] : data;
   if (!row?.id) return toast('Request response was empty. Refresh requests before retrying to avoid duplicates.');
   close();
-  if (isDeposit) showDepositTimer(row);
-  else { toast('Withdrawal request saved for review. No money has been sent.'); await loadPaymentRequests(); }
-}
-function showDepositTimer(row) {
-  const serverExpiry = row?.expires_at ? new Date(row.expires_at).getTime() : NaN;
-  const expires = Number.isFinite(serverExpiry) && serverExpiry > Date.now() ? serverExpiry : Date.now() + 120000;
-  modal('<h2>Deposit request created</h2><p>Request ID: <b>'+esc(row.id)+'</b></p><div class="wallet-total"><span id="depositCountdown">02:00</span></div><div class="room-card"><small class="room-label">SEND EXACT AMOUNT TO</small><div class="room-value"><b>kjaman@fam</b><button id="copyDepositUpiActive" class="outline">Copy UPI</button></div><div class="room-value">Amount <b>₹'+Number(row.amount).toFixed(2)+'</b></div></div><p class="notice">Status: PENDING VERIFICATION. Deposit verification can take up to 24 hours. This timer is not payment confirmation. If your payment is late, do not pay again; contact support with the request ID. Your wallet will not be credited until a trusted transaction record is verified.</p><button id="depositPaidNotice" class="join full">I have paid — submit for verification</button><button id="closeDepositTimer" class="outline full">Close</button>');
-  if (depositTimerInterval) clearInterval(depositTimerInterval);
-  const tick = () => { const el=$('#depositCountdown'); if (!el) { clearInterval(depositTimerInterval); return; } const left=Math.max(0,Math.ceil((expires-Date.now())/1000)); el.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0'); if (!left) { el.textContent='EXPIRED'; clearInterval(depositTimerInterval); toast('Request timer expired. A payment may still need manual checking.'); } };
-  tick(); depositTimerInterval=setInterval(tick,1000);
-  $('#copyDepositUpiActive')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(RECEIVING_UPI_ID); toast('UPI ID copied.'); } catch { toast('UPI ID: '+RECEIVING_UPI_ID); } });
-  $('#depositPaidNotice')?.addEventListener('click', async () => { const { error }=await supabase.rpc('mark_deposit_payment_reported',{p_request_id:row.id}); if(error) return toast('Could not update request. Please retry.'); toast('Marked as reported. It remains pending until verified.'); await loadPaymentRequests(); close(); });
-  $('#closeDepositTimer')?.addEventListener('click', async () => { close(); await loadPaymentRequests(); });
+  if (isDeposit) {
+    const { error: reportError } = await supabase.rpc('mark_deposit_payment_reported', { p_request_id: row.id });
+    if (reportError) { console.error(reportError); modal('<h2>Deposit request saved</h2><p>Request ID: <b>'+esc(row.id)+'</b></p><p class=\"notice\">Your request is pending. Please contact support if the paid status does not appear.</p><button id=\"closeDepositTimer\" class=\"join full\">Close</button>'); $('#closeDepositTimer')?.addEventListener('click', async () => { close(); await loadPaymentRequests(); }); }
+    else { modal('<h2>Payment submitted</h2><p>Request ID: <b>'+esc(row.id)+'</b></p><div class=\"room-card\"><div class=\"room-value\">Amount <b>₹'+Number(row.amount).toFixed(2)+'</b></div><div class=\"room-value\">Status <b>Pending verification</b></div></div><p>Your wallet will be credited only after the payment is manually verified. Verification may take up to 24 hours.</p><button id=\"closeDepositTimer\" class=\"join full\">Done</button>'); $('#closeDepositTimer')?.addEventListener('click', async () => { close(); await loadPaymentRequests(); }); }
+    await loadPaymentRequests();
+  } else { toast('Withdrawal request saved for review. No money has been sent.'); await loadPaymentRequests(); }
 }
 async function loadPaymentRequests() {
   const target=$('#paymentRequests'); if(!target) return;
