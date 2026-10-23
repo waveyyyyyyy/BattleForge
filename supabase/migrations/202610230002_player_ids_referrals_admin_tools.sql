@@ -8,6 +8,9 @@ create table if not exists public.player_profiles (
   constraint player_profiles_not_self_referred check (referred_by is null or referred_by <> user_id)
 );
 create index if not exists player_profiles_referrer_idx on public.player_profiles(referred_by);
+-- Extend the existing ledger types for non-withdrawable referral credits.
+alter table public.wallet_ledger drop constraint if exists wallet_ledger_entry_type_check;
+alter table public.wallet_ledger add constraint wallet_ledger_entry_type_check check (entry_type in ('deposit_credit','match_earning','entry_fee','withdrawal_reserve','withdrawal_refund','admin_adjustment','referral_reward'));
 alter table public.player_profiles enable row level security;
 drop policy if exists player_profiles_read_own on public.player_profiles;
 create policy player_profiles_read_own on public.player_profiles for select to authenticated using (auth.uid()=user_id or public.is_battleforge_admin());
