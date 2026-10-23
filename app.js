@@ -127,16 +127,24 @@ async function googleSignIn() {
   }
 }
 
+const nativeAuthCodesInFlight = new Set();
+const nativeAuthCodesHandled = new Set();
+
 async function handleNativeAuthCallback(rawUrl) {
   if (!rawUrl || !rawUrl.startsWith(NATIVE_AUTH_CALLBACK)) return;
+  const callback = new URL(rawUrl);
+  const code = callback.searchParams.get('code');
+  // Android can deliver the same deep link through both appUrlOpen and getLaunchUrl.
+  // Never try to exchange the same one-time PKCE code twice.
+  if (code && (nativeAuthCodesInFlight.has(code) || nativeAuthCodesHandled.has(code))) return;
+  if (code) nativeAuthCodesInFlight.add(code);
   try {
-    const callback = new URL(rawUrl);
     const errorDescription = callback.searchParams.get('error_description') || callback.searchParams.get('error');
     if (errorDescription) throw new Error(errorDescription);
-    const code = callback.searchParams.get('code');
     if (!code) throw new Error('Google sign-in did not return an authorization code. Please try again.');
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) throw error;
+    nativeAuthCodesHandled.add(code);
     await Browser.close().catch(() => {});
     close();
     await refreshData();
@@ -146,6 +154,8 @@ async function handleNativeAuthCallback(rawUrl) {
     const button = $('#googleSignInBtn');
     if (button) { button.disabled = false; button.innerHTML = '<span aria-hidden="true">G</span> Continue with Google'; }
     toast(error?.message || 'Google sign-in could not be completed.');
+  } finally {
+    if (code) nativeAuthCodesInFlight.delete(code);
   }
 }
 
