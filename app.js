@@ -332,18 +332,18 @@ async function authAction(kind) {
 }
 async function showProfile() {
   if (!currentUser) { showAuth(); return; }
-  const [{ data: account, error: accountError }, { data: wallet, error: walletError }, { data: ledger }, { data: paidWithdrawals }, { data: referrals }, { data: myResults }] = await Promise.all([
+  const [{ data: account, error: accountError }, { data: wallet, error: walletError }, { data: ledger }, { data: paidWithdrawals }, { data: referralStatsResult }, { data: myResults }] = await Promise.all([
     supabase.from('player_accounts').select('player_number,username,avatar_url,username_change_count,created_at').eq('user_id', currentUser.id).maybeSingle(),
     supabase.from('wallet_accounts').select('deposited_balance,earned_balance').eq('user_id', currentUser.id).maybeSingle(),
     supabase.from('wallet_ledger').select('entry_type,amount,note,created_at').eq('user_id', currentUser.id).order('created_at', {ascending:false}).limit(100),
     supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(50),
-    supabase.from('player_accounts').select('user_id,player_number,referral_rewarded_at,created_at').eq('referred_by', currentUser.id).order('created_at',{ascending:false}),
+    supabase.rpc('get_my_referral_stats'),
     supabase.from('tournament_results').select('tournament_id,placement,kills,note,created_at').eq('user_id',currentUser.id).eq('published',true).order('created_at',{ascending:false}).limit(100)
   ]);
   if (accountError || walletError) console.warn('Profile load issue',accountError||walletError);
   const a=account||{}, w=wallet||{}, notices=window.battleForgeBroadcasts||[];
   const referralLink=a.player_number?window.location.origin+window.location.pathname+'?ref='+a.player_number:'';
-  const totalReferrals=(referrals||[]).length, rewarded=(referrals||[]).filter(x=>x.referral_rewarded_at).length;
+  const referralStats=referralStatsResult||{}; const totalReferrals=Number(referralStats.invited_count||0), rewarded=Number(referralStats.rewarded_count||0);
   const resultRows=myResults||[], wins=resultRows.filter(x=>Number(x.placement)===1).length, kills=resultRows.reduce((n,x)=>n+Number(x.kills||0),0);
   const led=ledger||[], withdrawals=paidWithdrawals||[];
   modal(`<div class="profile-sheet"><div class="profile-top"><img id="profileAvatarPreview" class="profile-photo" src="${esc(a.avatar_url||'')}" alt="Profile photo" onerror="this.style.display='none'"><div><div class="eyebrow">PLAYER PROFILE</div><h2>${esc(a.username||currentUser.user_metadata?.full_name||'Player')}</h2><p>Player ID <b>${esc(a.player_number||'Loading')}</b></p></div></div>
