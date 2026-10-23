@@ -296,7 +296,6 @@ $('#tournaments').addEventListener('keydown', async e => {
     if (tournament) await showTournamentDetails(tournament);
   }
 });
-$('#historyBtn').onclick = showHistory;
 $('#closeModal').onclick = close;
 $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') close(); });
 $('#profileBtn').onclick = showProfile;
