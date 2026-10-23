@@ -193,7 +193,7 @@ async function refreshData() {
 
   if (currentUser) {
     try {
-      const { data: notices, error: noticeError } = await supabase.from('notification_broadcasts').select('id,title,message,created_at').order('created_at', { ascending: false }).limit(20);
+      const { data: notices, error: noticeError } = await supabase.from('notification_broadcasts').select('id,title,message,created_at').order('created_at', { ascending: false });
       if (!noticeError && Array.isArray(notices)) {
         const prior = window.battleForgeBroadcasts || [];
         const priorIds = new Set(prior.map(n=>String(n.id)));
@@ -332,13 +332,14 @@ async function authAction(kind) {
 }
 async function showProfile() {
   if (!currentUser) { showAuth(); return; }
-  const [{ data: account, error: accountError }, { data: wallet, error: walletError }, { data: ledger }, { data: paidWithdrawals }, { data: referralStatsResult }, { data: myResults }] = await Promise.all([
+  const [{ data: account, error: accountError }, { data: wallet, error: walletError }, { data: ledger }, { data: paidWithdrawals }, { data: depositHistory }, { data: referralStatsResult }, { data: myResults }] = await Promise.all([
     supabase.from('player_accounts').select('player_number,username,avatar_url,username_change_count,created_at').eq('user_id', currentUser.id).maybeSingle(),
     supabase.from('wallet_accounts').select('deposited_balance,earned_balance').eq('user_id', currentUser.id).maybeSingle(),
-    supabase.from('wallet_ledger').select('entry_type,amount,note,created_at').eq('user_id', currentUser.id).order('created_at', {ascending:false}).limit(100),
-    supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(50),
+    supabase.from('wallet_ledger').select('entry_type,amount,note,created_at').eq('user_id', currentUser.id).order('created_at', {ascending:false}),
+    supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at').eq('user_id', currentUser.id).order('created_at',{ascending:false}),
+    supabase.from('deposit_requests').select('id,amount,status,created_at,payment_reference').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
     supabase.rpc('get_my_referral_stats'),
-    supabase.from('tournament_results').select('tournament_id,placement,kills,note,created_at').eq('user_id',currentUser.id).eq('published',true).order('created_at',{ascending:false}).limit(100)
+    supabase.from('tournament_results').select('tournament_id,placement,kills,note,created_at').eq('user_id',currentUser.id).eq('published',true).order('created_at',{ascending:false})
   ]);
   if (accountError || walletError) console.warn('Profile load issue',accountError||walletError);
   const a=account||{}, w=wallet||{}, notices=window.battleForgeBroadcasts||[];
@@ -351,6 +352,7 @@ async function showProfile() {
   <section class="profile-block"><h3>Edit profile</h3><label class="field">USERNAME (LETTERS AND NUMBERS ONLY)<input id="profileUsername" maxlength="24" minlength="3" pattern="[A-Za-z0-9]+" value="${esc(a.username||'')}" placeholder="ChooseUniqueName" autocomplete="nickname"></label><p class="profile-help">${Number(a.username_change_count||0)===0?'Your first username change is free.':'Each additional username change costs ₹5 from entry-fee-only credits.'} No spaces or special characters.</p><label class="field">PROFILE PHOTO<input id="profilePhotoFile" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="savePlayerProfile" class="join full">Save profile</button><p id="profileSaveStatus" class="profile-help"></p></section>
   <section class="profile-block"><h3>Referral centre</h3><p>Your code: <b>${esc(a.player_number||'—')}</b></p><label class="field">YOUR REFERRAL LINK<input id="profileReferralLink" readonly value="${esc(referralLink)}"></label><button id="copyProfileReferral" class="outline full">Copy referral link</button><div class="profile-metrics"><div><small>INVITED PLAYERS</small><b>${totalReferrals}</b></div><div><small>REWARDS EARNED</small><b>${rewarded} · ₹${(rewarded*5).toFixed(2)}</b></div><div><small>WAITING FOR FIRST PAID WITHDRAWAL</small><b>${totalReferrals-rewarded}</b></div></div><p class="profile-help">₹5 referral rewards are credited as non-withdrawable entry-fee balance after a referred player completes their first withdrawal.</p></section>
   <section class="profile-block"><h3>Full activity history</h3><div class="profile-history">${led.length?led.map(x=>`<div class="profile-history-row"><div><b>${esc(x.entry_type||'Wallet activity')}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.note?' · '+esc(x.note):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No wallet activity recorded yet.</p>'}</div></section>
+  <section class="profile-block"><h3>Deposit history</h3><div class="profile-history">${(depositHistory||[]).length?(depositHistory||[]).map(x=>`<div class="profile-history-row"><div><b>${esc(String(x.status||'pending').toUpperCase())}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.payment_reference?' · Ref '+esc(x.payment_reference):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No deposit requests yet.</p>'}</div></section>
   <section class="profile-block"><h3>Withdrawal history</h3><div class="profile-history">${withdrawals.length?withdrawals.map(x=>`<div class="profile-history-row"><div><b>${esc(String(x.status||'pending').toUpperCase())}</b><small>${esc(new Date(x.created_at).toLocaleString())} · Fee ₹${Number(x.fee_amount||0).toFixed(2)}</small></div><b>₹${Number(x.net_amount??x.amount??0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No withdrawal requests yet.</p>'}</div></section>
   <section class="profile-block"><h3>Match results history</h3><div class="profile-history">${resultRows.length?resultRows.map(x=>`<div class="profile-history-row"><div><b>${x.placement?'Place #'+Number(x.placement):'Result published'} · ${Number(x.kills||0)} kills</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.note?' · '+esc(x.note):''}</small></div></div>`).join(''):'<p class="profile-help">No published results yet. Your tournament registrations are available under History.</p>'}</div></section>
   <button id="signOutBtn" class="outline full">Log out</button><button id="switchAccountBtn" class="outline full">Switch account</button></div>`);
