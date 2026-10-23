@@ -175,32 +175,49 @@ async function loadAdminRoom() {
 async function showAdmin() {
   if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
   const options = tournaments.map(t => `<option value="${esc(t.id)}">${esc(t.title)} (${esc(t.game_mode)})</option>`).join('');
-  modal(`<h2>BattleForge Admin</h2><p>Create tournaments, control entry status, publish room details and verify match results.</p>
-    <h3>Create tournament</h3>
-    <label class="field">TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
-    <label class="field">MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label>
-    <label class="field">ENTRY POINTS<input id="adminEntry" type="number" min="0" value="0"></label>
-    <label class="field">DISPLAYED PRIZE POOL (POINTS)<input id="adminPrize" type="number" min="0" value="0"></label>
-    <label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label>
+  const openCount = tournaments.filter(t => t.status === 'open').length;
+  const closedCount = tournaments.filter(t => t.status === 'closed' || t.status === 'full').length;
+  const playerTotal = Object.values(counts).reduce((sum, n) => sum + Number(n || 0), 0);
+  modal(`<div class="admin-dashboard-head"><div class="eyebrow"><span class="live-dot"></span> ORGANISER CONTROL CENTRE</div><h2>Admin dashboard</h2><p>Everything you need to run a match, from one place.</p></div>
+    <div class="admin-metrics"><div><small>TOURNAMENTS</small><b>${tournaments.length}</b></div><div><small>OPEN</small><b>${openCount}</b></div><div><small>REGISTRATIONS</small><b>${playerTotal}</b></div><div><small>CLOSED / FULL</small><b>${closedCount}</b></div></div>
+    <div class="admin-quick-grid"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div>
+    <div id="adminCreateSection" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
+    <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
+    <div class="admin-form-grid"><label class="field">GAME MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label></div>
+    <div class="admin-form-grid"><label class="field">ENTRY POINTS<input id="adminEntry" type="number" min="0" value="0"></label><label class="field">DISPLAYED PRIZE (POINTS)<input id="adminPrize" type="number" min="0" value="0"></label></div>
     <label class="field">START TIME (OPTIONAL)<input id="adminStarts" type="datetime-local"></label>
-    <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminDescription" maxlength="5000" rows="5" placeholder="Paste lobby instructions, match schedule, scoring, proof requirements, and disqualification rules…"></textarea></label>
-    <button id="adminCreateTournament" class="join full">Create tournament</button>
-    <hr>
-    <h3>Manage tournament</h3>
-    <label class="field">TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
-    <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminEditDescription" maxlength="5000" rows="5" placeholder="Custom instructions shown to players on the tournament details page"></textarea></label>
-    <button id="adminSaveDescription" class="join full secondary-action">Save match description</button>
-    <label class="field">STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label>
-    <button id="adminSetStatus" class="join full">Save entry status</button>
-    <button id="adminDeleteTournament" class="join full danger-button">Delete tournament permanently</button>
-    <label class="field">ROOM ID<input id="adminRoomId" maxlength="80" placeholder="Room ID"></label>
-    <label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80" placeholder="Room password"></label>
-    <label><input id="adminRoomPublished" type="checkbox"> Publish room details to registered players</label>
-    <button id="adminSaveRoom" class="join full">Save match room</button>
-    <button id="adminLoadEntries" class="join full">Load players / record results</button>
-    <div id="adminEntries"></div>
-    <p class="notice">Choose a tournament to load its saved room. You can change the room ID or password anytime; saving replaces the previous details. Players see the room and roster after publishing.</p>`);
-  await loadAdminRoom();
+    <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminDescription" maxlength="5000" rows="5" placeholder="Paste room instructions, start time, scoring, screenshot proof, and disqualification rules…"></textarea></label>
+    <p class="admin-helper">Tip: include the exact start time, room release time, kill scoring, late-entry policy, and what proof players must submit.</p>
+    <button id="adminCreateTournament" class="join full">＋ Create tournament</button></div>
+    <div id="adminManageSection" class="admin-section"><div class="admin-section-title"><span>02</span><div><h3>Manage tournament</h3><p>Select a match first, then edit its settings.</p></div></div>
+    <label class="field">SELECT TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
+    <div class="admin-current-summary" id="adminSelectedSummary">${tournaments.length ? 'Select a tournament to load its current settings.' : 'No tournaments yet.'}</div>
+    <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminEditDescription" maxlength="5000" rows="5" placeholder="Player-facing rules and match instructions"></textarea></label>
+    <button id="adminSaveDescription" class="outline full">Save description</button>
+    <div class="admin-form-grid"><label class="field">ENTRY STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label><div class="field"><span>DESTRUCTIVE ACTION</span><button id="adminDeleteTournament" class="outline full danger-button">Delete tournament</button></div></div>
+    <button id="adminSetStatus" class="join full secondary-action">Save entry status</button></div>
+    <div class="admin-section"><div class="admin-section-title"><span>03</span><div><h3>Room & lobby</h3><p>Only publish these details when you are ready.</p></div></div>
+    <label class="field">ROOM ID<input id="adminRoomId" maxlength="80" placeholder="Enter room ID"></label><label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80" placeholder="Enter room password"></label>
+    <label class="admin-check"><input id="adminRoomPublished" type="checkbox"><span><b>Publish room to registered players</b><small>Players will see room details and the eligible roster.</small></span></label>
+    <button id="adminSaveRoom" class="join full">Save room settings</button></div>
+    <div id="adminPlayersSection" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Players & results</h3><p>Load registered players and publish verified match results.</p></div></div><button id="adminLoadEntries" class="outline full">Load players / record results</button><div id="adminEntries" class="admin-entries"></div></div>
+    <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Result publishing records results only; it does not transfer prize money or credit wallet points.</p></div>`);
+  $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
+  document.querySelectorAll('[data-admin-jump]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'})));
+  await loadAdminRoom(); syncAdminSelectedSummary();
+}
+
+function syncAdminSelectedSummary() {
+  const id = Number($('#adminTournament')?.value);
+  const t = tournaments.find(item => Number(item.id) === id);
+  const el = $('#adminSelectedSummary');
+  if (!el) return;
+  if (!t) { el.textContent = 'Select a tournament to load its current settings.'; return; }
+  const count = Number(counts[String(id)] ?? 0);
+  const status = String(t.status || 'open').toUpperCase();
+  el.innerHTML = `<div><b>${esc(t.title)}</b><small>${esc(t.game_mode || 'SOLO')} · ${count}/${Number(t.max_players || 0)} players</small></div><span class="status-chip">${esc(status)}</span><div><small>ENTRY</small><b>${Number(t.entry_points || 0)} pts</b></div><div><small>PRIZE DISPLAY</small><b>${Number(t.prize_pool_points || 0)} pts</b></div>`;
+  if ($('#adminEditDescription')) $('#adminEditDescription').value = t.description || '';
+  if ($('#adminStatus')) $('#adminStatus').value = ['open','closed','full'].includes(t.status) ? t.status : 'open';
 }
 
 async function loadAdminEntries() {
