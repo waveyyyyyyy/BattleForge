@@ -49,6 +49,58 @@ function setPage(tab) {
   if (tab === 'arena-list') $('#arena-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   else window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+const RECEIVING_UPI_ID = 'kjaman@fam';
+let depositTimerInterval = null;
+function cleanUpi(value) { return String(value || '').trim().toLowerCase(); }
+function validUpi(value) { return /^[a-z0-9._-]{2,100}@[a-z0-9.-]{2,50}$/i.test(String(value || '').trim()); }
+function showDepositForm() {
+  if (!currentUser) { showAuth(); return; }
+  modal('<h2>Deposit request</h2><p>Enter the amount and the UPI ID you will pay from.</p><label class="field">AMOUNT (₹)<input id="depositAmount" type="number" min="1" max="50000" step="1" inputmode="numeric" placeholder="100"></label><label class="field">YOUR PAYING UPI ID<input id="depositPayerUpi" maxlength="100" autocomplete="off" placeholder="yourname@upi"></label><div class="room-card"><small class="room-label">PAY TO THIS UPI ID</small><div class="room-value"><b id="depositReceiverUpi">kjaman@fam</b><button id="copyDepositUpi" class="outline">Copy</button></div><p>Pay the exact amount only after creating the request. Do not share your UPI PIN or OTP.</p></div><p class="notice">A 2-minute timer is for the request window only. It does not verify payment. Late payments must still be checked manually; screenshots alone are not proof.</p><button id="createDepositRequest" class="join full">Create deposit request</button>');
+}
+function showWithdrawalForm() {
+  if (!currentUser) { showAuth(); return; }
+  modal('<h2>Withdrawal request</h2><p>Enter the exact account-holder name and destination UPI ID.</p><label class="field">EXACT ACCOUNT HOLDER NAME<input id="withdrawName" maxlength="120" autocomplete="name" placeholder="Name as shown by your bank/UPI app"></label><label class="field">YOUR RECEIVING UPI ID<input id="withdrawUpi" maxlength="100" autocomplete="off" placeholder="yourname@upi"></label><label class="field">AMOUNT (₹)<input id="withdrawAmount" type="number" min="1" max="50000" step="1" inputmode="numeric" placeholder="100"></label><div class="room-card"><div class="room-value">Planned withdrawal fee <b>2%</b></div><div class="room-value">You receive <b id="withdrawNet">₹0.00</b></div></div><p class="notice">This creates a review request only. It does not transfer money. Never enter your UPI PIN or OTP.</p><button id="createWithdrawalRequest" class="join full">Submit withdrawal request</button>');
+  $('#withdrawAmount')?.addEventListener('input', updateWithdrawalNet);
+}
+function updateWithdrawalNet() { const amount = Number($('#withdrawAmount')?.value || 0); const out = $('#withdrawNet'); if (out) out.textContent = '₹' + (Number.isFinite(amount) && amount > 0 ? (amount * .98).toFixed(2) : '0.00'); }
+async function createPaymentRequest(kind) {
+  if (!currentUser) { showAuth(); return; }
+  const isDeposit = kind === 'deposit';
+  const button = $(isDeposit ? '#createDepositRequest' : '#createWithdrawalRequest');
+  const amount = Number($(isDeposit ? '#depositAmount' : '#withdrawAmount')?.value);
+  const upi = cleanUpi($(isDeposit ? '#depositPayerUpi' : '#withdrawUpi')?.value);
+  const name = isDeposit ? null : $('#withdrawName')?.value.trim();
+  if (!Number.isInteger(amount) || amount < 1 || amount > 50000) return toast('Enter a whole amount between ₹1 and ₹50,000.');
+  if (!validUpi(upi)) return toast('Enter a valid UPI ID, like name@upi.');
+  if (!isDeposit && (!name || name.length < 2 || name.length > 120)) return toast('Enter the exact account-holder name.');
+  button.disabled = true;
+  const { data, error } = await supabase.rpc(isDeposit ? 'create_deposit_request' : 'create_withdrawal_request', isDeposit ? { p_amount: amount, p_payer_upi: upi } : { p_amount: amount, p_account_name: name, p_payout_upi: upi });
+  button.disabled = false;
+  if (error) { console.error(error); return toast('Could not save request. Apply supabase/006_payment_requests.sql in Supabase SQL Editor, then retry.'); }
+  const row = Array.isArray(data) ? data[0] : data;
+  close();
+  if (isDeposit) showDepositTimer(row);
+  else { toast('Withdrawal request saved for review. No money has been sent.'); await loadPaymentRequests(); }
+}
+function showDepositTimer(row) {
+  const expires = new Date(row.expires_at).getTime();
+  modal('<h2>Deposit request created</h2><p>Request ID: <b>'+esc(row.id)+'</b></p><div class="wallet-total"><span id="depositCountdown">02:00</span></div><div class="room-card"><small class="room-label">SEND EXACT AMOUNT TO</small><div class="room-value"><b>kjaman@fam</b><button id="copyDepositUpiActive" class="outline">Copy UPI</button></div><div class="room-value">Amount <b>₹'+Number(row.amount).toFixed(2)+'</b></div></div><p class="notice">Status: PENDING VERIFICATION. This timer is not payment confirmation. If your payment is late, do not pay again; contact support with the request ID. Your wallet will not be credited until a trusted transaction record is verified.</p><button id="depositPaidNotice" class="join full">I have paid — submit for verification</button><button id="closeDepositTimer" class="outline full">Close</button>');
+  if (depositTimerInterval) clearInterval(depositTimerInterval);
+  const tick = () => { const el=$('#depositCountdown'); if (!el) { clearInterval(depositTimerInterval); return; } const left=Math.max(0,Math.ceil((expires-Date.now())/1000)); el.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0'); if (!left) { el.textContent='EXPIRED'; clearInterval(depositTimerInterval); toast('Request timer expired. A payment may still need manual checking.'); } };
+  tick(); depositTimerInterval=setInterval(tick,1000);
+  $('#copyDepositUpiActive')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(RECEIVING_UPI_ID); toast('UPI ID copied.'); } catch { toast('UPI ID: '+RECEIVING_UPI_ID); } });
+  $('#depositPaidNotice')?.addEventListener('click', async () => { const { error }=await supabase.rpc('mark_deposit_payment_reported',{p_request_id:row.id}); if(error) return toast('Could not update request. Please retry.'); toast('Marked as reported. It remains pending until verified.'); await loadPaymentRequests(); close(); });
+  $('#closeDepositTimer')?.addEventListener('click', async () => { close(); await loadPaymentRequests(); });
+}
+async function loadPaymentRequests() {
+  const target=$('#paymentRequests'); if(!target) return;
+  if(!currentUser) { target.innerHTML='<p class="notice">Sign in to view payment requests.</p>'; return; }
+  const [dep,wd]=await Promise.all([supabase.from('deposit_requests').select('id,amount,status,created_at,expires_at,payer_upi').order('created_at',{ascending:false}).limit(10),supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at,account_name,payout_upi').order('created_at',{ascending:false}).limit(10)]);
+  if(dep.error||wd.error) { target.innerHTML='<p class="notice">Payment-request database is not ready. Apply supabase/006_payment_requests.sql in the Supabase SQL Editor.</p>'; return; }
+  const rows=[...(dep.data||[]).map(x=>({...x,kind:'Deposit'})),...(wd.data||[]).map(x=>({...x,kind:'Withdrawal'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,10);
+  target.innerHTML=rows.length?rows.map(x=>'<div class="activity-row"><span class="activity-mark">'+(x.kind==='Deposit'?'＋':'↗')+'</span><div><b>'+x.kind+' · ₹'+Number(x.amount).toFixed(2)+'</b><small>'+esc(x.status.toUpperCase())+' · '+esc(new Date(x.created_at).toLocaleString())+'</small><small>Ref '+esc(x.id)+'</small></div><strong>'+(x.kind==='Withdrawal'?'Net ₹'+Number(x.net_amount).toFixed(2):'Pending check')+'</strong></div>').join(''):'<div class="empty-state"><b>No payment requests yet</b><p>Your requests will appear here.</p></div>';
+}
+
 function renderWallet() {
   const total = $('#walletBalance'); if (total) total.textContent = String(balance);
   const activity = $('#walletActivity'); if (!activity) return;
@@ -101,6 +153,7 @@ async function refreshData() {
     for (const row of countRows) counts[String(row.tournament_id)] = Number(row.player_count);
   }
   render();
+  if ($('#paymentRequests')) await loadPaymentRequests();
 }
 function showAuth() {
   modal('<h2>Log in to BattleForge</h2><p>Use your Google account or email to access tournament registration and match history.</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div><label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters"></label><button id="signInBtn" class="join full">Log in with email</button><button id="signUpBtn" class="outline full">Create account with email</button><p class="notice">If this is your first time, create an account. Email confirmation may be required. Never share your password or OTP.</p>');
@@ -406,8 +459,14 @@ $('#tournaments').addEventListener('keydown', async e => {
 $('#closeModal').onclick = close;
 $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') close(); });
 $('#profileBtn').onclick = showProfile;
+$('#openDeposit')?.addEventListener('click', showDepositForm);
+$('#openWithdrawal')?.addEventListener('click', showWithdrawalForm);
+$('#refreshPaymentRequests')?.addEventListener('click', loadPaymentRequests);
 $('#adminBtn').onclick = showAdmin;
 $('#modalContent').addEventListener('click', async e => {
+  if (e.target.id === 'copyDepositUpi') { try { await navigator.clipboard.writeText(RECEIVING_UPI_ID); toast('UPI ID copied.'); } catch { toast('UPI ID: '+RECEIVING_UPI_ID); } }
+  if (e.target.id === 'createDepositRequest') await createPaymentRequest('deposit');
+  if (e.target.id === 'createWithdrawalRequest') await createPaymentRequest('withdrawal');
   if (e.target.id === 'googleSignInBtn') await googleSignIn();
   if (e.target.id === 'signInBtn') await authAction('signin');
   if (e.target.id === 'signUpBtn') await authAction('signup');
