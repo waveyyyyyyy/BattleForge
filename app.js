@@ -479,7 +479,7 @@ async function loadLeaderboard(period = leaderboardPeriod) {
   const { data, error } = await supabase.rpc('get_earnings_leaderboard', { p_period: period });
   if (error) { console.warn('Leaderboard unavailable', error); target.innerHTML = '<p class="notice">Leaderboard is not available yet. Please try again later.</p>'; return; }
   const rows = Array.isArray(data) ? data : [];
-  target.innerHTML = rows.length ? rows.map((r,i) => `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player"><b>${esc(r.username || ('Player '+(r.player_number || '')))}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}</small></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
+  target.innerHTML = rows.length ? rows.map((r,i) => `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player"><b>${esc(String(r.username || '').trim() || ('Player '+(r.player_number || '')))}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}</small></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
 }
 
 async function showHistory() {
@@ -522,11 +522,11 @@ async function loadAdminRoom() {
   if (error) { console.warn('Could not load saved room details', error); return; }
   roomId.value = data?.room_id ?? '';
   roomPassword.value = data?.room_password ?? '';
-  published.checked = data?.published ?? false;
+  published.checked = data?.published ?? false
+;
 }
 
-async function s
-howAdmin() {
+async function showAdmin() {
   if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
   const { data: adminTournamentRows, error: adminTournamentError } = await supabase.from('tournaments').select('id,title,game_mode,status,is_past_match,starts_at').order('id', { ascending: false });
   const adminAllTournaments = adminTournamentError ? tournaments : (adminTournamentRows || []);
@@ -618,9 +618,9 @@ async function sendAdminBroadcast() {
   const tournament_id = audience_type === 'match' ? Number($('#adminBroadcastTournament')?.value) : null;
   const status = $('#adminBroadcastStatus');
   const button = $('#adminSendBroadcast');
-  if (!title || !message) { toast('Enter a title and message first.'); return; }
-  if (audience_ty
-pe === 'match' && !tournament_id) { toast('Choose a match first.'); return; }
+  if (!title || !message) { toast('Enter a title and message first.'); return
+; }
+  if (audience_type === 'match' && !tournament_id) { toast('Choose a match first.'); return; }
   const targetText = audience_type === 'match' ? 'only players registered for this match' : 'all BattleForge users';
   if (!window.confirm(`Send this notification to ${targetText}?`)) return;
   button.disabled = true; button.textContent = 'Sending…';
@@ -825,9 +825,9 @@ $('#modalContent').addEventListener('click', async e => {
 $('#modalContent').addEventListener('change', async e => {
   if (e.target.id === 'adminTournament') await loadAdminRoom();
 });
-$('#modalContent').addEventListener('click', async e => {
-  const 
-button = e.target.closest('button');
+$('#modalContent').addEventListener('click', 
+async e => {
+  const button = e.target.closest('button');
   if (!button) return;
   if (button.id === 'adminLoadPayments') { await loadAdminPaymentRequests(); return; }
   if (button.dataset.paymentAction) { await handleAdminPaymentAction(button); return; }
