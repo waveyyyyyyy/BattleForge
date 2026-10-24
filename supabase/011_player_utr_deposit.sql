@@ -1,4 +1,5 @@
 -- BattleForge player UTR and safe admin deletion support. Apply in Supabase SQL Editor.
+alter table public.deposit_requests add column if not exists payment_reference text;
 create unique index if not exists deposit_requests_payment_reference_unique on public.deposit_requests (lower(trim(payment_reference))) where payment_reference is not null and length(trim(payment_reference)) > 0;
 drop function if exists public.create_deposit_request(numeric,text);
 create or replace function public.create_deposit_request(p_amount numeric,p_payer_upi text,p_payment_reference text) returns public.deposit_requests language plpgsql security definer set search_path=public,pg_temp as $$
