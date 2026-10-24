@@ -16,6 +16,9 @@ let currentUser = null;
 let isAdmin = false;
 let pendingResultEntry = null;
 let counts = {};
+let leaderboardPeriod = 'all';
+let audioContext = null;
+function playUiSound(kind = 'tap') { if (read('bf_sound_enabled', true) !== true) return; try { const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return; audioContext ||= new Ctx(); const osc = audioContext.createOscillator(); const gain = audioContext.createGain(); osc.type = 'sine'; osc.frequency.value = kind === 'success' ? 660 : 420; gain.gain.setValueAtTime(0.025, audioContext.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09); osc.connect(gain); gain.connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + 0.1); } catch {} }
 
 function read(k, fallback) {
   try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; }
@@ -35,7 +38,7 @@ function modal(html) {
 }
 function close() { $('#modal').classList.add('hidden'); }
 function setPage(tab) {
-  const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules'].includes(tab) ? tab : 'arena');
+  const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules','leaderboard'].includes(tab) ? tab : 'arena');
   document.querySelectorAll('.page-view').forEach(page => page.classList.toggle('active', page.dataset.page === target));
   document.querySelectorAll('[data-tab]').forEach(button => button.classList.toggle('active', button.dataset.tab === target));
   document.body.dataset.page = target;
@@ -204,6 +207,7 @@ async function refreshData() {
         window.battleForgeBroadcasts = notices;
         const seen = read('bf_notifications_seen_ids',[]).map(String);
         const newest = notices.find(n=>!priorIds.has(String(n.id)) && !seen.includes(String(n.id)));
+        // Seen IDs are persisted locally, so read announcements never retrigger the alert on refresh.
         if (newest && prior.length) toast('📣 ' + newest.title);
         updateNotificationBadge();
       }
@@ -393,6 +397,15 @@ function showNotifications() {
   $('#markNotificationsRead')?.addEventListener('click',()=>{localStorage.setItem('bf_notifications_seen_ids',JSON.stringify(items.map(n=>String(n.id))));updateNotificationBadge();close();toast('Notifications marked as read.');});
 }
 function updateNotificationBadge(){const items=window.battleForgeBroadcasts||[];const seen=read('bf_notifications_seen_ids',[]);const unread=items.filter(n=>!seen.map(String).includes(String(n.id))).length;const badge=$('#notificationBadge');if(badge){badge.textContent=unread>99?'99+':String(unread);badge.classList.toggle('hidden',unread===0);}}
+async function loadLeaderboard(period = leaderboardPeriod) {
+  leaderboardPeriod = period; const target = $('#leaderboardContent'); if (!target) return; target.innerHTML = '<p class="notice">Loading leaderboard…</p>';
+  document.querySelectorAll('[data-lb-period]').forEach(b => { const active = b.dataset.lbPeriod === period; b.classList.toggle('join', active); b.classList.toggle('outline', !active); });
+  const { data, error } = await supabase.rpc('get_earnings_leaderboard', { p_period: period });
+  if (error) { console.warn('Leaderboard unavailable', error); target.innerHTML = '<p class="notice">Leaderboard is not available yet. Please try again later.</p>'; return; }
+  const rows = Array.isArray(data) ? data : [];
+  target.innerHTML = rows.length ? rows.map((r,i) => `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player"><b>${esc(r.username || ('Player '+(r.player_number || '')))}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}</small></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
+}
+
 async function showHistory() {
   const target = $('#historyContent');
   if (!target) return;
@@ -449,7 +462,7 @@ async function showAdmin() {
   modal(`<div class="admin-dashboard-head"><div class="eyebrow"><span class="live-dot"></span> ORGANISER CONTROL CENTRE</div><h2>Admin dashboard</h2><p>Everything you need to run a match, from one place.</p><div class="admin-section" id="adminPlayerManager"><div class="admin-section-title"><div><h3>Player account manager</h3><p>Search by numeric Player ID, inspect full histories, and adjust balances.</p></div></div><label class="field">PLAYER ID<input id="adminPlayerNumber" type="number" min="1" step="1" placeholder="100001"></label><button id="adminFindPlayer" class="join full">Find player & load full history</button><div id="adminPlayerDetails"></div><div class="admin-form-grid"><label class="field">BALANCE TYPE<select id="adminBalanceBucket"><option value="deposited">Entry-fee-only balance</option><option value="earned">Withdrawable match earnings</option></select></label><label class="field">AMOUNT (+ add / − deduct)<input id="adminBalanceAmount" type="number" step="0.01" placeholder="50 or -20"></label></div><label class="field">REASON / AUDIT NOTE<input id="adminBalanceNote" maxlength="300" placeholder="Correction reason"></label><button id="adminAdjustBalance" class="join full">Apply balance adjustment</button></div><p></p></div>
     <div class="admin-metrics"><div><small>TOURNAMENTS</small><b>${tournaments.length}</b></div><div><small>OPEN</small><b>${openCount}</b></div><div><small>REGISTRATIONS</small><b>${playerTotal}</b></div><div><small>CLOSED / FULL</small><b>${closedCount}</b></div></div>
     <div class="admin-section"><div class="admin-section-title"><span>₹</span><div><h3>Payments & withdrawals</h3><p>Review full request details, verify UPI deposits, credit deposited coins, and mark manually sent withdrawals as paid.</p></div></div><button id="adminLoadPayments" class="join full">Open payment request queue</button><div id="adminPaymentRequests"></div></div><div class="admin-quick-grid"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div>
-    <div class="admin-section" id="adminBroadcastSection"><div class="admin-section-title"><span>✉</span><div><h3>Notify all users</h3><p>Send a custom announcement to the BattleForge notification feed.</p></div></div><label class="field">NOTIFICATION TITLE<input id="adminBroadcastTitle" maxlength="80" placeholder="Tournament update"></label><label class="field">MESSAGE<textarea id="adminBroadcastMessage" maxlength="1000" rows="4" placeholder="Write your announcement for all players…"></textarea></label><button id="adminSendBroadcast" class="join full">Send to all users</button><div id="adminBroadcastStatus" class="admin-helper" aria-live="polite"></div></div>
+    <div class="admin-section" id="adminBroadcastSection"><div class="admin-section-title"><span>✉</span><div><h3>Notify all users</h3><p>Send a custom announcement to the BattleForge notification feed.</p></div></div><label class="field">NOTIFICATION TITLE<input id="adminBroadcastTitle" maxlength="80" placeholder="Tournament update"></label><label class="field">MESSAGE<textarea id="adminBroadcastMessage" maxlength="1000" rows="4" placeholder="Write your announcement for all players…"></textarea></label><button id="adminSendBroadcast" class="join full">Send to all users</button><div id="adminBroadcastStatus" class="admin-helper" aria-live="polite"></div></div><div class="admin-section-title"><div><h3>Manage sent notifications</h3><p>Remove an outdated announcement from every user’s feed.</p></div></div><button id="adminLoadBroadcasts" class="outline full">Load sent notifications</button><div id="adminBroadcastList"></div>
     <div id="adminCreateSection" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
     <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
     <div class="admin-form-grid"><label class="field">GAME MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label></div>
@@ -473,9 +486,23 @@ async function showAdmin() {
     <div id="adminPlayersSection" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Players & results</h3><p>Load registered players and publish verified match results.</p></div></div><button id="adminLoadEntries" class="outline full">Load players / record results</button><div id="adminEntries" class="admin-entries"></div></div>
     <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Confirmed results are visible to players and credit the entered reward to their earned wallet.</p></div>`);
   $('#adminSendBroadcast')?.addEventListener('click', sendAdminBroadcast);
+  $('#adminLoadBroadcasts')?.addEventListener('click', loadAdminBroadcasts);
   $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
   document.querySelectorAll('[data-admin-jump]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'})));
   await loadAdminRoom(); syncAdminSelectedSummary();
+}
+
+async function loadAdminBroadcasts() {
+  if (!isAdmin) return; const box = $('#adminBroadcastList'); if (!box) return; box.innerHTML = '<p class="admin-helper">Loading…</p>';
+  const {data,error}=await supabase.from('notification_broadcasts').select('id,title,message,created_at').order('created_at',{ascending:false}).limit(20);
+  if(error){box.innerHTML='<p class="notice">Could not load notifications. Apply the latest database migration.</p>';return;}
+  box.innerHTML=(data||[]).map(n=>`<article class="notification-card"><div class="notification-card-top"><b>${esc(n.title)}</b><small>${esc(new Date(n.created_at).toLocaleString())}</small></div><p>${esc(n.message)}</p><button class="outline danger-button" data-delete-broadcast="${esc(n.id)}">Delete notification</button></article>`).join('')||'<p class="admin-helper">No sent notifications.</p>';
+}
+async function deleteAdminBroadcast(id) {
+  if(!isAdmin || !window.confirm('Delete this announcement from every user’s notification feed?')) return;
+  const {error}=await supabase.rpc('admin_delete_broadcast_notification',{p_notification_id:Number(id)});
+  if(error){toast('Could not delete notification. Apply the latest database migration.');return;}
+  window.battleForgeBroadcasts=(window.battleForgeBroadcasts||[]).filter(n=>String(n.id)!==String(id)); updateNotificationBadge(); await loadAdminBroadcasts(); toast('Notification deleted.');
 }
 
 async function sendAdminBroadcast() {
@@ -647,6 +674,7 @@ $('#modalContent').addEventListener('submit', async e => {
   }
 });
 $('#modalContent').addEventListener('click', async e => {
+  const deleteBroadcast = e.target.closest('[data-delete-broadcast]'); if (deleteBroadcast) await deleteAdminBroadcast(deleteBroadcast.dataset.deleteBroadcast);
   if (e.target.id === 'copyDepositUpi') { try { await navigator.clipboard.writeText(RECEIVING_UPI_ID); toast('UPI ID copied.'); } catch { toast('UPI ID: '+RECEIVING_UPI_ID); } }
   if (e.target.id === 'createDepositRequest' && e.target.form?.id !== 'depositRequestForm') await createPaymentRequest('deposit');
   if (e.target.id === 'createWithdrawalRequest' && e.target.form?.id !== 'withdrawalRequestForm') await createPaymentRequest('withdrawal');
@@ -762,7 +790,9 @@ $('#modalContent').addEventListener('click', async e => {
     pendingResultEntry = null; close(); toast('Verified result published to player.');
   }
 });
-document.querySelectorAll('[data-tab]').forEach(button => button.onclick = () => setPage(button.dataset.tab));
+document.querySelectorAll('[data-tab]').forEach(button => button.onclick = () => { setPage(button.dataset.tab); if (button.dataset.tab === 'leaderboard') loadLeaderboard(); });
+document.querySelectorAll('[data-lb-period]').forEach(button => button.addEventListener('click', () => loadLeaderboard(button.dataset.lbPeriod)));
+document.addEventListener('click', e => { if (e.target.closest('button')) playUiSound(); });
 document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => setPage(button.dataset.go)));
 document.querySelector('[data-home]')?.addEventListener('click', event => { event.preventDefault(); setPage('arena'); });
 $('#historySignIn')?.addEventListener('click', showAuth);
