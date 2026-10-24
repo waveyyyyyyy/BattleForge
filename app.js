@@ -154,8 +154,7 @@ async function handleAdminPaymentAction(button) {
   } catch (error) {
     console.error('BattleForge payment action threw an exception', error);
     toast('Payment action failed: '+(error?.message||'Unexpected error. Please reload and retry.'));
-  } finally
- { button.disabled=false; }
+  } finally { button.disabled=false; }
 }
 async function loadWalletSummary() {
   if(!currentUser) return;
@@ -413,8 +412,7 @@ async function authAction(kind) {
   }
   close();
   await refreshData();
-  toast(kind === 'signin' ? 'Signed in successfully
-.' : 'BattleForge account created.');
+  toast(kind === 'signin' ? 'Signed in successfully.' : 'BattleForge account created.');
 }
 async function showProfile() {
   if (!currentUser) { showAuth(); return; }
@@ -522,8 +520,7 @@ async function loadAdminRoom() {
   if (error) { console.warn('Could not load saved room details', error); return; }
   roomId.value = data?.room_id ?? '';
   roomPassword.value = data?.room_password ?? '';
-  published.checked = data?.published ?? false
-;
+  published.checked = data?.published ?? false;
 }
 
 async function showAdmin() {
@@ -618,8 +615,7 @@ async function sendAdminBroadcast() {
   const tournament_id = audience_type === 'match' ? Number($('#adminBroadcastTournament')?.value) : null;
   const status = $('#adminBroadcastStatus');
   const button = $('#adminSendBroadcast');
-  if (!title || !message) { toast('Enter a title and message first.'); return
-; }
+  if (!title || !message) { toast('Enter a title and message first.'); return; }
   if (audience_type === 'match' && !tournament_id) { toast('Choose a match first.'); return; }
   const targetText = audience_type === 'match' ? 'only players registered for this match' : 'all BattleForge users';
   if (!window.confirm(`Send this notification to ${targetText}?`)) return;
@@ -825,8 +821,7 @@ $('#modalContent').addEventListener('click', async e => {
 $('#modalContent').addEventListener('change', async e => {
   if (e.target.id === 'adminTournament') await loadAdminRoom();
 });
-$('#modalContent').addEventListener('click', 
-async e => {
+$('#modalContent').addEventListener('click', async e => {
   const button = e.target.closest('button');
   if (!button) return;
   if (button.id === 'adminLoadPayments') { await loadAdminPaymentRequests(); return; }
@@ -936,4 +931,3 @@ $('#modalContent').addEventListener('click', async event => {
 supabase.auth.onAuthStateChange(() => { setTimeout(() => refreshData(), 0); });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
 refreshData();
-
