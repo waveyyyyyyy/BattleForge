@@ -385,7 +385,7 @@ async function showProfile() {
     supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at').eq('user_id', currentUser.id).order('created_at',{ascending:false}),
     supabase.from('deposit_requests').select('id,amount,status,created_at,payment_reference').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
     supabase.rpc('get_my_referral_stats'),
-    supabase.from('tournament_results').select('tournament_id,placement,kills,note,created_at').eq('user_id',currentUser.id).eq('published',true).order('created_at',{ascending:false})
+    supabase.from('tournament_results').select('tournament_id,placement,kills,note,earned_points,created_at').eq('user_id',currentUser.id).eq('published',true).order('created_at',{ascending:false})
   ]);
   if (accountError || walletError) console.warn('Profile load issue',accountError||walletError);
   const a=account||{}, w=wallet||{}, notices=window.battleForgeBroadcasts||[];
@@ -449,21 +449,21 @@ async function showHistory() {
   const {data: matches, error}=await supabase.from('tournaments').select('id,title,game_mode,starts_at,created_at,description,is_past_match').eq('is_past_match',true).order('starts_at',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false});
   if(error){target.innerHTML='<p class="notice">Past Matches needs the latest BattleForge database migration. Please try again after it is applied.</p>';return;}
   if(!matches?.length){target.innerHTML='<div class="empty-state"><span>🏆</span><h3>No past matches yet</h3><p>Matches will appear here when an admin moves them to Past Matches.</p></div>';return;}
-  const {data: publishedResults}=await supabase.from('tournament_results').select('tournament_id,placement,kills,note,created_at').eq('user_id',currentUser.id).eq('published',true);
+  const {data: publishedResults}=await supabase.from('tournament_results').select('tournament_id,placement,kills,note,earned_points,created_at').eq('user_id',currentUser.id).eq('published',true);
   const mine=publishedResults||[];
-  target.innerHTML=matches.map(t=>{const r=mine.find(x=>String(x.tournament_id)===String(t.id));return `<button type="button" class="history-card past-match-card" data-past-match="${esc(t.id)}"><div class="history-card-top"><span class="history-symbol">✦</span><span class="status-chip">${r?'RESULTS PUBLISHED':'PENDING RESULTS'}</span></div><h3>${esc(t.title)}</h3><p class="history-meta">${esc(t.game_mode||'MATCH')} · ${esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Date not set')}</p><div class="result-banner"><small>${r?'YOUR RESULT':'RESULT STATUS'}</small><b>${r?((r.placement?'Rank #'+Number(r.placement)+' · ':'')+Number(r.kills||0)+' kills'):'Pending Results'}</b><p>Tap to view match details ↗</p></div></button>`}).join('');
+  target.innerHTML=matches.map(t=>{const r=mine.find(x=>String(x.tournament_id)===String(t.id));return `<button type="button" class="history-card past-match-card" data-past-match="${esc(t.id)}"><div class="history-card-top"><span class="history-symbol">✦</span><span class="status-chip">${r?'RESULTS PUBLISHED':'PENDING RESULTS'}</span></div><h3>${esc(t.title)}</h3><p class="history-meta">${esc(t.game_mode||'MATCH')} · ${esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Date not set')}</p><div class="result-banner"><small>${r?'YOUR RESULT':'RESULT STATUS'}</small><b>${r?((r.placement?'Rank #'+Number(r.placement)+' · ':'')+Number(r.kills||0)+' kills · '+Number(r.earned_points||0)+' points earned'):'Pending Results'}</b><p>Tap to view match details ↗</p></div></button>`}).join('');
 }
 
 async function openPastMatchDetails(id) {
   if(!currentUser) return showAuth();
   const {data:t,error}=await supabase.from('tournaments').select('id,title,game_mode,starts_at,description,is_past_match').eq('id',Number(id)).eq('is_past_match',true).maybeSingle();
   if(error||!t){toast('Could not load this past match.');return;}
-  const {data:results}=await supabase.from('tournament_results').select('user_id,placement,kills,note,published,created_at').eq('tournament_id',Number(id)).eq('published',true).order('placement',{ascending:true,nullsFirst:false});
+  const {data:results}=await supabase.from('tournament_results').select('user_id,placement,kills,note,earned_points,published,created_at').eq('tournament_id',Number(id)).eq('published',true).order('placement',{ascending:true,nullsFirst:false});
   const rows=results||[];
   const {data:profiles}=rows.length?await supabase.from('profiles').select('id,display_name').in('id',rows.map(r=>r.user_id)): {data:[]};
   const names=Object.fromEntries((profiles||[]).map(p=>[p.id,p.display_name]));
   const mine=rows.find(r=>r.user_id===currentUser.id);
-  modal(`<div class="match-detail-sheet"><div class="eyebrow">PAST MATCH DETAILS</div><h2>${esc(t.title)}</h2><p>${esc(t.game_mode||'MATCH')} · ${esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Date not set')}</p>${rows.length?`<div class="result-banner"><small>YOUR PERFORMANCE</small><b>${mine?((mine.placement?'Rank #'+Number(mine.placement)+' · ':'')+Number(mine.kills||0)+' kills'):'No published result for your account'}</b>${mine?.note?`<p>${esc(mine.note)}</p>`:''}</div><h3>Final rankings</h3><div class="past-results-table">${rows.map((r,i)=>`<div class="profile-history-row"><div><b>#${r.placement||'—'} · ${esc(names[r.user_id]||'Player')}</b><small>${Number(r.kills||0)} kills${r.note?' · '+esc(r.note):''}</small></div>${r.user_id===currentUser.id?'<b>YOU</b>':''}</div>`).join('')}</div>`:'<div class="result-banner"><small>RESULT STATUS</small><b>Pending Results</b><p>The admin has not published the final rankings yet. Check back later.</p></div>'}<button class="outline full" id="pastMatchClose">Close</button></div>`);
+  modal(`<div class="match-detail-sheet"><div class="eyebrow">PAST MATCH DETAILS</div><h2>${esc(t.title)}</h2><p>${esc(t.game_mode||'MATCH')} · ${esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Date not set')}</p>${rows.length?`<div class="result-banner"><small>YOUR PERFORMANCE</small><b>${mine?((mine.placement?'Rank #'+Number(mine.placement)+' · ':'')+Number(mine.kills||0)+' kills'):'No published result for your account'}</b>${mine?.note?`<p>${esc(mine.note)}</p>`:''}</div><h3>Final rankings</h3><div class="past-results-table">${rows.map((r,i)=>`<div class="profile-history-row"><div><b>#${r.placement||'—'} · ${esc(names[r.user_id]||'Player')}</b><small>${Number(r.kills||0)} kills · ${Number(r.earned_points||0)} points earned${r.note?' · '+esc(r.note):''}</small></div>${r.user_id===currentUser.id?'<b>YOU</b>':''}</div>`).join('')}</div>`:'<div class="result-banner"><small>RESULT STATUS</small><b>Pending Results</b><p>The admin has not published the final rankings yet. Check back later.</p></div>'}<button class="outline full" id="pastMatchClose">Close</button></div>`);
   $('#pastMatchClose')?.addEventListener('click',close);
 }
 
@@ -505,6 +505,7 @@ async function showAdmin() {
     <button id="adminCreateTournament" class="join full">＋ Create tournament</button></div>
     <div id="adminManageSection" data-admin-page="manage" class="admin-section"><div class="admin-section-title"><span>02</span><div><h3>Manage tournament</h3><p>Select a match first, then edit its settings.</p></div></div>
     <label class="field">SELECT TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
+    <button id="adminMarkPastMatch" class="outline full">Move selected match to Past Matches</button><p class="admin-helper">This works even with just one registered player. Players will see Pending Results until you publish the rankings.</p>
     <div class="admin-current-summary" id="adminSelectedSummary">${tournaments.length ? 'Select a tournament to load its current settings.' : 'No tournaments yet.'}</div>
     <div class="admin-form-grid"><label class="field">ENTRY FEE (PTS)<input id="adminEditEntry" type="number" min="0" max="1000000"></label><label class="field">PER-KILL REWARD (PTS)<input id="adminEditPerKill" type="number" min="0" max="1000000"></label></div><button id="adminSaveRewards" class="join full">Save entry fee & per-kill reward</button>
     <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminEditDescription" maxlength="5000" rows="5" placeholder="Player-facing rules and match instructions"></textarea></label>
@@ -601,7 +602,7 @@ async function loadAdminEntries() {
       <input aria-label="Total reward for ${esc(e.in_game_name)}" class="result-reward" type="number" min="0" max="1000000" step="1" value="0">
     </div>`).join('')}</div>
     <label class="field">ADMIN NOTE (OPTIONAL)<input id="adminBulkResultNote" maxlength="500" placeholder="Verified by screenshot"></label>
-    <button id="adminMarkPastMatch" class="outline full">Move this match to Past Matches</button><button id="adminConfirmAllResults" class="join full">Confirm results & credit wallets</button>
+    <button id="adminConfirmAllResults" class="join full">Confirm results & credit wallets</button>
     <p class="notice">Confirmation publishes the results and credits each entered reward to that player's earned wallet. Check every amount before confirming.</p>`;
 }
 
@@ -622,7 +623,7 @@ async function publishBulkResults(button) {
   if (results.some(r => r.placement !== null && (seen.has(r.placement) ? true : (seen.add(r.placement), false)))) return toast('Each rank can only be assigned once.');
   if (!confirm(`Confirm results for ${results.length} players and credit a total of ${results.reduce((n,r)=>n+r.reward,0).toLocaleString()} points? This cannot be undone.`)) return;
   button.disabled = true; button.textContent = 'Publishing results…';
-  const { error } = await supabase.rpc('admin_publish_match_results', { p_tournament_id: tournamentId, p_results: results, p_note: ($('#adminBulkResultNote')?.value || '').trim() });
+  const { error } = await supabase.rpc('admin_publish_match_results', { p_tournament_id: tournamentId, p_results: results });
   button.disabled = false; button.textContent = 'Confirm results & credit wallets';
   if (error) return toast(error.message);
   toast('Results published and player wallets credited.');
