@@ -218,6 +218,7 @@ async function refreshData() {
     if (!adminError) isAdmin = adminFlag === true;
   }
   $('#adminBtn')?.classList.toggle('hidden', !isAdmin);
+  if(currentUser){ await requireUsernameSetup(); if(usernameSetupOpen) return; }
   const { data, error } = await supabase.from('tournaments')
     .select('id,title,description,game_mode,entry_points,per_kill_points,prize_pool_points,max_players,status,starts_at')
     .order('starts_at', { ascending: true, nullsFirst: false }).order('id');
@@ -256,7 +257,7 @@ async function refreshData() {
   }
   render();
   if ($('#paymentRequests')) await loadPaymentRequests();
-  if (currentUser) { await loadWalletSummary(); await requireUsernameSetup(); }
+  if (currentUser) await loadWalletSummary();
 }
 function showAuth() {
   const referralFromLink = new URLSearchParams(window.location.search).get('ref') || '';
