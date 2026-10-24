@@ -814,8 +814,9 @@ $('#modalContent').addEventListener('click', async e => {
   if (button.id === 'adminDeleteTournament') {
     if (!isAdmin) return toast('Admin access required.');
     const id = Number($('#adminTournament')?.value);
-    const tournament = tournaments.find(t => Number(t.id) === id);
-    if (!id || !tournament) return toast('Choose a tournament.');
+    if (!id) return toast('Choose a tournament.');
+    const { data: tournament, error: lookupError } = await supabase.from('tournaments').select('id,title,is_past_match').eq('id', id).maybeSingle();
+    if (lookupError || !tournament) return toast(lookupError?.message || 'Choose a valid tournament.');
     const confirmed = window.confirm('Permanently delete "' + tournament.title + '" and its registrations, room, and results? This cannot be undone.');
     if (!confirmed) return;
     button.disabled = true;
