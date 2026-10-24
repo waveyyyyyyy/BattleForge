@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 const SUPABASE_URL = 'https://izyttrbspxrcacwuhwer.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_79ln_ouADVGWi6H5ZTc6Qg_c3ifNfQ7';
@@ -14,6 +15,9 @@ let tournaments = [];
 let joined = [];
 let currentUser = null;
 let isAdmin = false;
+let pushListenersInstalled = false;
+let pushRegistrationInProgress = false;
+let pushRegisteredUserId = null;
 let pendingResultEntry = null;
 let counts = {};
 let leaderboardPeriod = 'all';
@@ -213,11 +217,44 @@ async function saveRequiredUsername() {
   finally{if(button)button.disabled=false;}
 }
 
+async function setupBattleForgePush() {
+  if (!currentUser || !Capacitor.isNativePlatform() || pushRegistrationInProgress || pushRegisteredUserId === currentUser.id) return;
+  pushRegistrationInProgress = true;
+  try {
+    if (!pushListenersInstalled) {
+      pushListenersInstalled = true;
+      await PushNotifications.addListener('registration', async token => {
+        if (!currentUser?.id || !token?.value) return;
+        const { error } = await supabase.from('push_devices').upsert({
+          user_id: currentUser.id, token: token.value, platform: Capacitor.getPlatform(), updated_at: new Date().toISOString()
+        }, { onConflict: 'token' });
+        if (error) console.warn('Could not save push token:', error.message);
+      });
+      await PushNotifications.addListener('registrationError', error => console.warn('Push registration failed:', error));
+      await PushNotifications.addListener('pushNotificationReceived', notification => {
+        if (notification?.title) toast('🔔 ' + notification.title);
+        refreshData().catch(error => console.warn('Could not refresh after push:', error));
+      });
+      await PushNotifications.addListener('pushNotificationActionPerformed', () => {
+        setPage('arena');
+        refreshData().catch(error => console.warn('Could not refresh after opening push:', error));
+        toast('Open Notifications or your match card to view the update.');
+      });
+    }
+    let permission = await PushNotifications.checkPermissions();
+    if (permission.receive === 'prompt' || permission.receive === 'prompt-with-rationale') permission = await PushNotifications.requestPermissions();
+    if (permission.receive === 'granted') { await PushNotifications.register(); pushRegisteredUserId = currentUser.id; }
+  } catch (error) {
+    console.warn('Push notifications are not configured on this build yet:', error);
+  } finally { pushRegistrationInProgress = false; }
+}
+
 async function refreshData() {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) console.warn(sessionError);
   currentUser = session?.user ?? null;
   isAdmin = false;
+  if (currentUser) setupBattleForgePush().catch(error => console.warn('Push setup skipped:', error));
   if (currentUser) {
     const { data: adminFlag, error: adminError } = await supabase.rpc('is_battleforge_admin');
     if (!adminError) isAdmin = adminFlag === true;
@@ -497,7 +534,7 @@ async function showAdmin() {
   modal(`<div class="admin-dashboard-head"><div class="eyebrow"><span class="live-dot"></span> ORGANISER CONTROL CENTRE</div><h2>Admin dashboard</h2><p>Everything you need to run a match, from one place.</p><div class="admin-section" data-admin-page="players" id="adminPlayerManager"><div class="admin-section-title"><div><h3>Player account manager</h3><p>Search by numeric Player ID, inspect full histories, and adjust balances.</p></div></div><label class="field">PLAYER ID<input id="adminPlayerNumber" type="number" min="1" step="1" placeholder="100001"></label><button id="adminFindPlayer" class="join full">Find player & load full history</button><div id="adminPlayerDetails"></div><div class="admin-form-grid"><label class="field">BALANCE TYPE<select id="adminBalanceBucket"><option value="deposited">Entry-fee-only balance</option><option value="earned">Withdrawable match earnings</option></select></label><label class="field">AMOUNT (+ add / − deduct)<input id="adminBalanceAmount" type="number" step="0.01" placeholder="50 or -20"></label></div><label class="field">REASON / AUDIT NOTE<input id="adminBalanceNote" maxlength="300" placeholder="Correction reason"></label><button id="adminAdjustBalance" class="join full">Apply balance adjustment</button></div><p></p></div>
     <div class="admin-metrics"><div><small>TOURNAMENTS</small><b>${tournaments.length}</b></div><div><small>OPEN</small><b>${openCount}</b></div><div><small>REGISTRATIONS</small><b>${playerTotal}</b></div><div><small>CLOSED / FULL</small><b>${closedCount}</b></div></div>
     <div class="admin-section" data-admin-page="payments"><div class="admin-section-title"><span>₹</span><div><h3>Payments & withdrawals</h3><p>Review full request details, verify UPI deposits, credit deposited coins, and mark manually sent withdrawals as paid.</p></div></div><button id="adminLoadPayments" class="join full">Open payment request queue</button><div id="adminPaymentRequests"></div></div><div class="admin-quick-grid admin-home-menu"><button class="admin-quick" data-admin-page-open="create"><span>＋</span><b>Create match</b><small>New tournament setup</small></button><button class="admin-quick" data-admin-page-open="manage"><span>⚙</span><b>Manage matches</b><small>Edit status and rewards</small></button><button class="admin-quick" data-admin-page-open="players"><span>♙</span><b>Search players</b><small>Player lookup & results</small></button><button class="admin-quick" data-admin-page-open="results"><span>🏆</span><b>Match rankings</b><small>Drag ranks, edit kills & prizes</small></button><button class="admin-quick" data-admin-page-open="payments"><span>₹</span><b>Payments</b><small>Deposits & withdrawals</small></button><button class="admin-quick" data-admin-page-open="room"><span>🎮</span><b>Room & lobby</b><small>Room ID and password</small></button><button class="admin-quick" data-admin-page-open="notifications"><span>✉</span><b>Announcements</b><small>Send or delete broadcasts</small></button></div><div class="admin-page-back hidden" id="adminPageBack"><button class="outline" id="adminBackHome">← All admin options</button><span id="adminPageTitle">Admin section</span></div><div class="admin-legacy-quick hidden"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div></div>
-    <div class="admin-section" data-admin-page="notifications" id="adminBroadcastSection"><div class="admin-section-title"><span>✉</span><div><h3>Notify all users</h3><p>Send a custom announcement to the BattleForge notification feed.</p></div></div><label class="field">NOTIFICATION TITLE<input id="adminBroadcastTitle" maxlength="80" placeholder="Tournament update"></label><label class="field">MESSAGE<textarea id="adminBroadcastMessage" maxlength="1000" rows="4" placeholder="Write your announcement for all players…"></textarea></label><button id="adminSendBroadcast" class="join full">Send to all users</button><div id="adminBroadcastStatus" class="admin-helper" aria-live="polite"></div></div><div class="admin-section-title" data-admin-page="notifications"><div><h3>Manage sent notifications</h3><p>Remove an outdated announcement from every user’s feed.</p></div></div><button id="adminLoadBroadcasts" data-admin-page="notifications" class="outline full">Load sent notifications</button><div id="adminBroadcastList" data-admin-page="notifications"></div>
+    <div class="admin-section" data-admin-page="notifications" id="adminBroadcastSection"><div class="admin-section-title"><span>✉</span><div><h3>Push notifications</h3><p>Send a phone notification and add it to the in-app notification feed.</p></div></div><label class="field">AUDIENCE<select id="adminBroadcastAudience"><option value="all">All users — announcement</option><option value="match">Players registered for a match</option></select></label><label class="field hidden" id="adminBroadcastMatchWrap">MATCH<select id="adminBroadcastTournament"><option value="">Choose a match</option></select></label><label class="field">NOTIFICATION TITLE<input id="adminBroadcastTitle" maxlength="80" placeholder="Tournament update"></label><label class="field">MESSAGE<textarea id="adminBroadcastMessage" maxlength="1000" rows="4" placeholder="Write your announcement…"></textarea></label><p class="admin-helper">Match notifications never show room passwords on the lock screen. Players must open BattleForge to view match details.</p><button id="adminSendBroadcast" class="join full">Send notification</button><div id="adminBroadcastStatus" class="admin-helper" aria-live="polite"></div></div><div class="admin-section-title" data-admin-page="notifications"><div><h3>Manage sent notifications</h3><p>Remove an outdated announcement from every user’s feed.</p></div></div><button id="adminLoadBroadcasts" data-admin-page="notifications" class="outline full">Load sent notifications</button><div id="adminBroadcastList" data-admin-page="notifications"></div>
     <div id="adminCreateSection" data-admin-page="create" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
     <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
     <div class="admin-form-grid"><label class="field">GAME MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label></div>
@@ -524,6 +561,7 @@ async function showAdmin() {
     <div id="adminResultsSection" data-admin-page="results" class="admin-section"><div class="admin-section-title"><span>🏆</span><div><h3>Match rankings</h3><p>All registered players appear automatically. Drag to rank, enter kills and total prize, then publish rewards. You can edit results later.</p></div></div><label class="field">SELECT MATCH<select id="adminResultsTournament"><option value="">Choose a match…</option>${options}</select></label><button id="adminLoadResultsRoster" class="join full">Load registered players</button><div id="adminResultsRoster"><p class="admin-helper">Choose a match above, then load the registered players.</p></div></div>
     <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Confirmed results are visible to players and credit the entered reward to their earned wallet.</p></div>`);
   $('#adminSendBroadcast')?.addEventListener('click', sendAdminBroadcast);
+  $('#adminBroadcastAudience')?.addEventListener('change', syncBroadcastAudience);
   $('#adminLoadBroadcasts')?.addEventListener('click', loadAdminBroadcasts);
   $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
   $('#adminResultsTournament')?.addEventListener('change', loadAdminEntries);
@@ -539,6 +577,18 @@ async function showAdmin() {
   if (roomSelect) roomSelect.value = $('#adminTournament')?.value || roomSelect.value;
   openAdminPage('home');
   await loadAdminRoom(); syncAdminSelectedSummary();
+}
+
+function syncBroadcastAudience() {
+  const audience = $('#adminBroadcastAudience')?.value || 'all';
+  const wrap = $('#adminBroadcastMatchWrap');
+  const select = $('#adminBroadcastTournament');
+  if (wrap) wrap.classList.toggle('hidden', audience !== 'match');
+  if (select && audience === 'match') {
+    const current = select.value;
+    select.innerHTML = '<option value="">Choose a match</option>' + tournaments.filter(t => !t.is_past_match).map(t => `<option value="${esc(t.id)}">${esc(t.title)}${t.starts_at ? ' · ' + esc(new Date(t.starts_at).toLocaleString()) : ''}</option>`).join('');
+    if (current) select.value = current;
+  }
 }
 
 async function loadAdminBroadcasts() {
@@ -558,22 +608,32 @@ async function sendAdminBroadcast() {
   if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
   const title = ($('#adminBroadcastTitle')?.value || '').trim();
   const message = ($('#adminBroadcastMessage')?.value || '').trim();
+  const audience_type = $('#adminBroadcastAudience')?.value || 'all';
+  const tournament_id = audience_type === 'match' ? Number($('#adminBroadcastTournament')?.value) : null;
   const status = $('#adminBroadcastStatus');
   const button = $('#adminSendBroadcast');
   if (!title || !message) { toast('Enter a title and message first.'); return; }
-  if (!window.confirm('Send this announcement to every BattleForge user?')) return;
+  if (audience_type === 'match' && !tournament_id) { toast('Choose a match first.'); return; }
+  const targetText = audience_type === 'match' ? 'only players registered for this match' : 'all BattleForge users';
+  if (!window.confirm(`Send this notification to ${targetText}?`)) return;
   button.disabled = true; button.textContent = 'Sending…';
   try {
-    const { data, error } = await supabase.rpc('admin_broadcast_notification', { p_title: title, p_message: message });
+    const { data, error } = await supabase.functions.invoke('send-push-notification', {
+      body: { title, message, audience_type, tournament_id }
+    });
     if (error) throw error;
+    if (data?.error) throw new Error(data.error);
     $('#adminBroadcastTitle').value = ''; $('#adminBroadcastMessage').value = '';
-    if (status) status.textContent = 'Announcement published to all users.';
-    toast('Announcement sent to all users.');
+    if (status) status.textContent = data?.pushConfigured === false
+      ? 'Saved in the in-app feed. Finish Firebase setup to enable phone push delivery.'
+      : `Notification saved. Push sent to ${Number(data?.sent || 0)} device(s).`;
+    toast(data?.pushConfigured === false ? 'Saved in-app; phone push setup is still required.' : 'Notification sent.');
+    await refreshData(); await loadAdminBroadcasts();
   } catch (error) {
-    console.error('Broadcast failed', error);
-    if (status) status.textContent = 'Could not send: ' + (error?.message || 'check notification migration');
-    toast('Announcement failed. Check the notification setup.');
-  } finally { button.disabled = false; button.textContent = 'Send to all users'; }
+    console.error('Push notification failed', error);
+    if (status) status.textContent = 'Could not send: ' + (error?.message || 'check push notification setup');
+    toast('Notification failed. Check setup and try again.');
+  } finally { button.disabled = false; button.textContent = 'Send notification'; }
 }
 
 function syncAdminSelectedSummary() {
