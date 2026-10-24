@@ -14,3 +14,23 @@ begin
 end; $$;
 revoke all on function public.create_deposit_request(numeric,text,text) from public,anon;
 grant execute on function public.create_deposit_request(numeric,text,text) to authenticated;
+
+-- Admin-only payment-request deletion; no reason is required. Paid withdrawals remain audit-protected.
+create or replace function public.admin_delete_payment_request(p_kind text,p_request_id uuid) returns boolean language plpgsql security definer set search_path=public,auth,pg_temp as $$
+declare s text;
+begin
+ if auth.uid() is null or not public.is_battleforge_admin() then raise exception 'Admin access required'; end if;
+ if p_request_id is null then raise exception 'Request ID is required'; end if;
+ if lower(trim(p_kind))='deposit' then
+  delete from public.deposit_requests where id=p_request_id returning status into s;
+  if not found then raise exception 'Deposit transaction not found'; end if;
+ elsif lower(trim(p_kind))='withdrawal' then
+  select status into s from public.withdrawal_requests where id=p_request_id for update;
+  if not found then raise exception 'Withdrawal transaction not found'; end if;
+  if s='paid' then raise exception 'Paid withdrawals are retained for financial audit'; end if;
+  delete from public.withdrawal_requests where id=p_request_id;
+ else raise exception 'Kind must be deposit or withdrawal'; end if;
+ return true;
+end; $$;
+revoke all on function public.admin_delete_payment_request(text,uuid) from public,anon;
+grant execute on function public.admin_delete_payment_request(text,uuid) to authenticated;
