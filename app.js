@@ -34,9 +34,14 @@ function toast(message) {
 }
 function modal(html) {
   $('#modalContent').innerHTML = html;
+  $('#modal').classList.toggle('profile-modal', html.includes('profile-sheet'));
   $('#modal').classList.remove('hidden');
+  if (html.includes('profile-sheet')) {
+    const card = $('#modal .modal-card');
+    if (card) card.scrollTop = 0;
+  }
 }
-function close() { $('#modal').classList.add('hidden'); }
+function close() { $('#modal').classList.add('hidden'); $('#modal').classList.remove('profile-modal'); }
 function setPage(tab) {
   const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules','leaderboard'].includes(tab) ? tab : 'arena');
   document.querySelectorAll('.page-view').forEach(page => page.classList.toggle('active', page.dataset.page === target));
