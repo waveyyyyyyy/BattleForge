@@ -434,7 +434,500 @@ async function showProfile() {
   modal(`<div class="profile-sheet"><div class="profile-top"><img id="profileAvatarPreview" class="profile-photo" src="${esc(a.avatar_url||'')}" alt="Profile photo" onerror="this.style.display='none'"><div><div class="eyebrow">PLAYER PROFILE</div><h2>${esc(a.username||currentUser.user_metadata?.full_name||'Player')}</h2><p>Player ID <b>${esc(a.player_number||'Loading')}</b></p></div></div>
   <div class="profile-metrics"><div><small>TOTAL BALANCE</small><b>₹${(Number(w.deposited_balance||0)+Number(w.earned_balance||0)).toFixed(2)}</b></div><div><small>ENTRY-FEE CREDITS</small><b>₹${Number(w.deposited_balance||0).toFixed(2)}</b></div><div><small>MATCH EARNINGS</small><b>₹${Number(w.earned_balance||0).toFixed(2)}</b></div><div><small>MATCH RESULTS</small><b>${resultRows.length}</b></div><div><small>WINS / KILLS</small><b>${wins} / ${kills}</b></div><div><small>WITHDRAWALS</small><b>${withdrawals.length}</b></div></div>
   <details class="profile-block profile-accordion" open><summary>Edit profile</summary><label class="field">USERNAME (LETTERS, NUMBERS, UNDERSCORES)<input id="profileUsername" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]{3,24}" value="${esc(a.username||'')}" placeholder="ChooseUniqueName" autocomplete="nickname"></label><p class="profile-help">${Number(a.username_change_count||0)===0?'Your first username change is free.':'Each additional username change costs ₹5 from entry-fee-only credits.'} Only letters, numbers, and underscores; no spaces or other special characters.</p><label class="field">PROFILE PHOTO<input id="profilePhotoFile" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="savePlayerProfile" class="join full">Save profile</button><p id="profileSaveStatus" class="profile-help"></p></section>
-  </details><details cl
-... (output truncated, full output saved to: /mnt/files/.composio/output/exec_took_stdout.txt)
-To view the full output, run code: open('/mnt/files/.composio/output/exec_took_stdout.txt').read()
-Or use COMPOSIO_BASH_TOOL: 'cat /mnt/files/.composio/output/exec_took_stdout.txt' / 'head -n 100 /mnt/files/.composio/output/exec_took_stdout.txt' / 'tail -n 100 /mnt/files/.composio/output/exec_took_stdout.txt'
+  </details><details class="profile-block profile-accordion"><summary>Referral centre</summary><p>Your code: <b>${esc(a.player_number||'—')}</b></p><label class="field">YOUR REFERRAL LINK<input id="profileReferralLink" readonly value="${esc(referralLink)}"></label><button id="copyProfileReferral" class="outline full">Copy referral link</button><div class="profile-metrics"><div><small>INVITED PLAYERS</small><b>${totalReferrals}</b></div><div><small>REWARDS EARNED</small><b>${rewarded} · ₹${(rewarded*5).toFixed(2)}</b></div><div><small>WAITING FOR FIRST PAID WITHDRAWAL</small><b>${totalReferrals-rewarded}</b></div></div><p class="profile-help">₹5 referral rewards are credited as non-withdrawable entry-fee balance after a referred player completes their first withdrawal.</p></section>
+  </details><details class="profile-block profile-accordion"><summary>Full activity history</summary><div class="profile-history">${led.length?led.map(x=>`<div class="profile-history-row"><div><b>${esc(x.entry_type||'Wallet activity')}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.note?' · '+esc(x.note):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No wallet activity recorded yet.</p>'}</div></section>
+  </details><details class="profile-block profile-accordion"><summary>Deposit history</summary><div class="profile-history">${(depositHistory||[]).length?(depositHistory||[]).map(x=>`<div class="profile-history-row"><div><b>${esc(String(x.status||'pending').toUpperCase())}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.payment_reference?' · Ref '+esc(x.payment_reference):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No deposit requests yet.</p>'}</div></section>
+  </details><details class="profile-block profile-accordion"><summary>Withdrawal history</summary><div class="profile-history">${withdrawals.length?withdrawals.map(x=>`<div class="profile-history-row"><div><b>${esc(String(x.status||'pending').toUpperCase())}</b><small>${esc(new Date(x.created_at).toLocaleString())} · Fee ₹${Number(x.fee_amount||0).toFixed(2)}</small></div><b>₹${Number(x.net_amount??x.amount??0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No withdrawal requests yet.</p>'}</div></section>
+  </details><details class="profile-block profile-accordion"><summary>Match results history</summary><div class="profile-history">${resultRows.length?resultRows.map(x=>`<div class="profile-history-row"><div><b>${x.placement?'Place #'+Number(x.placement):'Result published'} · ${Number(x.kills||0)} kills</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.note?' · '+esc(x.note):''}</small></div></div>`).join(''):'<p class="profile-help">No published results yet. Your tournament registrations are available under History.</p>'}</div></details><details class="profile-block profile-accordion"><summary>Rules, wallet & support</summary><div class="profile-rules"><p><b>01 · Correct IGN:</b> register with the exact Free Fire in-game name you will use in the match.</p><p><b>02 · Respect timing:</b> join the published room on time and follow organiser lobby instructions.</p><p><b>03 · Fair play only:</b> no hacks, cheats, exploits, teaming outside the selected format, harassment, or deliberate match disruption.</p><p><b>04 · Protect your account:</b> never share passwords, login codes, or OTPs. BattleForge will not ask for them.</p><p><b>05 · Read match notes:</b> each tournament can have its own map, schedule, scoring, lobby, and disqualification rules.</p><p><b>06 · Results & disputes:</b> follow organiser instructions for screenshots, score reporting, and result review; organiser decisions are final.</p><p><b>Wallet & withdrawals:</b> registrations and results are managed online. Wallet funds are credited after verification; deposits and withdrawals are manually reviewed. Withdrawal fee is 2%, so check the net payout before confirming.</p><a class="support-cta" href="https://t.me/battleforgeff" target="_blank" rel="noopener noreferrer"><span>✦</span><div><b>BattleForge support</b><small>Get help on Telegram</small></div><span>↗</span></a></div></details>
+  <button id="signOutBtn" class="outline full">Log out</button><button id="switchAccountBtn" class="outline full">Switch account</button></div>`);
+  $('#copyProfileReferral')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(referralLink);toast('Referral link copied!')}catch{toast(referralLink)}});
+  $('#savePlayerProfile')?.addEventListener('click',savePlayerProfile);
+}
+async function savePlayerProfile() {
+  const button=$('#savePlayerProfile'), status=$('#profileSaveStatus');
+  const username=($('#profileUsername')?.value||'').trim(); const file=$('#profilePhotoFile')?.files?.[0];
+  if(!/^[A-Za-z0-9_]{3,24}$/.test(username)){toast('Username must be 3–24 letters, numbers, or underscores only.');return;}
+  button.disabled=true; button.textContent='Saving…';
+  try {
+    let avatarUrl;
+    if(file){
+      if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>3*1024*1024) throw new Error('Choose a JPG, PNG, or WebP image up to 3 MB.');
+      const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+      const path=currentUser.id+'/'+Date.now()+'.'+ext;
+      const {error:uploadError}=await supabase.storage.from('player-avatars').upload(path,file,{upsert:true,contentType:file.type}); if(uploadError) throw uploadError;
+      const {data:urlData}=supabase.storage.from('player-avatars').getPublicUrl(path); avatarUrl=urlData.publicUrl;
+    }
+    if(!await usernameIsAvailable(username)){const msg='Username not available. Please choose another.';if(status)status.textContent=msg;toast(msg);return;}
+    const {error}=await supabase.rpc('update_player_profile',{p_username:username,p_avatar_url:avatarUrl||null});
+    if(error){if(/duplicate|unique|username.*taken|already exists/i.test(String(error.message||'')))throw new Error('Username not available. Please choose another.');throw error;}
+    if(status) status.textContent='Profile saved.'; toast('Profile updated!'); await refreshData(); await showProfile();
+  } catch(error){console.error('Profile update failed',error);toast(error?.message||'Could not save profile.');if(status)status.textContent=error?.message||'Could not save profile.';}
+  finally{if(button){button.disabled=false;button.textContent='Save profile';}}
+}
+function showNotifications() {
+  const items=window.battleForgeBroadcasts||[];
+  const seen=read('bf_notifications_seen_ids',[]); const ids=Array.isArray(seen)?seen.map(String):[];
+  modal(`<div class="notification-sheet"><div class="eyebrow">BATTLEFORGE UPDATES</div><h2>Notifications</h2><p class="profile-help">Announcements from the BattleForge admins.</p>${items.length?items.map(n=>`<article class="notification-card ${ids.includes(String(n.id))?'':'unread'}"><div class="notification-card-top"><b>${esc(n.title)}</b><small>${esc(new Date(n.created_at).toLocaleString())}</small></div><p>${esc(n.message)}</p></article>`).join(''):'<div class="empty-state"><span>♢</span><h3>You’re all caught up</h3><p>Admin announcements will appear here.</p></div>'}<button id="markNotificationsRead" class="join full">Mark all as read</button></div>`);
+  $('#markNotificationsRead')?.addEventListener('click',()=>{localStorage.setItem('bf_notifications_seen_ids',JSON.stringify(items.map(n=>String(n.id))));updateNotificationBadge();close();toast('Notifications marked as read.');});
+}
+function updateNotificationBadge(){const items=window.battleForgeBroadcasts||[];const seen=read('bf_notifications_seen_ids',[]);const unread=items.filter(n=>!seen.map(String).includes(String(n.id))).length;const badge=$('#notificationBadge');if(badge){badge.textContent=unread>99?'99+':String(unread);badge.classList.toggle('hidden',unread===0);}}
+async function loadLeaderboard(period = leaderboardPeriod) {
+  leaderboardPeriod = period; const target = $('#leaderboardContent'); if (!target) return; target.innerHTML = '<p class="notice">Loading leaderboard…</p>';
+  document.querySelectorAll('[data-lb-period]').forEach(b => { const active = b.dataset.lbPeriod === period; b.classList.toggle('join', active); b.classList.toggle('outline', !active); });
+  const { data, error } = await supabase.rpc('get_earnings_leaderboard', { p_period: period });
+  if (error) { console.warn('Leaderboard unavailable', error); target.innerHTML = '<p class="notice">Leaderboard is not available yet. Please try again later.</p>'; return; }
+  const rows = Array.isArray(data) ? data : [];
+  target.innerHTML = rows.length ? rows.map((r,i) => `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player"><b>${esc(String(r.username || '').trim() || ('Player '+(r.player_number || '')))}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}</small></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
+}
+
+async function showHistory() {
+  const target = $('#historyContent'); if (!target) return;
+  if (!currentUser) { target.innerHTML='<div class="empty-state"><span>◷</span><h3>Past matches</h3><p>Sign in to view match archives and results.</p><button id="historySignIn" class="join">Sign in</button></div>'; return; }
+  target.innerHTML='<p class="notice">Loading past matches…</p>';
+  const {data: matches, error}=await supabase.from('tournaments').select('id,title,game_mode,starts_at,created_at,description,is_past_match').eq('is_past_match',true).order('starts_at',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false});
+  if(error){target.innerHTML='<p class="notice">Past Matches needs the latest BattleForge database migration. Please try again after it is applied.</p>';return;}
+  if(!matches?.length){target.innerHTML='<div class="empty-state"><span>🏆</span><h3>No past matches yet</h3><p>Matches will appear here when an admin moves them to Past Matches.</p></div>';return;}
+  const {data: publishedResults}=await supabase.from('tournament_results').select('tournament_id,placement,kills,note,earned_points,created_at').eq('user_id',currentUser.id).eq('published',true);
+  const mine=publishedResults||[];
+  target.innerHTML=matches.map(t=>{const r=mine.find(x=>String(x.tournament_id)===String(t.id));return `<button type="button" class="history-card past-match-card" data-past-match="${esc(t.id)}"><div class="history-card-top"><span class="history-symbol">✦</span><span class="status-chip">${r?'RESULTS PUBLISHED':'PENDING RESULTS'}</span></div><h3>${esc(t.title)}</h3><p class="history-meta">${esc(t.game_mode||'MATCH')} · ${esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Date not set')}</p><div class="result-banner"><small>${r?'YOUR RESULT':'RESULT STATUS'}</small><b>${r?((r.placement?'Rank #'+Number(r.placement)+' · ':'')+Number(r.kills||0)+' kills · '+Number(r.earned_points||0)+' points earned'):'Pending Results'}</b><p>Tap to view match details ↗</p></div></button>`}).join('');
+}
+
+async function openPastMatchDetails(id) {
+  if(!currentUser) return showAuth();
+  const {data:t,error}=await supabase.from('tournaments').select('id,title,game_mode,starts_at,description,is_past_match').eq('id',Number(id)).eq('is_past_match',true).maybeSingle();
+  if(error||!t){toast('Could not load this past match.');return;}
+  const {data:results}=await supabase.from('tournament_results').select('user_id,placement,kills,note,earned_points,published,created_at').eq('tournament_id',Number(id)).eq('published',true).order('placement',{ascending:true,nullsFirst:false});
+  const rows=results||[];
+  const {data:profiles}=rows.length?await supabase.from('profiles').select('id,display_name').in('id',rows.map(r=>r.user_id)): {data:[]};
+  const names=Object.fromEntries((profiles||[]).map(p=>[p.id,p.display_name]));
+  const mine=rows.find(r=>r.user_id===currentUser.id);
+  modal(`<div class="match-detail-sheet"><div class="eyebrow">PAST MATCH DETAILS</div><h2>${esc(t.title)}</h2><p>${esc(t.game_mode||'MATCH')} · ${esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Date not set')}</p>${rows.length?`<div class="result-banner"><small>YOUR PERFORMANCE</small><b>${mine?((mine.placement?'Rank #'+Number(mine.placement)+' · ':'')+Number(mine.kills||0)+' kills'):'No published result for your account'}</b>${mine?.note?`<p>${esc(mine.note)}</p>`:''}</div><h3>Final rankings</h3><div class="past-results-table">${rows.map((r,i)=>`<div class="profile-history-row"><div><b>#${r.placement||'—'} · ${esc(names[r.user_id]||'Player')}</b><small>${Number(r.kills||0)} kills · ${Number(r.earned_points||0)} points earned${r.note?' · '+esc(r.note):''}</small></div>${r.user_id===currentUser.id?'<b>YOU</b>':''}</div>`).join('')}</div>`:'<div class="result-banner"><small>RESULT STATUS</small><b>Pending Results</b><p>The admin has not published the final rankings yet. Check back later.</p></div>'}<button class="outline full" id="pastMatchClose">Close</button></div>`);
+  $('#pastMatchClose')?.addEventListener('click',close);
+}
+
+async function loadAdminRoom() {
+  if (!isAdmin) return;
+  const id = Number($('#adminRoomTournament')?.value || $('#adminTournament')?.value);
+  const selectedTournament = tournaments.find(t => Number(t.id) === id);
+  const descriptionEditor = $('#adminEditDescription');
+  if (descriptionEditor) descriptionEditor.value = selectedTournament?.description ?? '';
+  const roomId = $('#adminRoomId');
+  const roomPassword = $('#adminRoomPassword');
+  const published = $('#adminRoomPublished');
+  if (!id || !roomId || !roomPassword || !published) return;
+  const { data, error } = await supabase.from('tournament_rooms')
+    .select('room_id,room_password,published').eq('tournament_id', id).maybeSingle();
+  if (error) { console.warn('Could not load saved room details', error); return; }
+  roomId.value = data?.room_id ?? '';
+  roomPassword.value = data?.room_password ?? '';
+  published.checked = data?.published ?? false;
+}
+
+async function showAdmin() {
+  if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
+  const { data: adminTournamentRows, error: adminTournamentError } = await supabase.from('tournaments').select('id,title,game_mode,status,is_past_match,starts_at').order('id', { ascending: false });
+  const adminAllTournaments = adminTournamentError ? tournaments : (adminTournamentRows || []);
+  const options = adminAllTournaments.map(t => `<option value="${esc(t.id)}">${esc(t.title)} (${esc(t.game_mode || 'Match')})${t.is_past_match ? ' · Past' : ''}</option>`).join('');
+  const openCount = tournaments.filter(t => t.status === 'open').length;
+  const closedCount = tournaments.filter(t => t.status === 'closed' || t.status === 'full').length;
+  const playerTotal = Object.values(counts).reduce((sum, n) => sum + Number(n || 0), 0);
+  modal(`<div class="admin-dashboard-head"><div class="eyebrow"><span class="live-dot"></span> ORGANISER CONTROL CENTRE</div><h2>Admin dashboard</h2><p>Everything you need to run a match, from one place.</p><div class="admin-section" data-admin-page="players" id="adminPlayerManager"><div class="admin-section-title"><div><h3>Player account manager</h3><p>Search by numeric Player ID, inspect full histories, and adjust balances.</p></div></div><label class="field">PLAYER ID<input id="adminPlayerNumber" type="number" min="1" step="1" placeholder="100001"></label><button id="adminFindPlayer" class="join full">Find player & load full history</button><div id="adminPlayerDetails"></div><div class="admin-form-grid"><label class="field">BALANCE TYPE<select id="adminBalanceBucket"><option value="deposited">Entry-fee-only balance</option><option value="earned">Withdrawable match earnings</option></select></label><label class="field">AMOUNT (+ add / − deduct)<input id="adminBalanceAmount" type="number" step="0.01" placeholder="50 or -20"></label></div><label class="field">REASON / AUDIT NOTE<input id="adminBalanceNote" maxlength="300" placeholder="Correction reason"></label><button id="adminAdjustBalance" class="join full">Apply balance adjustment</button></div><p></p></div>
+    <div class="admin-metrics"><div><small>TOURNAMENTS</small><b>${tournaments.length}</b></div><div><small>OPEN</small><b>${openCount}</b></div><div><small>REGISTRATIONS</small><b>${playerTotal}</b></div><div><small>CLOSED / FULL</small><b>${closedCount}</b></div></div>
+    <div class="admin-section" data-admin-page="payments"><div class="admin-section-title"><span>₹</span><div><h3>Payments & withdrawals</h3><p>Review full request details, verify UPI deposits, credit deposited coins, and mark manually sent withdrawals as paid.</p></div></div><button id="adminLoadPayments" class="join full">Open payment request queue</button><div id="adminPaymentRequests"></div></div><div class="admin-quick-grid admin-home-menu"><button class="admin-quick" data-admin-page-open="create"><span>＋</span><b>Create match</b><small>New tournament setup</small></button><button class="admin-quick" data-admin-page-open="manage"><span>⚙</span><b>Manage matches</b><small>Edit status and rewards</small></button><button class="admin-quick" data-admin-page-open="players"><span>♙</span><b>Search players</b><small>Player lookup & results</small></button><button class="admin-quick" data-admin-page-open="results"><span>🏆</span><b>Match rankings</b><small>Drag ranks, edit kills & prizes</small></button><button class="admin-quick" data-admin-page-open="payments"><span>₹</span><b>Payments</b><small>Deposits & withdrawals</small></button><button class="admin-quick" data-admin-page-open="room"><span>🎮</span><b>Room & lobby</b><small>Room ID and password</small></button><button class="admin-quick" data-admin-page-open="notifications"><span>✉</span><b>Announcements</b><small>Send or delete broadcasts</small></button></div><div class="admin-page-back hidden" id="adminPageBack"><button class="outline" id="adminBackHome">← All admin options</button><span id="adminPageTitle">Admin section</span></div><div class="admin-legacy-quick hidden"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div></div>
+    <div class="admin-section" data-admin-page="notifications" id="adminBroadcastSection"><div class="admin-section-title"><span>✉</span><div><h3>Push notifications</h3><p>Send a phone notification and add it to the in-app notification feed.</p></div></div><label class="field">AUDIENCE<select id="adminBroadcastAudience"><option value="all">All users — announcement</option><option value="match">Players registered for a match</option></select></label><label class="field hidden" id="adminBroadcastMatchWrap">MATCH<select id="adminBroadcastTournament"><option value="">Choose a match</option></select></label><label class="field">NOTIFICATION TITLE<input id="adminBroadcastTitle" maxlength="80" placeholder="Tournament update"></label><label class="field">MESSAGE<textarea id="adminBroadcastMessage" maxlength="1000" rows="4" placeholder="Write your announcement…"></textarea></label><p class="admin-helper">Match alerts go only to registered players. Published room credentials are included in that match push notification. Never send private room details to all users.</p><button id="adminSendBroadcast" class="join full">Send notification</button><div id="adminBroadcastStatus" class="admin-helper" aria-live="polite"></div></div><div class="admin-section-title" data-admin-page="notifications"><div><h3>Manage sent notifications</h3><p>Remove an outdated announcement from every user’s feed.</p></div></div><button id="adminLoadBroadcasts" data-admin-page="notifications" class="outline full">Load sent notifications</button><div id="adminBroadcastList" data-admin-page="notifications"></div>
+    <div id="adminCreateSection" data-admin-page="create" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
+    <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
+    <div class="admin-form-grid"><label class="field">GAME MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label></div>
+    <div class="admin-form-grid"><label class="field">ENTRY FEE (PTS)<input id="adminEntry" type="number" min="0" value="0"></label><label class="field">PER-KILL REWARD (PTS)<input id="adminPerKill" type="number" min="0" value="0"></label><label class="field">DISPLAYED PRIZE POOL (PTS)<input id="adminPrize" type="number" min="0" value="0"></label></div>
+    <label class="field">START TIME (OPTIONAL)<input id="adminStarts" type="datetime-local"></label>
+    <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminDescription" maxlength="5000" rows="5" placeholder="Paste room instructions, start time, scoring, screenshot proof, and disqualification rules…"></textarea></label>
+    <p class="admin-helper">Tip: include the exact start time, room release time, kill scoring, late-entry policy, and what proof players must submit.</p>
+    <button id="adminCreateTournament" class="join full">＋ Create tournament</button></div>
+    <div id="adminManageSection" data-admin-page="manage" class="admin-section"><div class="admin-section-title"><span>02</span><div><h3>Manage tournament</h3><p>Select a match first, then edit its settings.</p></div></div>
+    <label class="field">SELECT TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
+    <button id="adminMarkPastMatch" class="outline full">Move selected match to Past Matches</button><p class="admin-helper">This works even with just one registered player. Players will see Pending Results until you publish the rankings.</p>
+    <div class="admin-current-summary" id="adminSelectedSummary">${tournaments.length ? 'Select a tournament to load its current settings.' : 'No tournaments yet.'}</div>
+    <div class="admin-form-grid"><label class="field">ENTRY FEE (PTS)<input id="adminEditEntry" type="number" min="0" max="1000000"></label><label class="field">PER-KILL REWARD (PTS)<input id="adminEditPerKill" type="number" min="0" max="1000000"></label></div><button id="adminSaveRewards" class="join full">Save entry fee & per-kill reward</button>
+    <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminEditDescription" maxlength="5000" rows="5" placeholder="Player-facing rules and match instructions"></textarea></label>
+    <button id="adminSaveDescription" class="outline full">Save description</button>
+    <div class="admin-form-grid"><label class="field">ENTRY STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label><div class="field"><span>DESTRUCTIVE ACTION</span><button id="adminDeleteTournament" class="outline full danger-button">Delete tournament</button></div></div>
+    <button id="adminSetStatus" class="join full secondary-action">Save entry status</button></div>
+    <div class="admin-section" data-admin-page="room"><div class="admin-section-title"><span>03</span><div><h3>Room & lobby</h3><p>Only publish these details when you are ready.</p></div></div>
+    <label class="field">SELECT MATCH FOR ROOM DETAILS<select id="adminRoomTournament">${options || '<option value="">Create a tournament first</option>'}</select></label><p class="admin-helper">Choose the exact match these room credentials belong to. Only players registered for this match will see them.</p>
+    <label class="field">ROOM ID<input id="adminRoomId" maxlength="80" placeholder="Enter room ID"></label><label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80" placeholder="Enter room password"></label>
+    <label class="admin-check"><input id="adminRoomPublished" type="checkbox"><span><b>Publish room to registered players</b><small>Players will see room details and the eligible roster.</small></span></label>
+    <button id="adminSaveRoom" class="join full">Save room settings</button></div>
+    <div id="adminPlayersSection" data-admin-page="players" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Search players</h3><p>Find a player account by Player ID and manage their account.</p></div></div><button id="adminLoadEntries" class="outline full">Load player search</button><div id="adminEntries" class="admin-entries"></div></div>
+    <div id="adminResultsSection" data-admin-page="results" class="admin-section"><div class="admin-section-title"><span>🏆</span><div><h3>Match rankings</h3><p>All registered players appear automatically. Drag to rank, enter kills and total prize, then publish rewards. You can edit results later.</p></div></div><label class="field">SELECT MATCH<select id="adminResultsTournament"><option value="">Choose a match…</option>${options}</select></label><button id="adminLoadResultsRoster" class="join full">Load registered players</button><div id="adminResultsRoster"><p class="admin-helper">Choose a match above, then load the registered players.</p></div></div>
+    <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Confirmed results are visible to players and credit the entered reward to their earned wallet.</p></div>`);
+  $('#detailsCopyRoomId')?.addEventListener('click', async () => { try { const {data}=await supabase.from('tournament_rooms').select('room_id').eq('tournament_id',Number(id)).eq('published',true).maybeSingle(); await navigator.clipboard.writeText(String(data?.room_id||'')); toast('Room ID copied'); } catch { toast('Could not copy room ID'); } });
+  $('#detailsCopyRoomPassword')?.addEventListener('click', async () => { try { const {data}=await supabase.from('tournament_rooms').select('room_password').eq('tournament_id',Number(id)).eq('published',true).maybeSingle(); await navigator.clipboard.writeText(String(data?.room_password||'')); toast('Room password copied'); } catch { toast('Could not copy password'); } });
+  $('#adminQuickJoinReminder')?.addEventListener('click', () => { const a=$('#adminBroadcastAudience'), t=$('#adminBroadcastTitle'), m=$('#adminBroadcastMessage'); if(a) a.value='match'; syncBroadcastAudience(); if(t) t.value='Match starting soon'; if(m) m.value='Your Free Fire match is starting soon. Open BattleForge and get ready to join the room.'; $('#adminBroadcastTournament')?.focus(); });
+  $('#adminSendBroadcast')?.addEventListener('click', sendAdminBroadcast);
+  $('#adminBroadcastAudience')?.addEventListener('change', syncBroadcastAudience);
+  $('#adminLoadBroadcasts')?.addEventListener('click', loadAdminBroadcasts);
+  $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
+  $('#adminResultsTournament')?.addEventListener('change', loadAdminEntries);
+  $('#adminLoadResultsRoster')?.addEventListener('click', loadAdminEntries);
+  $('#adminLoadEntries')?.addEventListener('click', () => openAdminPage('players'));
+  $('#adminRoomTournament')?.addEventListener('change', loadAdminRoom);
+  const adminPages={home:null,create:'Create match',manage:'Manage matches',players:'Search players',results:'Match rankings',payments:'Payments & withdrawals',room:'Room & lobby',notifications:'Announcements'};
+  const openAdminPage=(page)=>{document.querySelectorAll('[data-admin-page]').forEach(el=>el.classList.toggle('hidden',el.dataset.adminPage!==page));document.querySelectorAll('.admin-home-menu').forEach(el=>el.classList.toggle('hidden',page!=='home'));$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=adminPages[page]||'Admin section';};
+  document.querySelectorAll('[data-admin-page-open]').forEach(button=>button.addEventListener('click',()=>openAdminPage(button.dataset.adminPageOpen)));
+  $('#adminBackHome')?.addEventListener('click',()=>openAdminPage('home'));
+  document.querySelectorAll('[data-admin-jump]').forEach(button=>button.addEventListener('click',()=>{const map={adminCreateSection:'create',adminManageSection:'manage',adminPlayersSection:'players'};openAdminPage(map[button.dataset.adminJump]||'home');document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'});}));
+  const roomSelect = $('#adminRoomTournament');
+  if (roomSelect) roomSelect.value = $('#adminTournament')?.value || roomSelect.value;
+  openAdminPage('home');
+  await loadAdminRoom(); syncAdminSelectedSummary();
+}
+
+function syncBroadcastAudience() {
+  const audience = $('#adminBroadcastAudience')?.value || 'all';
+  const wrap = $('#adminBroadcastMatchWrap');
+  const select = $('#adminBroadcastTournament');
+  if (wrap) wrap.classList.toggle('hidden', audience !== 'match');
+  if (select && audience === 'match') {
+    const current = select.value;
+    select.innerHTML = '<option value="">Choose a match</option>' + tournaments.filter(t => !t.is_past_match).map(t => `<option value="${esc(t.id)}">${esc(t.title)}${t.starts_at ? ' · ' + esc(new Date(t.starts_at).toLocaleString()) : ''}</option>`).join('');
+    if (current) select.value = current;
+  }
+}
+
+async function loadAdminBroadcasts() {
+  if (!isAdmin) return; const box = $('#adminBroadcastList'); if (!box) return; box.innerHTML = '<p class="admin-helper">Loading…</p>';
+  const {data,error}=await supabase.from('notification_broadcasts').select('id,title,message,created_at').order('created_at',{ascending:false}).limit(20);
+  if(error){box.innerHTML='<p class="notice">Could not load notifications. Apply the latest database migration.</p>';return;}
+  box.innerHTML=(data||[]).map(n=>`<article class="notification-card"><div class="notification-card-top"><b>${esc(n.title)}</b><small>${esc(new Date(n.created_at).toLocaleString())}</small></div><p>${esc(n.message)}</p><button class="outline danger-button" data-delete-broadcast="${esc(n.id)}">Delete notification</button></article>`).join('')||'<p class="admin-helper">No sent notifications.</p>';
+}
+async function deleteAdminBroadcast(id) {
+  if(!isAdmin || !window.confirm('Delete this announcement from every user’s notification feed?')) return;
+  const {error}=await supabase.rpc('admin_delete_broadcast_notification',{p_notification_id:Number(id)});
+  if(error){console.error('Broadcast deletion failed:',error);const msg=String(error.message||'');toast(/function .*admin_delete_broadcast_notification.*does not exist|could not find the function|schema cache/i.test(msg)?'Database migration missing. Apply 202610240001_leaderboard_notification_controls.sql in Supabase.':'Could not delete notification: '+msg);return;}
+  window.battleForgeBroadcasts=(window.battleForgeBroadcasts||[]).filter(n=>String(n.id)!==String(id)); updateNotificationBadge(); await loadAdminBroadcasts(); toast('Notification deleted.');
+}
+
+async function sendAdminBroadcast() {
+  if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
+  const title = ($('#adminBroadcastTitle')?.value || '').trim();
+  const message = ($('#adminBroadcastMessage')?.value || '').trim();
+  const audience_type = $('#adminBroadcastAudience')?.value || 'all';
+  const tournament_id = audience_type === 'match' ? Number($('#adminBroadcastTournament')?.value) : null;
+  const status = $('#adminBroadcastStatus');
+  const button = $('#adminSendBroadcast');
+  if (!title || !message) { toast('Enter a title and message first.'); return; }
+  if (audience_type === 'match' && !tournament_id) { toast('Choose a match first.'); return; }
+  const targetText = audience_type === 'match' ? 'only players registered for this match' : 'all BattleForge users';
+  if (!window.confirm(`Send this notification to ${targetText}?`)) return;
+  button.disabled = true; button.textContent = 'Sending…';
+  try {
+    const { data, error } = await supabase.functions.invoke('send-push-notification', {
+      body: { title, message, audience_type, tournament_id }
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    $('#adminBroadcastTitle').value = ''; $('#adminBroadcastMessage').value = '';
+    if (status) status.textContent = data?.pushConfigured === false
+      ? 'Saved in the in-app feed. Finish Firebase setup to enable phone push delivery.'
+      : `Notification saved. Push sent to ${Number(data?.sent || 0)} device(s).`;
+    toast(data?.pushConfigured === false ? 'Saved in-app; phone push setup is still required.' : 'Notification sent.');
+    await refreshData(); await loadAdminBroadcasts();
+  } catch (error) {
+    console.error('Push notification failed', error);
+    if (status) status.textContent = 'Could not send: ' + (error?.message || 'check push notification setup');
+    toast('Notification failed. Check setup and try again.');
+  } finally { button.disabled = false; button.textContent = 'Send notification'; }
+}
+
+function syncAdminSelectedSummary() {
+  const id = Number($('#adminTournament')?.value);
+  const t = tournaments.find(item => Number(item.id) === id);
+  const el = $('#adminSelectedSummary');
+  if (!el) return;
+  if (!t) { el.textContent = 'Select a tournament to load its current settings.'; return; }
+  const count = Number(counts[String(id)] ?? 0);
+  const status = String(t.status || 'open').toUpperCase();
+  el.innerHTML = `<div><b>${esc(t.title)}</b><small>${esc(t.game_mode || 'SOLO')} · ${count}/${Number(t.max_players || 0)} players</small></div><span class="status-chip">${esc(status)}</span><div><small>ENTRY FEE</small><b>${Number(t.entry_points || 0)} pts</b></div><div><small>PER KILL</small><b>${Number(t.per_kill_points || 0)} pts</b></div><div><small>PRIZE DISPLAY</small><b>${Number(t.prize_pool_points || 0)} coins</b></div>`;
+  if ($('#adminEditDescription')) $('#adminEditDescription').value = t.description || '';
+  if ($('#adminEditEntry')) $('#adminEditEntry').value = Number(t.entry_points || 0);
+  if ($('#adminEditPerKill')) $('#adminEditPerKill').value = Number(t.per_kill_points || 0);
+  if ($('#adminStatus')) $('#adminStatus').value = ['open','closed','full'].includes(t.status) ? t.status : 'open';
+}
+
+async function loadAdminEntries() {
+  if (!isAdmin) { toast('Admin access required.'); return; }
+  const selector = $('#adminResultsTournament') || $('#adminTournament');
+  const id = Number(selector?.value);
+  if (!id) { toast('Choose a match to rank first.'); return; }
+  const list = $('#adminResultsRoster') || $('#adminEntries');
+  if (!list) return;
+  list.innerHTML = '<p class="admin-helper">Loading registered players and saved results…</p>';
+  const [{ data: entries, error }, { data: saved, error: savedError }] = await Promise.all([
+    supabase.rpc('admin_list_tournament_entries', { p_tournament_id: id }),
+    supabase.from('tournament_results').select('entry_id,placement,kills,earned_points,published').eq('tournament_id', id)
+  ]);
+  if (error) { list.innerHTML = `<p class="notice">${esc(error.message)}</p>`; return; }
+  if (savedError) { list.innerHTML = `<p class="notice">Could not load saved rankings: ${esc(savedError.message)}</p>`; return; }
+  if (!entries?.length) { list.innerHTML = '<p class="notice">No registered players found. You can still prepare ranking placeholders, but rewards can only be sent to verified registered accounts.</p><div id="adminRankingRows" class="admin-ranking-rows"></div><button id="adminAddRankingPlaceholder" class="outline full">＋ Add placeholder player (—)</button><button id="adminConfirmAllResults" class="join full" disabled>Publish / update rankings & prizes</button>'; $('#adminAddRankingPlaceholder')?.addEventListener('click',()=>addRankingPlaceholder()); return; }
+  const resultByEntry = new Map((saved || []).map(r => [String(r.entry_id), r]));
+  const ordered = [...entries].sort((a,b) => {
+    const ar=resultByEntry.get(String(a.entry_id))?.placement, br=resultByEntry.get(String(b.entry_id))?.placement;
+    return (ar ?? 999999)-(br ?? 999999) || new Date(a.created_at||0)-new Date(b.created_at||0);
+  });
+  list.innerHTML = `<p class="notice">${(saved||[]).some(r=>r.published) ? 'Published results loaded. Changes can be saved again; wallet credits will be adjusted by the difference.' : 'Pending Results — arrange every player before publishing.'} Drag the ☰ handle to reorder.</p>
+    <div class="admin-ranking-head"><span>RANK / PLAYER</span><span>KILLS</span><span>TOTAL PRIZE (PTS)</span></div>
+    <div id="adminRankingRows" class="admin-ranking-rows">${ordered.map((e,i)=>{const r=resultByEntry.get(String(e.entry_id))||{};return `<div class="admin-ranking-row" draggable="true" data-result-row="${esc(e.entry_id)}" data-ign="${esc(e.in_game_name)}"><div class="ranking-player-cell"><span class="ranking-drag" aria-label="Drag to reorder">☰</span><span class="ranking-bracket">[${i+1}]</span><div><b>${esc((e.in_game_name||'').trim() || '-')}</b><small>${r.published?'Published':'Pending Results'}</small></div></div><label class="ranking-input"><span>Kills</span><input aria-label="Kills for ${esc(e.in_game_name)}" class="result-kills" type="number" min="0" step="1" value="${Number(r.kills||0)}"></label><label class="ranking-input"><span>Total prize</span><input aria-label="Total prize for ${esc(e.in_game_name)}" class="result-reward" type="number" min="0" max="1000000" step="1" value="${Number(r.earned_points||0)}"></label><input class="result-rank" type="hidden" value="${i+1}"></div>`}).join('')}</div>
+    <label class="field">ADMIN NOTE (OPTIONAL)<input id="adminBulkResultNote" maxlength="500" placeholder="Verified by screenshot"></label>
+    <button id="adminAddRankingPlaceholder" class="outline full">＋ Add placeholder player (—)</button><button id="adminConfirmAllResults" class="join full">Publish / update rankings & prizes</button>
+    <p class="notice">Each prize is the total points to credit. Re-publishing updates the final result and credits/debits only the difference, preventing duplicate payouts.</p>`;
+  const rowsBox=$('#adminRankingRows'); let dragged=null;
+  rowsBox.querySelectorAll('.admin-ranking-row').forEach(row=>{
+    row.addEventListener('dragstart',e=>{dragged=row;row.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+    row.addEventListener('dragend',()=>{row.classList.remove('dragging');dragged=null;syncRankingPositions();});
+    row.addEventListener('dragover',e=>{e.preventDefault();if(!dragged||dragged===row)return;const rect=row.getBoundingClientRect();rowsBox.insertBefore(dragged,e.clientY<rect.top+rect.height/2?row:row.nextSibling);});
+  });
+  syncRankingPositions();
+  $('#adminAddRankingPlaceholder')?.addEventListener('click',()=>addRankingPlaceholder());
+}
+function addRankingPlaceholder(){const box=$('#adminRankingRows');if(!box)return;const row=document.createElement('div');row.className='admin-ranking-row ranking-placeholder';row.dataset.resultRow='';row.dataset.ign='—';row.innerHTML='<div class="ranking-player-cell"><span class="ranking-drag">☰</span><span class="ranking-bracket">[—]</span><div><b>—</b><small>Placeholder — not linked to a player account</small></div></div><label class="ranking-input"><span>Kills</span><input class="result-kills" type="number" min="0" value="0"></label><label class="ranking-input"><span>Total prize</span><input class="result-reward" type="number" min="0" value="0"></label><input class="result-rank" type="hidden"><button type="button" class="outline" data-remove-placeholder>Remove</button>';box.appendChild(row);row.querySelector('[data-remove-placeholder]').addEventListener('click',()=>{row.remove();syncRankingPositions();});syncRankingPositions();
+}
+function syncRankingPositions(){const rows=[...document.querySelectorAll('#adminRankingRows .admin-ranking-row')];rows.forEach((row,i)=>{row.querySelector('.ranking-bracket').textContent=`[${i+1}]`;row.querySelector('.result-rank').value=String(i+1);});}
+async function publishBulkResults(button) {
+  if (!isAdmin) return toast('Admin access required.');
+  const tournamentId = Number(($('#adminResultsTournament')||$('#adminTournament'))?.value);
+  const rows = [...document.querySelectorAll('#adminRankingRows [data-result-row]')];
+  if (!tournamentId || !rows.length) return toast('Choose a match and load its players first.');
+  if(rows.some(row=>!row.dataset.resultRow)){return toast('Remove the — placeholder rows or replace them with a registered player. Rewards require a verified player account.');}
+  const results = rows.map((row,i) => ({entry_id:row.dataset.resultRow,placement:i+1,kills:Number(row.querySelector('.result-kills').value),reward:Number(row.querySelector('.result-reward').value),in_game_name:row.dataset.ign,note:$('#adminBulkResultNote')?.value.trim()||''}));
+  if(results.some(r=>!Number.isInteger(r.kills)||r.kills<0||!Number.isInteger(r.reward)||r.reward<0||r.reward>1000000))return toast('Kills and total prize must be whole non-negative numbers.');
+  if(!confirm(`Publish/update rankings for ${results.length} players? Total prize credit: ${results.reduce((n,r)=>n+r.reward,0).toLocaleString()} points. Existing prizes will be adjusted, not double-credited.`))return;
+  button.disabled=true;button.textContent='Saving rankings…';
+  const {error}=await supabase.rpc('admin_publish_match_results',{p_tournament_id:tournamentId,p_results:results});
+  button.disabled=false;button.textContent='Publish / update rankings & prizes';
+  if(error)return toast(error.message);
+  toast('Rankings saved and wallet balances reconciled.');await loadAdminEntries();
+}
+
+async function showTournamentDetails(t) {
+  if (!t) return;
+  const id = String(t.id);
+  const has = joined.some(e => String(e.tournament_id) === id);
+  const mode = t.game_mode || t.type || 'SOLO';
+  const entry = Number(t.entry_points ?? t.entry ?? 0);
+  const prize = Number(t.prize_pool_points ?? t.prize ?? 0);
+  const perKill = Number(t.per_kill_points ?? 0);
+  const count = counts[id] ?? joined.filter(e => String(e.tournament_id) === id).length;
+  const starts = t.starts_at ? new Date(t.starts_at).toLocaleString() : 'To be announced';
+  let roomHtml = '';
+  if (has && currentUser) {
+    const { data: room } = await supabase.from('tournament_rooms')
+      .select('room_id,room_password,published').eq('tournament_id', Number(id)).eq('published', true).maybeSingle();
+    if (room?.published) {
+      const { data: roster } = await supabase.rpc('get_tournament_roster', { p_tournament_id: Number(id) });
+      roomHtml = '<div class="room-card"><small class="room-label">MATCH ROOM</small><div class="room-value">ID <b>' + esc(room.room_id || 'Not set') + '</b></div><div class="room-value">Password <b>' + esc(room.room_password || 'Not set') + '</b></div>' +
+        (roster?.length ? '<div class="roster"><strong>PLAYER LOBBY · ' + roster.length + '</strong><div class="roster-chips">' + roster.map((p, i) => '<span class="player-chip"><i>' + (i + 1) + '</i>' + esc(p.in_game_name) + '</span>').join('') + '</div></div>' : '') + '</div>';
+    }
+  }
+  const full = t.status === 'full' || count >= Number(t.max_players);
+  const canJoin = currentUser && !has && !full && t.status === 'open';
+  modal('<div class="detail-hero"><span class="tag">' + esc(mode) + ' ARENA</span><h2>' + esc(t.title) + '</h2><p>' + esc((t.status || 'open').toUpperCase()) + ' · Competitive Free Fire tournament</p></div>' +
+    '<div class="detail-stats"><div><small>ENTRY FEE</small><b>' + entry + ' <i>PTS</i></b></div><div><small>PER KILL</small><b>' + perKill + ' <i>PTS</i></b></div><div><small>PRIZE POOL</small><b>' + prize + ' <i>PTS</i></b></div><div><small>PLAYERS</small><b>' + count + '/' + Number(t.max_players) + '</b></div></div>' +
+    '<div class="detail-info"><div><span>🕒</span><section><small>START TIME</small><b>' + esc(starts) + '</b></section></div><div><span>🎮</span><section><small>GAME MODE</small><b>' + esc(mode) + '</b></section></div><div><span>👥</span><section><small>REGISTRATION</small><b>' + (has ? 'You are registered' : full ? 'Tournament full' : t.status === 'open' ? 'Open to join' : 'Registration closed') + '</b></section></div></div>' +
+    '<section class="match-rules"><div class="rules-heading"><div><small>ORGANISER NOTES</small><h3>Match description & rules</h3></div><button id="detailsCopyRules" class="outline" '+(t.description ? '' : 'disabled')+'>Copy rules</button></div><div class="match-rules-copy">'+esc(t.description || 'The organiser has not added custom match instructions yet. Please check back before the match.')+'</div></section>' +
+    roomHtml +
+    (canJoin ? '<button id="detailsJoin" class="join full">Join tournament · ' + entry + ' pts</button>' : has ? '<button class="join full" disabled>REGISTERED ✓</button>' : !currentUser ? '<button id="detailsSignIn" class="join full">Sign in to join</button>' : '<button class="join full" disabled>' + (full ? 'TOURNAMENT FULL' : 'REGISTRATION CLOSED') + '</button>'));
+  $('#detailsJoin')?.addEventListener('click', () => startJoin(t));
+  $('#detailsSignIn')?.addEventListener('click', showAuth);
+}
+function startJoin(tournament) {
+  if (!currentUser) { showAuth(); return; }
+  const already = joined.some(x => String(x.tournament_id) === String(tournament.id));
+  if (already) { toast('You are already registered.'); return; }
+  modal('<h2>Register for ' + esc(tournament.title) + '</h2><p>Registration will be saved to the BattleForge database. Entry fees must be enabled in the server wallet before charging players.</p><label class="field">FREE FIRE IN-GAME NAME<input id="ign" maxlength="24" minlength="2" placeholder="Your IGN"></label><button id="confirmJoin" class="join full">Confirm online registration</button>');
+  $('#confirmJoin').onclick = async () => {
+    const ign = $('#ign').value.trim();
+    if (ign.length < 2 || ign.length > 24) { toast('IGN must be 2–24 characters.'); return; }
+    const confirm = $('#confirmJoin');
+    confirm.disabled = true;
+    const { error } = await supabase.rpc('join_tournament', {
+      p_tournament_id: Number(tournament.id),
+      p_in_game_name: ign
+    });
+    confirm.disabled = false;
+    if (error) { toast(error.message); return; }
+    close();
+    await refreshData();
+    toast('Online tournament registration confirmed!');
+  };
+}
+$('#tournaments').addEventListener('click', async e => {
+  const joinButton = e.target.closest('[data-join]');
+  if (joinButton) {
+    const tournament = tournaments.find(t => String(t.id) === joinButton.dataset.join);
+    if (tournament) startJoin(tournament);
+    return;
+  }
+  const card = e.target.closest('[data-detail]');
+  if (card) {
+    const tournament = tournaments.find(t => String(t.id) === card.dataset.detail);
+    if (tournament) await showTournamentDetails(tournament);
+  }
+});
+$('#tournaments').addEventListener('keydown', async e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-detail]')) {
+    e.preventDefault();
+    const tournament = tournaments.find(t => String(t.id) === e.target.dataset.detail);
+    if (tournament) await showTournamentDetails(tournament);
+  }
+});
+$('#closeModal').onclick = close;
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') close(); });
+$('#profileBtn').onclick = showProfile; $('#notificationBell')?.addEventListener('click', showNotifications);
+$('#openDeposit')?.addEventListener('click', showDepositForm);
+$('#openWithdrawal')?.addEventListener('click', showWithdrawalForm);
+$('#refreshPaymentRequests')?.addEventListener('click', loadPaymentRequests);
+$('#adminBtn').onclick = showAdmin;
+$('#modalContent').addEventListener('submit', async e => {
+  if (e.target.id === 'depositRequestForm' || e.target.id === 'withdrawalRequestForm') {
+    e.preventDefault();
+    await createPaymentRequest(e.target.id === 'depositRequestForm' ? 'deposit' : 'withdrawal');
+  }
+});
+$('#modalContent').addEventListener('click', async e => {
+  const deleteBroadcast = e.target.closest('[data-delete-broadcast]'); if (deleteBroadcast) await deleteAdminBroadcast(deleteBroadcast.dataset.deleteBroadcast);
+  if (e.target.id === 'copyDepositUpi') { try { await navigator.clipboard.writeText(RECEIVING_UPI_ID); toast('UPI ID copied.'); } catch { toast('UPI ID: '+RECEIVING_UPI_ID); } }
+  if (e.target.id === 'createDepositRequest' && e.target.form?.id !== 'depositRequestForm') await createPaymentRequest('deposit');
+  if (e.target.id === 'createWithdrawalRequest' && e.target.form?.id !== 'withdrawalRequestForm') await createPaymentRequest('withdrawal');
+  if (e.target.id === 'googleSignInBtn') await googleSignIn();
+  if (e.target.id === 'saveRequiredUsername') await saveRequiredUsername();
+  if (e.target.id === 'requiredUsernameLogout') { usernameSetupOpen=false; await supabase.auth.signOut(); close(); await refreshData(); showAuth(); }
+  if (e.target.id === 'signInBtn') await authAction('signin');
+  if (e.target.id === 'signUpBtn') await authAction('signup');
+  if (e.target.id === 'backToSignIn') showAuth();
+  if (e.target.id === 'signOutBtn') {
+    const { error } = await supabase.auth.signOut();
+    if (error) { toast(error.message); return; }
+    close();
+    await refreshData();
+    toast('Logged out successfully.');
+  }
+  if (e.target.id === 'switchAccountBtn') {
+    const { error } = await supabase.auth.signOut();
+    if (error) { toast(error.message); return; }
+    await refreshData();
+    showAuth();
+  }
+});
+$('#modalContent').addEventListener('change', async e => {
+  if (e.target.id === 'adminTournament') await loadAdminRoom();
+});
+$('#modalContent').addEventListener('click', async e => {
+  const button = e.target.closest('button');
+  if (!button) return;
+  if (button.id === 'adminLoadPayments') { await loadAdminPaymentRequests(); return; }
+  if (button.dataset.paymentAction) { await handleAdminPaymentAction(button); return; }
+  if (button.id === 'adminFindPlayer') { if(!isAdmin)return toast('Admin access required.'); const n=Number($('#adminPlayerNumber')?.value); if(!Number.isSafeInteger(n)||n<1)return toast('Enter a valid numeric Player ID.'); button.disabled=true; const box=$('#adminPlayerDetails'); box.textContent='Loading player history…'; const {data,error}=await supabase.rpc('admin_get_player_details',{p_player_number:n}); button.disabled=false; if(error){box.textContent=error.message;return;} window.battleForgeAdminPlayer=data; const hist=(data.wallet_history||[]).map(x=>`<div class=\"activity-row\"><div><b>${esc(x.entry_type)} · ${esc(x.bucket)}</b><small>${esc(x.created_at)} · ${esc(x.note||'')}</small></div><strong>${Number(x.amount||0)>0?'+':''}${Number(x.amount||0).toFixed(2)}</strong></div>`).join(''); const deps=(data.deposits||[]).map(x=>`<div class=\"activity-row\"><div><b>Deposit ₹${Number(x.amount).toFixed(2)}</b><small>${esc(x.status)} · ${esc(x.created_at)} · ${esc(x.id)}</small></div></div>`).join(''); const wds=(data.withdrawals||[]).map(x=>`<div class=\"activity-row\"><div><b>Withdrawal ₹${Number(x.amount).toFixed(2)}</b><small>${esc(x.status)} · ${esc(x.created_at)} · ${esc(x.id)}</small></div><strong>Net ₹${Number(x.net_amount||0).toFixed(2)}</strong></div>`).join(''); box.innerHTML=`<div class=\"room-card\"><h3>Player #${esc(data.player_number)}</h3><p>${esc(data.email||'No email')} · Joined ${esc(data.created_at)}</p><p>Auth UID: ${esc(data.user_id)}</p><p>Referrer Player ID: ${esc(data.referred_by_player_number||'None')}</p><p>Entries: ${Number(data.stats?.entries||0)} · Deposits: ${Number(data.stats?.deposits||0)} · Withdrawals: ${Number(data.stats?.withdrawals||0)} · Paid withdrawals: ${Number(data.stats?.paid_withdrawals||0)}</p><p>Entry-only balance: ₹${Number(data.wallet?.deposited_balance||0).toFixed(2)} · Earned balance: ₹${Number(data.wallet?.earned_balance||0).toFixed(2)} · Total: ₹${Number(data.wallet?.total_balance||0).toFixed(2)}</p></div><h3>Wallet ledger</h3>${hist||'<p>No ledger entries.</p>'}<h3>Deposit history</h3>${deps||'<p>No deposits.</p>'}<h3>Withdrawal history</h3>${wds||'<p>No withdrawals.</p>'}`; return; }
+  if (button.id === 'adminAdjustBalance') { if(!isAdmin)return toast('Admin access required.'); const n=Number($('#adminPlayerNumber')?.value),amount=Number($('#adminBalanceAmount')?.value),bucket=$('#adminBalanceBucket')?.value,note=$('#adminBalanceNote')?.value.trim(); if(!Number.isSafeInteger(n)||n<1||!Number.isFinite(amount)||amount===0||!note||note.length<3)return toast('Enter Player ID, non-zero amount, and reason.'); if(!window.confirm(`Apply ${amount>0?'credit':'deduction'} of ₹${Math.abs(amount).toFixed(2)} to Player #${n} (${bucket})?`))return; button.disabled=true; const {data,error}=await supabase.rpc('admin_adjust_player_balance',{p_player_number:n,p_bucket:bucket,p_amount:amount,p_note:note}); button.disabled=false; if(error)return toast(error.message); toast('Balance adjusted and audit logged.'); $('#adminBalanceAmount').value=''; const find=$('#adminFindPlayer'); if(find) find.click(); return; }
+  if (button.dataset.deletePaymentKind) { if(!isAdmin)return toast('Admin access required.'); const reason=window.prompt('Why are you deleting this request? This is audited.'); if(!reason||reason.trim().length<3)return toast('Enter a reason to delete the request.'); if(!window.confirm('Delete this '+button.dataset.deletePaymentKind+' request? Pending withdrawal funds will be refunded; verified deposits and paid withdrawals cannot be deleted.'))return; button.disabled=true; const {error}=await supabase.rpc('admin_delete_payment_request',{p_kind:button.dataset.deletePaymentKind,p_request_id:button.dataset.requestId,p_note:reason.trim()}); button.disabled=false; if(error)return toast(error.message); toast('Request deleted safely.'); await loadAdminPaymentRequests(); await loadPaymentRequests(); await loadWalletSummary(); return; }
+  if (button.id === 'adminCreateTournament') {
+    if (!isAdmin) return toast('Admin access required.');
+    const title = $('#adminTitle').value.trim();
+    const mode = $('#adminMode').value;
+    const entry = Number($('#adminEntry').value);
+    const perKill = Number($('#adminPerKill').value);
+    const prize = Number($('#adminPrize').value);
+    const max = Number($('#adminMax').value);
+    const startsRaw = $('#adminStarts').value;
+    if (title.length < 3 || !Number.isInteger(entry) || entry < 0 || !Number.isInteger(perKill) || perKill < 0 || !Number.isInteger(prize) || prize < 0 || !Number.isInteger(max) || max < 1 || max > 500) return toast('Check tournament fields.');
+    button.disabled = true;
+    const description = $('#adminDescription').value.trim();
+    const { error } = await supabase.rpc('admin_create_tournament_with_rewards', { p_title:title, p_game_mode:mode, p_entry_points:entry, p_per_kill_points:perKill, p_prize_pool_points:prize, p_max_players:max, p_starts_at:startsRaw ? new Date(startsRaw).toISOString() : null, p_description:description });
+    button.disabled = false;
+    if (error) return toast(error.message);
+    await refreshData(); showAdmin(); toast('Tournament created.');
+  }
+  if (button.id === 'adminSaveRewards') {
+    if (!isAdmin) return toast('Admin access required.');
+    const id = Number($('#adminTournament').value);
+    const entry = Number($('#adminEditEntry').value);
+    const perKill = Number($('#adminEditPerKill').value);
+    if (!id || !Number.isInteger(entry) || entry < 0 || entry > 1000000 || !Number.isInteger(perKill) || perKill < 0 || perKill > 1000000) return toast('Enter valid whole-number amounts.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_update_tournament_rewards', { p_tournament_id:id, p_entry_points:entry, p_per_kill_points:perKill });
+    button.disabled = false;
+    if (error) return toast(error.message);
+    await refreshData(); showAdmin(); toast('Entry fee and per-kill reward updated.'); return;
+  }
+  if (button.id === 'adminSaveDescription') {
+    if (!isAdmin) return toast('Admin access required.');
+    const id = Number($('#adminTournament').value); const description = $('#adminEditDescription').value.trim();
+    if (!id) return toast('Choose a tournament.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_set_tournament_description', { p_tournament_id:id, p_description:description });
+    button.disabled = false; if (error) return toast(error.message);
+    await refreshData(); showAdmin(); toast('Match description saved.'); return;
+  }
+  if (button.id === 'adminSetStatus') {
+    const id = Number($('#adminTournament').value); if (!id) return toast('Choose a tournament.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_set_tournament_status', { p_tournament_id:id, p_status:$('#adminStatus').value });
+    button.disabled = false; if (error) return toast(error.message);
+    await refreshData(); showAdmin(); toast('Tournament status saved.');
+  }
+  if (button.id === 'adminDeleteTournament') {
+    if (!isAdmin) return toast('Admin access required.');
+    const id = Number($('#adminTournament')?.value);
+    if (!id) return toast('Choose a tournament.');
+    const { data: tournament, error: lookupError } = await supabase.from('tournaments').select('id,title,is_past_match').eq('id', id).maybeSingle();
+    if (lookupError || !tournament) return toast(lookupError?.message || 'Choose a valid tournament.');
+    const confirmed = window.confirm('Permanently delete "' + tournament.title + '" and its registrations, room, and results? This cannot be undone.');
+    if (!confirmed) return;
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_delete_tournament', { p_tournament_id: id });
+    button.disabled = false;
+    if (error) return toast(error.message);
+    await refreshData();
+    showAdmin();
+    toast('Tournament and its records deleted.');
+  }
+  if (button.id === 'adminSaveRoom') {
+    const id = Number($('#adminRoomTournament')?.value || $('#adminTournament')?.value); if (!id) return toast('Choose a tournament.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_set_tournament_room', { p_tournament_id:id, p_room_id:$('#adminRoomId').value.trim(), p_room_password:$('#adminRoomPassword').value.trim(), p_published:$('#adminRoomPublished').checked });
+    button.disabled = false; if (error) return toast(error.message);
+    toast('Match room saved. You can update it anytime.');
+    await loadAdminEntries();
+  }
+  if (button.id === 'adminLoadEntries') await loadAdminEntries();
+  if (button.id === 'adminConfirmAllResults') await publishBulkResults(button);
+  if (button.id === 'adminPublishResult') {
+    if (!pendingResultEntry) return toast('Choose a player first.');
+    const placeRaw = $('#resultPlacement').value;
+    const placement = placeRaw === '' ? null : Number(placeRaw);
+    const kills = Number($('#resultKills').value);
+    const note = $('#resultNote').value.trim();
+    if ((placement !== null && (!Number.isInteger(placement) || placement < 1)) || !Number.isInteger(kills) || kills < 0) return toast('Check placement and kills.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_publish_result', { p_entry_id:pendingResultEntry, p_placement:placement, p_kills:kills, p_note:note });
+    button.disabled = false; if (error) return toast(error.message);
+    pendingResultEntry = null; close(); toast('Verified result published to player.');
+  }
+});
+document.querySelectorAll('[data-tab]').forEach(button => button.onclick = () => { setPage(button.dataset.tab); if (button.dataset.tab === 'leaderboard') loadLeaderboard(); });
+document.querySelectorAll('[data-lb-period]').forEach(button => button.addEventListener('click', () => loadLeaderboard(button.dataset.lbPeriod)));
+document.addEventListener('click', e => { if (e.target.closest('button')) playUiSound(); });
+document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => setPage(button.dataset.go)));
+document.querySelector('[data-home]')?.addEventListener('click', event => { event.preventDefault(); setPage('arena'); });
+$('#historySignIn')?.addEventListener('click', showAuth);
+document.addEventListener('click', async event => { const button=event.target.closest('#adminMarkPastMatch'); if(!button)return; if(!isAdmin)return toast('Admin access required.'); const id=Number($('#adminTournament')?.value); if(!id)return toast('Choose a match first.'); button.disabled=true; const {error}=await supabase.rpc('admin_mark_match_past',{p_tournament_id:id}); button.disabled=false; if(error)return toast(error.message); toast('Moved out of Arena. Now load players below to rank them.'); await refreshData(); await showHistory(); const pageButton=document.querySelector('[data-admin-page-open="players"]'); pageButton?.click(); const selector=$('#adminResultsTournament'); if(selector) selector.value=String(id); openAdminPage('results'); await loadAdminEntries(); });
+$('#historyContent')?.addEventListener('click', event => { const match=event.target.closest('[data-past-match]'); if(match){openPastMatchDetails(match.dataset.pastMatch);return;} const button=event.target.closest('[data-go]'); if(button)setPage(button.dataset.go); if(event.target.closest('#historySignIn'))showAuth(); });
+$('#modalContent').addEventListener('click', async event => {
+  if (!event.target.closest('#detailsCopyRules')) return;
+  const rules = $('.match-rules-copy')?.textContent ?? '';
+  if (!rules) return;
+  try { await navigator.clipboard.writeText(rules); toast('Match rules copied.'); }
+  catch { const area=document.createElement('textarea'); area.value=rules; area.style.position='fixed'; area.style.opacity='0'; document.body.appendChild(area); area.select(); const ok=document.execCommand('copy'); area.remove(); toast(ok?'Match rules copied.':'Select and copy the rules manually.'); }
+});
+supabase.auth.onAuthStateChange(() => { setTimeout(() => refreshData(), 0); });
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
+refreshData();
