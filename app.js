@@ -488,7 +488,9 @@ async function loadAdminRoom() {
 
 async function showAdmin() {
   if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
-  const options = tournaments.map(t => `<option value="${esc(t.id)}">${esc(t.title)} (${esc(t.game_mode)})</option>`).join('');
+  const { data: adminTournamentRows, error: adminTournamentError } = await supabase.from('tournaments').select('id,title,game_mode,status,is_past_match,starts_at').order('id', { ascending: false });
+  const adminAllTournaments = adminTournamentError ? tournaments : (adminTournamentRows || []);
+  const options = adminAllTournaments.map(t => `<option value="${esc(t.id)}">${esc(t.title)} (${esc(t.game_mode || 'Match')})${t.is_past_match ? ' · Past' : ''}</option>`).join('');
   const openCount = tournaments.filter(t => t.status === 'open').length;
   const closedCount = tournaments.filter(t => t.status === 'closed' || t.status === 'full').length;
   const playerTotal = Object.values(counts).reduce((sum, n) => sum + Number(n || 0), 0);
@@ -518,13 +520,15 @@ async function showAdmin() {
     <label class="field">ROOM ID<input id="adminRoomId" maxlength="80" placeholder="Enter room ID"></label><label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80" placeholder="Enter room password"></label>
     <label class="admin-check"><input id="adminRoomPublished" type="checkbox"><span><b>Publish room to registered players</b><small>Players will see room details and the eligible roster.</small></span></label>
     <button id="adminSaveRoom" class="join full">Save room settings</button></div>
-    <div id="adminPlayersSection" data-admin-page="players" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Rank players & publish results</h3><p>Select any match, including matches with only one player. Enter rank, kills and total earned points, then publish.</p></div></div><button id="adminLoadEntries" class="outline full">Load players to rank this match</button><div id="adminEntries" class="admin-entries"></div></div>
+    <div id="adminPlayersSection" data-admin-page="players" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Search players</h3><p>Find a player account by Player ID and manage their account.</p></div></div><button id="adminLoadEntries" class="outline full">Load player search</button><div id="adminEntries" class="admin-entries"></div></div>
+    <div id="adminResultsSection" data-admin-page="results" class="admin-section"><div class="admin-section-title"><span>🏆</span><div><h3>Match rankings</h3><p>All registered players appear automatically. Drag to rank, enter kills and total prize, then publish rewards. You can edit results later.</p></div></div><label class="field">SELECT MATCH<select id="adminResultsTournament"><option value="">Choose a match…</option>${options}</select></label><button id="adminLoadResultsRoster" class="join full">Load registered players</button><div id="adminResultsRoster"><p class="admin-helper">Choose a match above, then load the registered players.</p></div></div>
     <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Confirmed results are visible to players and credit the entered reward to their earned wallet.</p></div>`);
   $('#adminSendBroadcast')?.addEventListener('click', sendAdminBroadcast);
   $('#adminLoadBroadcasts')?.addEventListener('click', loadAdminBroadcasts);
   $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
   $('#adminResultsTournament')?.addEventListener('change', loadAdminEntries);
   $('#adminLoadResultsRoster')?.addEventListener('click', loadAdminEntries);
+  $('#adminLoadEntries')?.addEventListener('click', () => openAdminPage('players'));
   $('#adminRoomTournament')?.addEventListener('change', loadAdminRoom);
   const adminPages={home:null,create:'Create match',manage:'Manage matches',players:'Search players',results:'Match rankings',payments:'Payments & withdrawals',room:'Room & lobby',notifications:'Announcements'};
   const openAdminPage=(page)=>{document.querySelectorAll('[data-admin-page]').forEach(el=>el.classList.toggle('hidden',el.dataset.adminPage!==page));document.querySelectorAll('.admin-home-menu').forEach(el=>el.classList.toggle('hidden',page!=='home'));$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=adminPages[page]||'Admin section';};
@@ -601,7 +605,7 @@ async function loadAdminEntries() {
   ]);
   if (error) { list.innerHTML = `<p class="notice">${esc(error.message)}</p>`; return; }
   if (savedError) { list.innerHTML = `<p class="notice">Could not load saved rankings: ${esc(savedError.message)}</p>`; return; }
-  if (!entries?.length) { list.innerHTML = '<p class="notice">No registered players for this match yet.</p>'; return; }
+  if (!entries?.length) { list.innerHTML = '<p class="notice">No registered players found. You can still prepare ranking placeholders, but rewards can only be sent to verified registered accounts.</p><div id="adminRankingRows" class="admin-ranking-rows"></div><button id="adminAddRankingPlaceholder" class="outline full">＋ Add placeholder player (—)</button><button id="adminConfirmAllResults" class="join full" disabled>Publish / update rankings & prizes</button>'; $('#adminAddRankingPlaceholder')?.addEventListener('click',()=>addRankingPlaceholder()); return; }
   const resultByEntry = new Map((saved || []).map(r => [String(r.entry_id), r]));
   const ordered = [...entries].sort((a,b) => {
     const ar=resultByEntry.get(String(a.entry_id))?.placement, br=resultByEntry.get(String(b.entry_id))?.placement;
@@ -609,9 +613,9 @@ async function loadAdminEntries() {
   });
   list.innerHTML = `<p class="notice">${(saved||[]).some(r=>r.published) ? 'Published results loaded. Changes can be saved again; wallet credits will be adjusted by the difference.' : 'Pending Results — arrange every player before publishing.'} Drag the ☰ handle to reorder.</p>
     <div class="admin-ranking-head"><span>RANK / PLAYER</span><span>KILLS</span><span>TOTAL PRIZE (PTS)</span></div>
-    <div id="adminRankingRows" class="admin-ranking-rows">${ordered.map((e,i)=>{const r=resultByEntry.get(String(e.entry_id))||{};return `<div class="admin-ranking-row" draggable="true" data-result-row="${esc(e.entry_id)}" data-ign="${esc(e.in_game_name)}"><div class="ranking-player-cell"><span class="ranking-drag" aria-label="Drag to reorder">☰</span><span class="ranking-bracket">[${i+1}]</span><div><b>${esc(e.in_game_name)}</b><small>${r.published?'Published':'Pending Results'}</small></div></div><label class="ranking-input"><span>Kills</span><input aria-label="Kills for ${esc(e.in_game_name)}" class="result-kills" type="number" min="0" step="1" value="${Number(r.kills||0)}"></label><label class="ranking-input"><span>Total prize</span><input aria-label="Total prize for ${esc(e.in_game_name)}" class="result-reward" type="number" min="0" max="1000000" step="1" value="${Number(r.earned_points||0)}"></label><input class="result-rank" type="hidden" value="${i+1}"></div>`}).join('')}</div>
+    <div id="adminRankingRows" class="admin-ranking-rows">${ordered.map((e,i)=>{const r=resultByEntry.get(String(e.entry_id))||{};return `<div class="admin-ranking-row" draggable="true" data-result-row="${esc(e.entry_id)}" data-ign="${esc(e.in_game_name)}"><div class="ranking-player-cell"><span class="ranking-drag" aria-label="Drag to reorder">☰</span><span class="ranking-bracket">[${i+1}]</span><div><b>${esc((e.in_game_name||'').trim() || '-')}</b><small>${r.published?'Published':'Pending Results'}</small></div></div><label class="ranking-input"><span>Kills</span><input aria-label="Kills for ${esc(e.in_game_name)}" class="result-kills" type="number" min="0" step="1" value="${Number(r.kills||0)}"></label><label class="ranking-input"><span>Total prize</span><input aria-label="Total prize for ${esc(e.in_game_name)}" class="result-reward" type="number" min="0" max="1000000" step="1" value="${Number(r.earned_points||0)}"></label><input class="result-rank" type="hidden" value="${i+1}"></div>`}).join('')}</div>
     <label class="field">ADMIN NOTE (OPTIONAL)<input id="adminBulkResultNote" maxlength="500" placeholder="Verified by screenshot"></label>
-    <button id="adminConfirmAllResults" class="join full">Publish / update rankings & prizes</button>
+    <button id="adminAddRankingPlaceholder" class="outline full">＋ Add placeholder player (—)</button><button id="adminConfirmAllResults" class="join full">Publish / update rankings & prizes</button>
     <p class="notice">Each prize is the total points to credit. Re-publishing updates the final result and credits/debits only the difference, preventing duplicate payouts.</p>`;
   const rowsBox=$('#adminRankingRows'); let dragged=null;
   rowsBox.querySelectorAll('.admin-ranking-row').forEach(row=>{
@@ -620,6 +624,9 @@ async function loadAdminEntries() {
     row.addEventListener('dragover',e=>{e.preventDefault();if(!dragged||dragged===row)return;const rect=row.getBoundingClientRect();rowsBox.insertBefore(dragged,e.clientY<rect.top+rect.height/2?row:row.nextSibling);});
   });
   syncRankingPositions();
+  $('#adminAddRankingPlaceholder')?.addEventListener('click',()=>addRankingPlaceholder());
+}
+function addRankingPlaceholder(){const box=$('#adminRankingRows');if(!box)return;const row=document.createElement('div');row.className='admin-ranking-row ranking-placeholder';row.dataset.resultRow='';row.dataset.ign='—';row.innerHTML='<div class="ranking-player-cell"><span class="ranking-drag">☰</span><span class="ranking-bracket">[—]</span><div><b>—</b><small>Placeholder — not linked to a player account</small></div></div><label class="ranking-input"><span>Kills</span><input class="result-kills" type="number" min="0" value="0"></label><label class="ranking-input"><span>Total prize</span><input class="result-reward" type="number" min="0" value="0"></label><input class="result-rank" type="hidden"><button type="button" class="outline" data-remove-placeholder>Remove</button>';box.appendChild(row);row.querySelector('[data-remove-placeholder]').addEventListener('click',()=>{row.remove();syncRankingPositions();});syncRankingPositions();
 }
 function syncRankingPositions(){const rows=[...document.querySelectorAll('#adminRankingRows .admin-ranking-row')];rows.forEach((row,i)=>{row.querySelector('.ranking-bracket').textContent=`[${i+1}]`;row.querySelector('.result-rank').value=String(i+1);});}
 async function publishBulkResults(button) {
@@ -627,6 +634,7 @@ async function publishBulkResults(button) {
   const tournamentId = Number(($('#adminResultsTournament')||$('#adminTournament'))?.value);
   const rows = [...document.querySelectorAll('#adminRankingRows [data-result-row]')];
   if (!tournamentId || !rows.length) return toast('Choose a match and load its players first.');
+  if(rows.some(row=>!row.dataset.resultRow)){return toast('Remove the — placeholder rows or replace them with a registered player. Rewards require a verified player account.');}
   const results = rows.map((row,i) => ({entry_id:row.dataset.resultRow,placement:i+1,kills:Number(row.querySelector('.result-kills').value),reward:Number(row.querySelector('.result-reward').value),in_game_name:row.dataset.ign,note:$('#adminBulkResultNote')?.value.trim()||''}));
   if(results.some(r=>!Number.isInteger(r.kills)||r.kills<0||!Number.isInteger(r.reward)||r.reward<0||r.reward>1000000))return toast('Kills and total prize must be whole non-negative numbers.');
   if(!confirm(`Publish/update rankings for ${results.length} players? Total prize credit: ${results.reduce((n,r)=>n+r.reward,0).toLocaleString()} points. Existing prizes will be adjusted, not double-credited.`))return;
