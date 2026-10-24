@@ -225,7 +225,8 @@ async function refreshData() {
   $('#adminBtn')?.classList.toggle('hidden', !isAdmin);
   if(currentUser){ await requireUsernameSetup(); if(usernameSetupOpen) return; }
   const { data, error } = await supabase.from('tournaments')
-    .select('id,title,description,game_mode,entry_points,per_kill_points,prize_pool_points,max_players,status,starts_at')
+    .select('id,title,description,game_mode,entry_points,per_kill_points,prize_pool_points,max_players,status,starts_at,is_past_match')
+    .eq('is_past_match', false)
     .order('starts_at', { ascending: true, nullsFirst: false }).order('id');
   if (error) {
     toast('Could not load online tournaments. Check Supabase setup.');
@@ -517,7 +518,7 @@ async function showAdmin() {
     <label class="field">ROOM ID<input id="adminRoomId" maxlength="80" placeholder="Enter room ID"></label><label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80" placeholder="Enter room password"></label>
     <label class="admin-check"><input id="adminRoomPublished" type="checkbox"><span><b>Publish room to registered players</b><small>Players will see room details and the eligible roster.</small></span></label>
     <button id="adminSaveRoom" class="join full">Save room settings</button></div>
-    <div id="adminPlayersSection" data-admin-page="players" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Players & results</h3><p>Load registered players and publish verified match results.</p></div></div><button id="adminLoadEntries" class="outline full">Load players / record results</button><div id="adminEntries" class="admin-entries"></div></div>
+    <div id="adminPlayersSection" data-admin-page="players" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Rank players & publish results</h3><p>Select any match, including matches with only one player. Enter rank, kills and total earned points, then publish.</p></div></div><button id="adminLoadEntries" class="outline full">Load players to rank this match</button><div id="adminEntries" class="admin-entries"></div></div>
     <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Confirmed results are visible to players and credit the entered reward to their earned wallet.</p></div>`);
   $('#adminSendBroadcast')?.addEventListener('click', sendAdminBroadcast);
   $('#adminLoadBroadcasts')?.addEventListener('click', loadAdminBroadcasts);
@@ -840,7 +841,7 @@ document.addEventListener('click', e => { if (e.target.closest('button')) playUi
 document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => setPage(button.dataset.go)));
 document.querySelector('[data-home]')?.addEventListener('click', event => { event.preventDefault(); setPage('arena'); });
 $('#historySignIn')?.addEventListener('click', showAuth);
-document.addEventListener('click', async event => { const button=event.target.closest('#adminMarkPastMatch'); if(!button)return; if(!isAdmin)return toast('Admin access required.'); const id=Number($('#adminTournament')?.value); if(!id)return toast('Choose a match first.'); button.disabled=true; const {error}=await supabase.rpc('admin_mark_match_past',{p_tournament_id:id}); button.disabled=false; if(error)return toast(error.message); toast('Match added to Past Matches. Results remain pending until published.'); await showHistory(); });
+document.addEventListener('click', async event => { const button=event.target.closest('#adminMarkPastMatch'); if(!button)return; if(!isAdmin)return toast('Admin access required.'); const id=Number($('#adminTournament')?.value); if(!id)return toast('Choose a match first.'); button.disabled=true; const {error}=await supabase.rpc('admin_mark_match_past',{p_tournament_id:id}); button.disabled=false; if(error)return toast(error.message); toast('Moved out of Arena. Now load players below to rank them.'); await refreshData(); await showHistory(); const pageButton=document.querySelector('[data-admin-page-open="players"]'); pageButton?.click(); const selector=$('#adminTournament'); if(selector) selector.value=String(id); await loadAdminEntries(); });
 $('#historyContent')?.addEventListener('click', event => { const match=event.target.closest('[data-past-match]'); if(match){openPastMatchDetails(match.dataset.pastMatch);return;} const button=event.target.closest('[data-go]'); if(button)setPage(button.dataset.go); if(event.target.closest('#historySignIn'))showAuth(); });
 $('#modalContent').addEventListener('click', async event => {
   if (!event.target.closest('#detailsCopyRules')) return;
