@@ -537,7 +537,7 @@ async function loadAdminBroadcasts() {
 async function deleteAdminBroadcast(id) {
   if(!isAdmin || !window.confirm('Delete this announcement from every user’s notification feed?')) return;
   const {error}=await supabase.rpc('admin_delete_broadcast_notification',{p_notification_id:Number(id)});
-  if(error){toast('Could not delete notification. Apply the latest database migration.');return;}
+  if(error){console.error('Broadcast deletion failed:',error);const msg=String(error.message||'');toast(/function .*admin_delete_broadcast_notification.*does not exist|could not find the function|schema cache/i.test(msg)?'Database migration missing. Apply 202610240001_leaderboard_notification_controls.sql in Supabase.':'Could not delete notification: '+msg);return;}
   window.battleForgeBroadcasts=(window.battleForgeBroadcasts||[]).filter(n=>String(n.id)!==String(id)); updateNotificationBadge(); await loadAdminBroadcasts(); toast('Notification deleted.');
 }
 
