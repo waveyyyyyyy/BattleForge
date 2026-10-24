@@ -468,7 +468,7 @@ async function showHistory() {
 
 async function loadAdminRoom() {
   if (!isAdmin) return;
-  const id = Number($('#adminTournament')?.value);
+  const id = Number($('#adminRoomTournament')?.value || $('#adminTournament')?.value);
   const selectedTournament = tournaments.find(t => Number(t.id) === id);
   const descriptionEditor = $('#adminEditDescription');
   if (descriptionEditor) descriptionEditor.value = selectedTournament?.description ?? '';
@@ -511,6 +511,7 @@ async function showAdmin() {
     <div class="admin-form-grid"><label class="field">ENTRY STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label><div class="field"><span>DESTRUCTIVE ACTION</span><button id="adminDeleteTournament" class="outline full danger-button">Delete tournament</button></div></div>
     <button id="adminSetStatus" class="join full secondary-action">Save entry status</button></div>
     <div class="admin-section" data-admin-page="room"><div class="admin-section-title"><span>03</span><div><h3>Room & lobby</h3><p>Only publish these details when you are ready.</p></div></div>
+    <label class="field">SELECT MATCH FOR ROOM DETAILS<select id="adminRoomTournament">${options || '<option value="">Create a tournament first</option>'}</select></label><p class="admin-helper">Choose the exact match these room credentials belong to. Only players registered for this match will see them.</p>
     <label class="field">ROOM ID<input id="adminRoomId" maxlength="80" placeholder="Enter room ID"></label><label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80" placeholder="Enter room password"></label>
     <label class="admin-check"><input id="adminRoomPublished" type="checkbox"><span><b>Publish room to registered players</b><small>Players will see room details and the eligible roster.</small></span></label>
     <button id="adminSaveRoom" class="join full">Save room settings</button></div>
@@ -519,11 +520,14 @@ async function showAdmin() {
   $('#adminSendBroadcast')?.addEventListener('click', sendAdminBroadcast);
   $('#adminLoadBroadcasts')?.addEventListener('click', loadAdminBroadcasts);
   $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
+  $('#adminRoomTournament')?.addEventListener('change', loadAdminRoom);
   const adminPages={home:null,create:'Create match',manage:'Manage matches',players:'Players & results',payments:'Payments & withdrawals',room:'Room & lobby',notifications:'Announcements'};
   const openAdminPage=(page)=>{document.querySelectorAll('[data-admin-page]').forEach(el=>el.classList.toggle('hidden',el.dataset.adminPage!==page));document.querySelectorAll('.admin-home-menu').forEach(el=>el.classList.toggle('hidden',page!=='home'));$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=adminPages[page]||'Admin section';};
   document.querySelectorAll('[data-admin-page-open]').forEach(button=>button.addEventListener('click',()=>openAdminPage(button.dataset.adminPageOpen)));
   $('#adminBackHome')?.addEventListener('click',()=>openAdminPage('home'));
   document.querySelectorAll('[data-admin-jump]').forEach(button=>button.addEventListener('click',()=>{const map={adminCreateSection:'create',adminManageSection:'manage',adminPlayersSection:'players'};openAdminPage(map[button.dataset.adminJump]||'home');document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'});}));
+  const roomSelect = $('#adminRoomTournament');
+  if (roomSelect) roomSelect.value = $('#adminTournament')?.value || roomSelect.value;
   openAdminPage('home');
   await loadAdminRoom(); syncAdminSelectedSummary();
 }
