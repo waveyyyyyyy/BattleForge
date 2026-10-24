@@ -810,7 +810,7 @@ $('#modalContent').addEventListener('click', async e => {
     toast('Tournament and its records deleted.');
   }
   if (button.id === 'adminSaveRoom') {
-    const id = Number($('#adminTournament').value); if (!id) return toast('Choose a tournament.');
+    const id = Number($('#adminRoomTournament')?.value || $('#adminTournament')?.value); if (!id) return toast('Choose a tournament.');
     button.disabled = true;
     const { error } = await supabase.rpc('admin_set_tournament_room', { p_tournament_id:id, p_room_id:$('#adminRoomId').value.trim(), p_room_password:$('#adminRoomPassword').value.trim(), p_published:$('#adminRoomPublished').checked });
     button.disabled = false; if (error) return toast(error.message);
