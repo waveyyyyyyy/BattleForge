@@ -1,0 +1,20 @@
+-- Optimize RLS policy expressions and narrow unnecessary direct RPC access.
+alter policy "admin_wallet_adjustments_admin_read" on public.admin_wallet_adjustments using ((select public.is_battleforge_admin()));
+alter policy "Users read own deposit requests" on public.deposit_requests using ((select auth.uid()) = user_id or (select public.is_battleforge_admin()));
+alter policy "Users read own withdrawal requests" on public.withdrawal_requests using ((select auth.uid()) = user_id or (select public.is_battleforge_admin()));
+alter policy "player_accounts_read_self_or_admin" on public.player_accounts using ((select auth.uid()) = user_id or (select public.is_battleforge_admin()));
+alter policy "wallet_accounts_read_own" on public.wallet_accounts using ((select auth.uid()) = user_id or (select public.is_battleforge_admin()));
+alter policy "wallet_ledger_read_own" on public.wallet_ledger using ((select auth.uid()) = user_id or (select public.is_battleforge_admin()));
+alter policy "Players can read published own results and admins all results" on public.tournament_results using ((select public.is_battleforge_admin()) or (user_id = (select auth.uid()) and published));
+alter policy "Joined players and admins can read match rooms" on public.tournament_rooms using ((select public.is_battleforge_admin()) or (published and exists (select 1 from public.tournament_entries e where e.tournament_id=tournament_rooms.tournament_id and e.user_id=(select auth.uid()))));
+alter policy "Users manage own push devices" on public.push_devices using ((select auth.uid())=user_id) with check ((select auth.uid())=user_id);
+alter policy "Authenticated users can read broadcasts" on public.notification_broadcasts using ((select public.is_battleforge_admin()) or audience_type='all' or (audience_type='match' and exists (select 1 from public.tournament_entries e where e.tournament_id=notification_broadcasts.tournament_id and e.user_id=(select auth.uid()))));
+revoke all on function public.battleforge_register_player() from public, anon, authenticated;
+revoke all on function public.create_profile_for_new_user() from public, anon, authenticated;
+revoke all on function public.battleforge_reward_referrer_after_withdrawal() from public, anon, authenticated;
+revoke all on function public.apply_referral_code(text) from public, anon;
+grant execute on function public.apply_referral_code(text) to authenticated;
+revoke all on function public.get_earnings_leaderboard(text) from public, anon;
+grant execute on function public.get_earnings_leaderboard(text) to authenticated;
+revoke all on function public.get_tournament_roster(bigint) from public, anon;
+grant execute on function public.get_tournament_roster(bigint) to authenticated;
