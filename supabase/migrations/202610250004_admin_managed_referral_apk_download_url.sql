@@ -1,5 +1,5 @@
-alter table public.battleforge_social_settings add column if not exists referral_download_url text not null default 'https://www.dropbox.com/scl/fi/4ilaxiyco4yfoj8v50t2d/BattleForge.apk?rlkey=csoyiik3kbxkam8msmof5ccr2&st=f09jedfq&dl=0';
-update public.battleforge_social_settings set referral_download_url='https://www.dropbox.com/scl/fi/4ilaxiyco4yfoj8v50t2d/BattleForge.apk?rlkey=csoyiik3kbxkam8msmof5ccr2&st=f09jedfq&dl=0' where id=1 and (referral_download_url is null or referral_download_url='');
+alter table public.battleforge_social_settings add column if not exists referral_download_url text not null default 'https://www.dropbox.com/scl/fi/rdkpfx9lggtvavhzntc6k/BattleForge.apk?rlkey=klsepxvg2ejzjh70tcugy3bmn&st=528fxegd&dl=0';
+update public.battleforge_social_settings set referral_download_url='https://www.dropbox.com/scl/fi/rdkpfx9lggtvavhzntc6k/BattleForge.apk?rlkey=klsepxvg2ejzjh70tcugy3bmn&st=528fxegd&dl=0' where id=1 and (referral_download_url is null or referral_download_url='');
 create or replace function public.get_battleforge_referral_download_url()
 returns table(download_url text)
 language sql stable security definer set search_path=public,pg_temp as $$ select s.referral_download_url from public.battleforge_social_settings s where s.id=1; $$;
