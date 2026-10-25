@@ -75,6 +75,15 @@ function showWithdrawalForm() {
   $('#withdrawAmount')?.addEventListener('input', updateWithdrawalNet);
 }
 function updateWithdrawalNet() { const amount = Number($('#withdrawAmount')?.value || 0); const out = $('#withdrawNet'); if (out) out.textContent = '₹' + (Number.isFinite(amount) && amount > 0 ? (amount * .98).toFixed(2) : '0.00'); }
+async function notifyAdminOfPaymentRequest(kind, requestId) {
+  try {
+    const { error } = await supabase.functions.invoke('notify-admin-payment-request', {
+      body: { request_type: kind, request_id: String(requestId) }
+    });
+    if (error) console.warn('Admin payment alert could not be sent:', error.message);
+  } catch (error) { console.warn('Admin payment alert failed:', error); }
+}
+
 async function createPaymentRequest(kind) {
   if (!currentUser) { showAuth(); return; }
   const isDeposit = kind === 'deposit';
@@ -101,9 +110,9 @@ async function createPaymentRequest(kind) {
   if (isDeposit) {
     const { error: reportError } = await supabase.rpc('mark_deposit_payment_reported', { p_request_id: row.id });
     if (reportError) { console.error(reportError); modal('<h2>Deposit request saved</h2><p>Request ID: <b>'+esc(row.id)+'</b></p><p class=\"notice\">Your request is pending. Please contact support if the paid status does not appear.</p><button id=\"closeDepositTimer\" class=\"join full\">Close</button>'); $('#closeDepositTimer')?.addEventListener('click', async () => { close(); await loadPaymentRequests(); }); }
-    else { modal('<h2>Payment submitted</h2><p>Request ID: <b>'+esc(row.id)+'</b></p><div class=\"room-card\"><div class=\"room-value\">Amount <b>₹'+Number(row.amount).toFixed(2)+'</b></div><div class=\"room-value\">Status <b>Pending verification</b></div></div><p>Your wallet will be credited only after the payment is manually verified. Verification may take up to 24 hours.</p><button id=\"closeDepositTimer\" class=\"join full\">Done</button>'); $('#closeDepositTimer')?.addEventListener('click', async () => { close(); await loadPaymentRequests(); }); }
+    else { await notifyAdminOfPaymentRequest('deposit', row.id); modal('<h2>Payment submitted</h2><p>Request ID: <b>'+esc(row.id)+'</b></p><div class=\"room-card\"><div class=\"room-value\">Amount <b>₹'+Number(row.amount).toFixed(2)+'</b></div><div class=\"room-value\">Status <b>Pending verification</b></div></div><p>Your wallet will be credited only after the payment is manually verified. Verification may take up to 24 hours.</p><button id=\"closeDepositTimer\" class=\"join full\">Done</button>'); $('#closeDepositTimer')?.addEventListener('click', async () => { close(); await loadPaymentRequests(); }); }
     await loadPaymentRequests();
-  } else { toast('Withdrawal request saved for review. No money has been sent.'); await loadPaymentRequests(); }
+  } else { await notifyAdminOfPaymentRequest('withdrawal', row.id); toast('Withdrawal request saved for review. No money has been sent.'); await loadPaymentRequests(); }
 }
 async function loadPaymentRequests() {
   const target=$('#paymentRequests'); if(!target) return;
