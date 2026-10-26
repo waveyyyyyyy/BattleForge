@@ -12,7 +12,7 @@ main.app-shell{width:100%;max-width:760px;margin:0 auto;padding:12px 12px 105px}
 .page-heading h1 .accent{color:#f3f3ed}
 .page-heading p{color:#aeb8c0;font-size:11px;line-height:1.55;margin:0}
 .hero-premium{isolation:isolate;position:relative;overflow:hidden;min-height:0;padding:18px 16px 0;border-radius:22px;border:1px solid #a7d86b5c;background:#10201f!important;box-shadow:0 18px 42px #0007;transform:translateZ(0)}
-.hero-premium:before{content:"";position:absolute;z-index:-2;inset:0;background-image:linear-gradient(90deg,#07110ff2 0%,#091512d9 42%,#0915126e 100%),linear-gradient(0deg,#081017 0%,transparent 55%),url("https://dl.dir.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/2d6e7a11b79218c9b29167f77a9b92eb.jpg");background-size:cover;background-position:center;background-repeat:no-repeat;pointer-events:none;animation:none!important;transition:none!important}
+.hero-premium:before{content:"";position:absolute;z-index:-2;inset:0;background-image:linear-gradient(90deg,#07110ff2 0%,#091512d9 42%,#0915126e 100%),linear-gradient(0deg,#081017 0%,transparent 55%),url("https://dl.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/2d6e7a11b79218c9b29167f77a9b92eb.jpg");background-size:cover;background-position:center;background-repeat:no-repeat;pointer-events:none;animation:none!important;transition:none!important}
 .hero-premium:after{content:"";position:absolute;z-index:-1;inset:0;background:radial-gradient(ellipse at 85% 20%,#b5f25a20,transparent 40%);pointer-events:none;animation:none!important;transition:none!important}
 .hero-premium .hero-copy,.hero-premium .hero-stats,.hero-premium .hero-emblem{position:relative;z-index:1}
 .hero-premium .eyebrow{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #c8ff4238;border-radius:999px;background:#c8ff4210;color:#d5e7b5;font-size:9px;font-weight:800;letter-spacing:1px}
@@ -31,7 +31,7 @@ main.app-shell{width:100%;max-width:760px;margin:0 auto;padding:12px 12px 105px}
 .section-sub{margin:4px 0 0;font-size:11px;color:var(--bf-muted)}
 .tournaments{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .tour{min-width:0;overflow:hidden;border-radius:18px!important;border:1px solid #34434c!important;background:linear-gradient(145deg,#17232b,#0d141d)!important;box-shadow:0 12px 30px #0006}
-.tour-banner{height:165px!important;min-height:165px!important;position:relative;background-color:#142b28!important;background-image:linear-gradient(0deg,#0c1519 0%,#0c151900 65%),linear-gradient(90deg,#0c151933,#0c151900),url("https://dl.dir.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/c23d656a45bc5c75cd77d53065605fe0.jpg")!important;background-position:center 35%!important;background-size:cover!important;background-repeat:no-repeat!important;border-bottom:1px solid #c8ff4230!important}
+.tour-banner{height:165px!important;min-height:165px!important;position:relative;background-color:#142b28!important;background-image:linear-gradient(0deg,#0c1519 0%,#0c151900 65%),linear-gradient(90deg,#0c151933,#0c151900),url("https://dl.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/c23d656a45bc5c75cd77d53065605fe0.jpg")!important;background-position:center 35%!important;background-size:cover!important;background-repeat:no-repeat!important;border-bottom:1px solid #c8ff4230!important}
 .tour-banner:after{content:"FREE FIRE • COMMUNITY ARENA";position:absolute;left:12px;bottom:10px;padding:5px 8px;border-radius:99px;border:1px solid #c8ff4240;background:#09110dbd;color:#d8ff8a;font-size:8px;font-weight:850;letter-spacing:1px}
 .tour-body{padding:14px!important}.tour h3{font-size:20px!important;line-height:1.2!important;color:#f2f5ef!important}.tour .meta,.tour p{color:#aeb9c2}.tour .prize-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}.tour .prize{padding:11px!important;border:1px solid #ffffff10!important;border-radius:12px!important;background:#ffffff08!important}.tour .prize b{color:#d8ff70!important}.tour .join{width:100%!important;min-height:46px!important;margin-top:10px!important}
 .join{background:linear-gradient(100deg,#d3ff59,#b7f32e)!important;color:#10170a!important;border:1px solid #e2ff8a!important;border-radius:12px!important;font-weight:900!important;box-shadow:0 5px 18px #c8ff421a}
@@ -53,7 +53,7 @@ main.app-shell{width:100%;max-width:760px;margin:0 auto;padding:12px 12px 105px}
 .panel,.activity-item,.leader-row,.history-item,.rule-card{background:linear-gradient(145deg,#151f29,#0e151e)!important;border:1px solid #ffffff14!important;border-radius:15px!important}
 .leaderboard-tabs{display:flex;gap:7px;flex-wrap:wrap}.leaderboard-list,.history-list{display:grid;gap:10px}.leader-row{margin:0;padding:13px}.rule-card{padding:16px}.rules-grid{display:grid;grid-template-columns:1fr;gap:10px}
 #page-history .page-heading{position:relative;isolation:isolate;padding-top:18px}
-#page-history .page-heading:after{content:"";position:absolute;z-index:-1;right:-8px;top:-10px;width:145px;height:150px;opacity:.25;background:url("https://dl.dir.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/2d6e7a11b79218c9b29167f77a9b92eb.jpg") center/cover no-repeat;mask-image:linear-gradient(90deg,transparent,#000)}
+#page-history .page-heading:after{content:"";position:absolute;z-index:-1;right:-8px;top:-10px;width:145px;height:150px;opacity:.25;background:url("https://dl.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/2d6e7a11b79218c9b29167f77a9b92eb.jpg") center/cover no-repeat;mask-image:linear-gradient(90deg,transparent,#000)}
 #page-history .history-list:before{content:"🏆";display:block;text-align:center;font-size:76px;line-height:1.15;padding:12px 0 2px;filter:drop-shadow(0 8px 16px #d9b45b32)}
 #page-rules .rule-card{background:linear-gradient(145deg,#1a3027,#101923)!important}
 #page-rules .rule-card>span{color:var(--bf-lime);font-weight:900}
@@ -82,3 +82,39 @@ input::placeholder,textarea::placeholder{color:#87939e!important;opacity:1!impor
 #modalContent .close{color:#f2f5ef!important}
 @media(min-width:600px){main.app-shell{padding:20px 20px 36px}.hero-premium{padding:28px 25px 0}.tournaments{grid-template-columns:repeat(2,minmax(0,1fr))}.rules-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bottom{max-width:760px;left:50%;transform:translateX(-50%);border:1px solid #ffffff18;border-bottom:0;border-radius:16px 16px 0 0}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Focused follow-up fixes: visible Free Fire hero art, compact height, robust profile sheet, gold coin-bag wallet art. */
+.hero-premium{min-height:0!important;padding:14px 14px 0!important;margin:12px 0 22px!important;border-radius:18px!important}
+.hero-premium:before{background-image:linear-gradient(90deg,#07110fe8 0%,#091512c4 38%,#09151255 100%),linear-gradient(0deg,#081017 0%,transparent 58%),url("https://dl.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/2d6e7a11b79218c9b29167f77a9b92eb.jpg")!important;background-position:center 35%!important;background-size:cover!important}
+.hero-kicker{margin:10px 0 0!important}
+.hero-premium h1{margin:8px 0 9px!important;font-size:clamp(36px,9.5vw,54px)!important;line-height:.9!important;letter-spacing:-1.4px!important}
+.hero-sub{max-width:250px!important;font-size:10px!important;line-height:1.4!important}
+.hero-actions{margin-top:11px!important;gap:7px!important}
+.hero-actions .join{min-height:39px!important;padding:9px 11px!important}
+.hero-stats{margin:13px -1px 0!important;padding:10px 0 12px!important;gap:6px!important}
+.hero-stats b{font-size:17px!important}.hero-stats small{font-size:7px!important}
+.hero-emblem{display:none!important}
+.wallet-hero{padding:18px!important;min-height:245px}
+.wallet-label,.wallet-total,.wallet-hero>p,.wallet-actions{position:relative;z-index:2}
+.wallet-label,.wallet-total,.wallet-hero>p{max-width:72%}
+.wallet-art{position:absolute;z-index:1;right:10px;top:16px;width:96px;height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transform:rotate(5deg);filter:drop-shadow(0 8px 14px #0007);pointer-events:none}
+.wallet-art:before{content:"";position:absolute;inset:17px 5px 0;border:2px solid #f5d778;border-radius:16px 16px 23px 23px;background:linear-gradient(145deg,#f8df85 0%,#b9852c 35%,#f3cf67 60%,#8e5b1c 100%);box-shadow:inset 0 0 0 4px #6f481c55,inset 0 0 18px #fff7}
+.wallet-art:after{content:"";position:absolute;top:9px;width:35px;height:18px;border:3px solid #e6bd52;border-radius:50%;background:#8b6327;box-shadow:0 0 12px #f5d77845}
+.wallet-art span{position:relative;z-index:1;margin-top:19px;color:#5a3a12;font-size:37px;font-weight:1000;text-shadow:0 1px #ffe7a0}
+.wallet-art small{position:relative;z-index:1;color:#5a3a12;font-size:7px;font-weight:1000;letter-spacing:1px}
+.profile-sheet{display:grid!important;gap:13px!important;min-width:0!important}
+.profile-top{display:flex!important;align-items:center!important;gap:12px!important;padding:8px 0 15px!important;border-bottom:1px solid #ffffff18!important}
+.profile-top h2{margin:8px 0 4px!important;overflow-wrap:anywhere}
+.profile-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+.profile-metrics>div{min-width:0!important;padding:12px!important;border:1px solid #ffffff15!important;border-radius:12px!important;background:linear-gradient(145deg,#1b2831,#101820)!important}
+.profile-metrics small{display:block!important;font-size:8px!important;line-height:1.35!important;color:#aab8c0!important;letter-spacing:.4px!important}
+.profile-metrics b{display:block!important;margin-top:6px!important;font-size:17px!important;line-height:1.25!important;overflow-wrap:anywhere!important;color:#f2f5ef!important}
+.profile-block{min-width:0!important;padding:13px!important;border:1px solid #ffffff17!important;border-radius:13px!important;background:#0c141d!important}
+.profile-block summary{cursor:pointer;color:#e9f0e8!important;font-size:13px!important;font-weight:850!important;padding:3px 0!important}
+.profile-block[open] summary{margin-bottom:13px!important;color:#d7ff78!important}
+.profile-block .field{margin-top:8px!important}
+.profile-help{color:#aebbc4!important;font-size:11px!important;line-height:1.55!important;overflow-wrap:anywhere!important}
+.profile-history{display:grid!important;gap:8px!important;min-width:0!important}
+.profile-history-row{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:10px!important;padding:10px!important;border-radius:10px!important;background:#ffffff08!important;min-width:0!important}
+.profile-history-row>div{min-width:0!important}.profile-history-row small{display:block!important;margin-top:4px!important;color:#aab7c0!important;font-size:10px!important;line-height:1.45!important;overflow-wrap:anywhere!important}
+@media(max-width:380px){.wallet-art{right:5px;transform:scale(.82) rotate(5deg);transform-origin:top right}.wallet-label,.wallet-total,.wallet-hero>p{max-width:68%}.hero-premium h1{font-size:clamp(34px,9vw,42px)!important}.profile-metrics b{font-size:15px!important}}
