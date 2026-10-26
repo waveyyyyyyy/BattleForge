@@ -161,3 +161,14 @@ input::placeholder,textarea::placeholder{color:#87939e!important;opacity:1!impor
 #openDeposit.wallet-action:focus-visible,#openWithdrawal.wallet-action:focus-visible,.wallet-actions>.wallet-action:focus-visible{outline:2px solid #ffe7a0!important;outline-offset:3px!important}
 @keyframes walletActionGlow{from{box-shadow:0 0 0 1px #ffc85730,0 0 8px #ffc85770,0 0 16px #ffb52c44,inset 0 1px 0 #ffffff9c}to{box-shadow:0 0 0 2px #ffc85755,0 0 16px #ffc857c9,0 0 32px #ffb52c85,inset 0 1px 0 #ffffffc9}}
 @media(prefers-reduced-motion:reduce){#openDeposit.wallet-action,#openWithdrawal.wallet-action,.wallet-actions>.wallet-action{animation:none!important}}
+
+
+/* Hard-visible Free Fire artwork: place the image on the actual surfaces, not behind pseudo-element stacking contexts. */
+.hero.hero-premium{background-image:linear-gradient(90deg,rgba(5,12,16,.80) 0%,rgba(5,12,16,.48) 48%,rgba(5,12,16,.08) 100%),linear-gradient(0deg,rgba(5,12,16,.92) 0%,rgba(5,12,16,0) 62%),url("https://dl.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/2d6e7a11b79218c9b29167f77a9b92eb.jpg")!important;background-size:cover!important;background-position:center 34%!important;background-repeat:no-repeat!important;}
+.hero.hero-premium:before{display:none!important;}
+.hero.hero-premium:after{background:linear-gradient(90deg,rgba(5,12,16,.20),transparent)!important;pointer-events:none!important;}
+.hero.hero-premium .hero-copy,.hero.hero-premium .hero-actions,.hero.hero-premium .hero-stats,.hero.hero-premium .hero-emblem{position:relative!important;z-index:3!important;}
+.tour{overflow:hidden!important;}
+.tour .tour-banner{display:block!important;position:relative!important;isolation:isolate!important;width:100%!important;min-height:165px!important;height:165px!important;opacity:1!important;visibility:visible!important;background-color:#263e4b!important;background-image:linear-gradient(0deg,rgba(5,12,16,.60),rgba(5,12,16,0) 72%),url("https://dl.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/c23d656a45bc5c75cd77d53065605fe0.jpg")!important;background-size:cover!important;background-position:center 35%!important;background-repeat:no-repeat!important;}
+.history-card.past-match-card{padding-top:126px!important;position:relative!important;isolation:isolate!important;overflow:hidden!important;}
+.history-card.past-match-card:before{z-index:-1!important;display:block!important;opacity:1!important;background-color:#263e4b!important;background-image:linear-gradient(0deg,rgba(12,20,29,.18),rgba(12,20,29,0) 75%),url("https://dl.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/2d6e7a11b79218c9b29167f77a9b92eb.jpg")!important;background-size:cover!important;background-position:center 30%!important;}
