@@ -186,19 +186,6 @@ function renderWallet() {
   activity.innerHTML = history.length ? history.slice().reverse().slice(0,5).map(item => '<div class="activity-row"><span class="activity-mark">◈</span><div><b>' + esc(item.title || item.type || 'Wallet activity') + '</b><small>' + esc(item.date || '') + '</small></div><strong>' + esc(item.amount ?? '') + ' COINS</strong></div>').join('') : '<div class="empty-state"><span>◷</span><b>No wallet activity yet</b><p>Verified wallet activity will appear here when available.</p></div>' ;
 }
 
-function formatMatchDateTime(value) {
-  if (!value) return 'Time to be announced';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return 'Time to be announced';
-  return date.toLocaleString('en-IN', { weekday:'short', day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true });
-}
-function toLocalDateTimeInput(value) {
-  if (!value) return '';
-  const date = new Date(value); if (Number.isNaN(date.getTime())) return '';
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0,16);
-}
-
 async function render() {
   if ($('#walletBalance')) $('#walletBalance').textContent = String(balance);
   renderWallet();
@@ -211,7 +198,7 @@ async function render() {
     const perKill = Number(t.per_kill_points ?? 0);
     const count = counts[id] ?? joined.filter(e => String(e.tournament_id) === id).length;
     const full = t.status === 'full' || count >= Number(t.max_players);
-    return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="match-start-time"><span class="match-time-icon">◷</span><span><small>MATCH STARTS</small><b>' + esc(formatMatchDateTime(t.starts_at)) + '</b></span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>' + esc(t.status || 'open').toUpperCase() + '</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' COINS</b><small>DISPLAYED PRIZE POOL</small></div><div class="prize"><b>' + perKill + ' COINS</b><small>PER KILL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open') ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' COINS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
+    return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="match-time"><span class="match-time-icon">◷</span><span><small>MATCH STARTS</small><b>' + (t.starts_at ? esc(new Date(t.starts_at).toLocaleString(undefined,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})) : 'Time to be announced') + '</b></span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>' + esc(t.status || 'open').toUpperCase() + '</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' COINS</b><small>DISPLAYED PRIZE POOL</small></div><div class="prize"><b>' + perKill + ' COINS</b><small>PER KILL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open') ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' COINS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
   }).join('') : '<p class="notice">No tournaments are published yet.</p>';
   const profileBtn=$('#profileBtn'); if(profileBtn){ const {data:profileText}=currentUser?await supabase.from('player_accounts').select('username').eq('user_id',currentUser.id).maybeSingle():{data:null}; profileBtn.textContent=currentUser?(profileText?.username||'Profile'):'Sign in'; profileBtn.setAttribute('aria-label',currentUser?'Player profile':'Sign in'); }
 }
@@ -536,6 +523,16 @@ async function openPastMatchDetails(id) {
   $('#pastMatchClose')?.addEventListener('click',close);
 }
 
+async function loadAdminSchedule() {
+  if (!isAdmin) return;
+  const id = Number($('#adminTournament')?.value); const input = $('#adminEditStarts');
+  if (!id || !input) return;
+  const { data, error } = await supabase.from('tournaments').select('starts_at').eq('id', id).maybeSingle();
+  if (error) { console.warn('Could not load match schedule', error); return; }
+  const d = data?.starts_at ? new Date(data.starts_at) : null;
+  input.value = d && !Number.isNaN(d.getTime()) ? new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,16) : '';
+}
+
 async function loadAdminRoom() {
   if (!isAdmin) return;
   const id = Number($('#adminRoomTournament')?.value || $('#adminTournament')?.value);
@@ -576,12 +573,13 @@ async function showAdmin() {
     <button id="adminCreateTournament" class="join full">＋ Create tournament</button></div>
     <div id="adminManageSection" data-admin-page="manage" class="admin-section"><div class="admin-section-title"><span>02</span><div><h3>Manage tournament</h3><p>Select a match first, then edit its settings.</p></div></div>
     <label class="field">SELECT TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
+    <div class="schedule-editor"><div class="schedule-editor-head"><span class="schedule-icon">◷</span><div><h4>Match schedule</h4><p>Change the date and exact start time, including for past matches.</p></div></div><label class="field">DATE & START TIME<input id="adminEditStarts" type="datetime-local"></label><button id="adminSaveSchedule" class="join full">Save match date & time</button><p class="admin-helper">The updated time will be visible directly on the match card.</p></div>
     <button id="adminMarkPastMatch" class="outline full">Move selected match to Past Matches</button><p class="admin-helper">This works even with just one registered player. Players will see Pending Results until you publish the rankings.</p>
     <div class="admin-current-summary" id="adminSelectedSummary">${tournaments.length ? 'Select a tournament to load its current settings.' : 'No tournaments yet.'}</div>
     <div class="admin-form-grid"><label class="field">ENTRY FEE (COINS)<input id="adminEditEntry" type="number" min="0" max="1000000"></label><label class="field">PER-KILL REWARD (COINS)<input id="adminEditPerKill" type="number" min="0" max="1000000"></label></div><button id="adminSaveRewards" class="join full">Save entry fee & per-kill reward</button>
     <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminEditDescription" maxlength="5000" rows="5" placeholder="Player-facing rules and match instructions"></textarea></label>
     <button id="adminSaveDescription" class="outline full">Save description</button>
-    <div class="match-timing-editor"><div class="admin-section-title"><span>◷</span><div><h3>Match date & time</h3><p>Change the schedule at any time, including after a match is moved to Past Matches. Uses your device's local time.</p></div></div><label class="field">NEW START DATE & TIME<input id="adminEditStarts" type="datetime-local"></label><button id="adminSaveStartTime" class="join full">Save match timing</button><p class="admin-helper">Leave blank and save to clear the scheduled time.</p></div>\n    <div class="admin-form-grid"><label class="field">ENTRY STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label><div class="field"><span>DESTRUCTIVE ACTION</span><button id="adminDeleteTournament" class="outline full danger-button">Delete tournament</button></div></div>
+    <div class="admin-form-grid"><label class="field">ENTRY STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label><div class="field"><span>DESTRUCTIVE ACTION</span><button id="adminDeleteTournament" class="outline full danger-button">Delete tournament</button></div></div>
     <button id="adminSetStatus" class="join full secondary-action">Save entry status</button></div>
     <div class="admin-section" data-admin-page="room"><div class="admin-section-title"><span>03</span><div><h3>Room & lobby</h3><p>Only publish these details when you are ready.</p></div></div>
     <label class="field">SELECT MATCH FOR ROOM DETAILS<select id="adminRoomTournament">${options || '<option value="">Create a tournament first</option>'}</select></label><p class="admin-helper">Choose the exact match these room credentials belong to. Only players registered for this match will see them.</p>
@@ -597,7 +595,7 @@ async function showAdmin() {
   $('#adminSendBroadcast')?.addEventListener('click', sendAdminBroadcast);
   $('#adminBroadcastAudience')?.addEventListener('change', syncBroadcastAudience);
   $('#adminLoadBroadcasts')?.addEventListener('click', loadAdminBroadcasts);
-  $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
+  $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); await loadAdminSchedule(); });
   $('#adminResultsTournament')?.addEventListener('change', loadAdminEntries);
   $('#adminLoadResultsRoster')?.addEventListener('click', loadAdminEntries);
   $('#adminLoadEntries')?.addEventListener('click', () => openAdminPage('players'));
@@ -610,7 +608,7 @@ async function showAdmin() {
   const roomSelect = $('#adminRoomTournament');
   if (roomSelect) roomSelect.value = $('#adminTournament')?.value || roomSelect.value;
   openAdminPage('home');
-  await loadAdminRoom(); syncAdminSelectedSummary();
+  await loadAdminRoom(); syncAdminSelectedSummary(); await loadAdminSchedule();
 }
 
 async function loadAdminSocialLinks(){if(!isAdmin)return;const {data,error}=await supabase.rpc('get_battleforge_social_links');if(error){console.warn(error);return;}const x=Array.isArray(data)?(data[0]||{}):(data||{});if($('#adminSocialTelegram'))$('#adminSocialTelegram').value=x.telegram_url||'https://t.me/battleforgeff';if($('#adminSocialInstagram'))$('#adminSocialInstagram').value=x.instagram_url||'https://www.instagram.com/battleforgeff?vrfl=MXAxeXhubTd4OTZrZQ==';if($('#adminSocialYoutube'))$('#adminSocialYoutube').value=x.youtube_url||'';const {data:download}=await supabase.rpc('get_battleforge_referral_download_url');const d=Array.isArray(download)?download[0]:download;if($('#adminReferralDownloadUrl'))$('#adminReferralDownloadUrl').value=d?.download_url||'https://www.dropbox.com/scl/fi/rdkpfx9lggtvavhzntc6k/BattleForge.apk?rlkey=klsepxvg2ejzjh70tcugy3bmn&st=528fxegd&dl=0';}
@@ -683,10 +681,11 @@ function syncAdminSelectedSummary() {
   const status = String(t.status || 'open').toUpperCase();
   el.innerHTML = `<div><b>${esc(t.title)}</b><small>${esc(t.game_mode || 'SOLO')} · ${count}/${Number(t.max_players || 0)} players</small></div><span class="status-chip">${esc(status)}</span><div><small>ENTRY FEE</small><b>${Number(t.entry_points || 0)} COINS</b></div><div><small>PER KILL</small><b>${Number(t.per_kill_points || 0)} COINS</b></div><div><small>PRIZE DISPLAY</small><b>${Number(t.prize_pool_points || 0)} coins</b></div>`;
   if ($('#adminEditDescription')) $('#adminEditDescription').value = t.description || '';
-  if ($('#adminEditStarts')) $('#adminEditStarts').value = toLocalDateTimeInput(t.starts_at);
   if ($('#adminEditEntry')) $('#adminEditEntry').value = Number(t.entry_points || 0);
   if ($('#adminEditPerKill')) $('#adminEditPerKill').value = Number(t.per_kill_points || 0);
   if ($('#adminStatus')) $('#adminStatus').value = ['open','closed','full'].includes(t.status) ? t.status : 'open';
+  const startsInput = $('#adminEditStarts');
+  if (startsInput) { const d = t.starts_at ? new Date(t.starts_at) : null; startsInput.value = d && !Number.isNaN(d.getTime()) ? new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,16) : ''; }
 }
 
 async function loadAdminEntries() {
@@ -881,19 +880,15 @@ $('#modalContent').addEventListener('click', async e => {
     if (error) return toast(error.message);
     await refreshData(); showAdmin(); toast('Tournament created.');
   }
-  if (button.id === 'adminSaveStartTime') {
+  if (button.id === 'adminSaveSchedule') {
     if (!isAdmin) return toast('Admin access required.');
-    const id = Number($('#adminTournament')?.value);
-    const raw = $('#adminEditStarts')?.value || '';
+    const id = Number($('#adminTournament')?.value); const raw = $('#adminEditStarts')?.value || '';
     if (!id) return toast('Choose a match first.');
-    const startsAt = raw ? new Date(raw) : null;
-    if (raw && Number.isNaN(startsAt?.getTime())) return toast('Enter a valid date and time.');
-    if (!window.confirm(raw ? 'Save this new match date and time? The change will appear to players, including for past matches.' : 'Clear the scheduled time for this match?')) return;
-    button.disabled = true; button.textContent = 'Saving timing…';
-    const { error } = await supabase.rpc('admin_set_tournament_start_time', { p_tournament_id: id, p_starts_at: startsAt ? startsAt.toISOString() : null });
-    button.disabled = false; button.textContent = 'Save match timing';
-    if (error) return toast('Could not save timing: ' + error.message + '. If the function is new, apply supabase/013_admin_edit_match_timing.sql in Supabase SQL Editor.');
-    await refreshData(); showAdmin(); toast('Match timing updated.'); return;
+    if (!raw || Number.isNaN(new Date(raw).getTime())) return toast('Choose a valid match date and time.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_update_tournament_schedule', { p_tournament_id:id, p_starts_at:new Date(raw).toISOString() });
+    button.disabled = false; if (error) return toast(error.message);
+    await refreshData(); await showAdmin(); toast('Match date and time updated.'); return;
   }
   if (button.id === 'adminSaveRewards') {
     if (!isAdmin) return toast('Admin access required.');
