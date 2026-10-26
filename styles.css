@@ -261,3 +261,52 @@ body{background:radial-gradient(ellipse at 50% -18%,rgba(35,60,82,.25),transpare
 button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}button{font-family:inherit}button:disabled{cursor:not-allowed;filter:saturate(.55)}
 @media(max-width:520px){.top{background:rgba(12,15,22,.92)}.hero-premium{background:radial-gradient(ellipse at 100% 0%,rgba(35,60,82,.18),transparent 48%)}.wallet-hero{border-radius:19px}.panel,.tour,.history-card,.rule-card,.profile-block,.notification-card{box-shadow:0 8px 22px rgba(0,0,0,.12)}}
 @media(prefers-reduced-motion:reduce){.wallet-action,.join,.outline,.navitem,.tour,.support-cta{transition:none!important}}
+
+/* BattleForge screen-level redesign v2: clear hierarchy, stronger cards, and visible accent treatment */
+:root{--bg:#080d13;--panel:#111923;--panel-raised:#17222d;--line:rgba(191,208,222,.14);--text:#f6f8fa;--muted:#9eacb9;--lime:#d5ff4f;--accent:#d5ff4f;--card:#111923}
+body{background:radial-gradient(ellipse at 50% -12%,rgba(65,96,120,.32),transparent 48%),linear-gradient(180deg,#080d13 0%,#0a1118 54%,#080d13 100%)}
+.top{height:76px;padding-left:max(20px,calc((100% - 980px)/2));padding-right:max(20px,calc((100% - 980px)/2));background:rgba(8,13,19,.94);border-bottom:1px solid rgba(213,255,79,.14)}
+.mark{clip-path:none;border-radius:12px!important;background:linear-gradient(135deg,#e2ff75,#b8eb32);box-shadow:0 0 0 5px rgba(213,255,79,.07),0 8px 26px rgba(213,255,79,.16)}
+main{max-width:980px;padding:18px 20px 34px}
+.hero-premium{margin:18px 0 30px;padding:28px 24px 24px;border:1px solid rgba(191,208,222,.14);border-radius:26px;background:radial-gradient(ellipse at 85% 12%,rgba(213,255,79,.12),transparent 35%),linear-gradient(135deg,#172531 0%,#111923 58%,#0d141c 100%);box-shadow:0 22px 55px rgba(0,0,0,.22);min-height:310px}
+.hero-premium:after{content:"";position:absolute;left:0;top:0;width:4px;height:100%;background:linear-gradient(180deg,#d5ff4f,rgba(213,255,79,0));border-radius:26px 0 0 26px}
+.hero-kicker{font-size:10px!important;font-weight:800;letter-spacing:2px!important;color:#d5ff4f!important;margin:20px 0 0!important}
+.hero-premium h1{font-size:clamp(48px,10vw,76px);letter-spacing:-1.8px;line-height:.9;margin:12px 0 16px}
+.hero-sub{max-width:390px;font-size:14px;line-height:1.7}
+.hero-actions{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-top:23px}
+.hero-actions .join{min-height:48px;padding:0 19px;border-radius:12px;font-size:12px;box-shadow:0 8px 25px rgba(213,255,79,.16)}
+.trust-note{font-size:10px;color:#a7b4bf}
+.hero-emblem{right:22px;opacity:.95}
+.hero-stats{margin-top:28px;max-width:420px;gap:0}
+.hero-stats>div{flex:1;padding:0 16px 0 0;margin-right:16px;border-right:1px solid rgba(191,208,222,.16)}
+.hero-stats b{font-size:20px;letter-spacing:-.5px}
+.section-head{margin-top:34px;margin-bottom:16px;align-items:center}
+.section-head h2{font-size:24px!important;letter-spacing:-.7px}
+.section-sub{margin:5px 0 0;font-size:12px}
+.pill{padding:8px 11px;border-radius:99px;background:rgba(213,255,79,.09);border-color:rgba(213,255,79,.25)}
+.tournaments{gap:17px}
+.tour{position:relative;border-radius:20px!important;overflow:hidden;background:linear-gradient(145deg,#17222c 0%,#101720 70%)!important;border:1px solid rgba(191,208,222,.13)!important;box-shadow:0 15px 38px rgba(0,0,0,.2)!important}
+.tour:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:linear-gradient(180deg,#d5ff4f,rgba(213,255,79,.06));z-index:1}
+.tour-banner{height:5px!important;background:linear-gradient(90deg,#d5ff4f 0%,#94c938 45%,rgba(148,201,56,0) 100%)!important}
+.tour-body{padding:20px!important}
+.tour h3{font-size:21px!important;letter-spacing:-.5px!important;line-height:1.2!important}
+.tour .tag{border-radius:8px;background:rgba(213,255,79,.09);border:1px solid rgba(213,255,79,.2);color:#d5ff4f;font-size:9px;font-weight:900}
+.tour .meta{gap:8px 15px;font-size:11px;color:#a7b4bf}
+.tour .prize-row{margin-top:15px;padding-top:15px;border-top:1px solid rgba(191,208,222,.12)!important;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tour .prize{padding:12px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(191,208,222,.08)}
+.tour .prize b{font-size:21px!important;color:#e0ff8a}
+.tour .join{grid-column:1/-1;width:100%;min-height:46px;border-radius:12px;font-weight:900;letter-spacing:.35px}
+.wallet-hero{border-radius:24px!important;padding:24px!important;background:radial-gradient(ellipse at 90% 0%,rgba(213,255,79,.14),transparent 40%),linear-gradient(145deg,#1a2934,#101821 76%)!important;border-color:rgba(213,255,79,.18)!important}
+.wallet-total{font-size:clamp(36px,9vw,48px)!important;letter-spacing:-1.5px}
+.wallet-actions{gap:12px!important;margin-top:22px!important}
+.wallet-action{padding:16px!important;border-radius:16px!important;background:rgba(5,10,15,.38)!important}
+.page-heading{padding:18px 0 20px}
+.page-heading h1{font-size:clamp(44px,10vw,66px);letter-spacing:-1.4px}
+.leaderboard-tabs{padding:5px;background:#0c141c;border:1px solid rgba(191,208,222,.12);border-radius:14px;margin:18px 0}
+.leaderboard-tabs button{min-height:42px;border-radius:10px!important}
+.leader-row{border-radius:17px!important;padding:14px!important;background:linear-gradient(110deg,rgba(213,255,79,.035),transparent 55%),#121c26!important}
+.bottom{padding-top:9px;padding-bottom:calc(9px + env(safe-area-inset-bottom));background:rgba(7,12,18,.96);border-top:1px solid rgba(191,208,222,.14)}
+.navitem{min-width:64px;min-height:52px;gap:5px;border-radius:13px!important}
+.navitem.active{background:rgba(213,255,79,.08);color:#d5ff4f}
+@media(min-width:760px){.hero-premium{padding:34px 34px 26px;min-height:340px}.tournaments{grid-template-columns:repeat(2,minmax(0,1fr))!important}.tour-body{padding:22px!important}}
+@media(max-width:520px){main{padding:12px 15px 28px}.hero-premium{padding:25px 18px 20px;margin:12px 0 25px;border-radius:22px;min-height:0}.hero-emblem{opacity:.24;right:-15px;top:22px;transform:scale(.8);transform-origin:top right}.hero-premium h1{font-size:clamp(45px,12vw,60px)}.hero-stats{max-width:100%;margin-top:24px}.hero-stats>div{padding-right:10px;margin-right:10px}.hero-stats b{font-size:17px}.hero-stats small{font-size:8px;letter-spacing:.6px}.section-head h2{font-size:22px!important}.tour-body{padding:17px!important}.tour h3{font-size:19px!important}.wallet-hero{padding:19px!important}.wallet-actions{gap:9px!important}.wallet-action{padding:13px 10px!important}.bottom .navitem{min-width:56px}}
