@@ -588,7 +588,14 @@ async function showAdmin() {
     <button id="adminSaveRoom" class="join full">Save room settings</button></div>
     <div id="adminPlayersSection" data-admin-page="players" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Search players</h3><p>Find a player account by Player ID and manage their account.</p></div></div><button id="adminLoadEntries" class="outline full">Load player search</button><div id="adminEntries" class="admin-entries"></div></div>
     <div id="adminResultsSection" data-admin-page="results" class="admin-section"><div class="admin-section-title"><span>🏆</span><div><h3>Match rankings</h3><p>All registered players appear automatically. Drag to rank, enter kills and total prize, then publish rewards. You can edit results later.</p></div></div><label class="field">SELECT MATCH<select id="adminResultsTournament"><option value="">Choose a match…</option>${options}</select></label><button id="adminLoadResultsRoster" class="join full">Load registered players</button><div id="adminResultsRoster"><p class="admin-helper">Choose a match above, then load the registered players.</p></div></div>
-    <div class=\"admin-section\" data-admin-page=\"social\"><div class=\"admin-section-title\"><span>↗</span><div><h3>Profile social links</h3><p>Change these links at any time.</p></div></div><label class=\"field\">TELEGRAM URL<input id=\"adminSocialTelegram\" type=\"url\" value=\"https://t.me/battleforgeff\"></label><label class=\"field\">INSTAGRAM URL<input id=\"adminSocialInstagram\" type=\"url\" value=\"https://www.instagram.com/battleforgeff?vrfl=MXAxeXhubTd4OTZrZQ==\"></label><label class=\\\"field\\\">YOUTUBE URL (OPTIONAL)<input id=\\\"adminSocialYoutube\\\" type=\\\"url\\\" placeholder=\\\"Add later\\\"></label><label class=\\\"field\\\">REFERRAL APK DOWNLOAD URL<input id=\\\"adminReferralDownloadUrl\\\" type=\\\"url\\\" placeholder=\\\"Dropbox APK link\\\"></label><p class=\\\"admin-helper\\\">This link appears in the Referral centre. Admins can update it anytime.</p><button id=\\\"adminSaveSocialLinks\\\" class=\\\"join full\\\">Save social links</button><p id=\"adminSocialStatus\" class=\"admin-helper\"></p></div><div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Confirmed results are visible to players and credit the entered reward to their earned wallet.</p></div>`);
+    <div class=\"admin-section social-settings-section\" data-admin-page=\"social\">
+      <div class=\"admin-section-title\"><span>↗</span><div><h3>Social links</h3><p>Each platform has its own field. Leave YouTube blank to remove it from the player profile.</p></div></div>
+      <div class=\"settings-group\"><div class=\"settings-group-title\"><span>✈</span><div><b>Telegram</b><small>Community and support channel</small></div></div><label class=\"field\">TELEGRAM URL<input id=\"adminSocialTelegram\" type=\"url\" placeholder=\"https://t.me/yourchannel\"></label></div>
+      <div class=\"settings-group\"><div class=\"settings-group-title\"><span>◎</span><div><b>Instagram</b><small>Official social profile</small></div></div><label class=\"field\">INSTAGRAM URL<input id=\"adminSocialInstagram\" type=\"url\" placeholder=\"https://instagram.com/yourprofile\"></label></div>
+      <div class=\"settings-group\"><div class=\"settings-group-title\"><span>▶</span><div><b>YouTube</b><small>Optional channel or video link</small></div></div><label class=\"field\">YOUTUBE URL (OPTIONAL)<input id=\"adminSocialYoutube\" type=\"url\" placeholder=\"https://youtube.com/@yourchannel\"></label><button id=\"adminSaveSocialLinks\" class=\"join full\">Save social links</button><p class=\"admin-helper\">To remove YouTube, clear its field and save social links.</p></div>
+      <div class=\"settings-group referral-url-group\"><div class=\"settings-group-title\"><span>⬇</span><div><b>BattleForge APK download</b><small>Link shown in the Referral Centre</small></div></div><label class=\"field\">REFERRAL APK DOWNLOAD URL<input id=\"adminReferralDownloadUrl\" type=\"url\" placeholder=\"https://your-host/BattleForge.apk\"></label><button id=\"adminSaveReferralUrl\" class=\"join full secondary-action\">Save APK download link</button><p class=\"admin-helper\">Use the direct APK download URL you want players to share. This is separate from your social links.</p></div>
+      <p id=\"adminSocialStatus\" class=\"admin-helper settings-save-status\" aria-live=\"polite\"></p>
+    </div><div class=\"admin-footer-note\"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Confirmed results are visible to players and credit the entered reward to their earned wallet.</p></div>`);
   $('#detailsCopyRoomId')?.addEventListener('click', async () => { try { const {data}=await supabase.from('tournament_rooms').select('room_id').eq('tournament_id',Number(id)).eq('published',true).maybeSingle(); await navigator.clipboard.writeText(String(data?.room_id||'')); toast('Room ID copied'); } catch { toast('Could not copy room ID'); } });
   $('#detailsCopyRoomPassword')?.addEventListener('click', async () => { try { const {data}=await supabase.from('tournament_rooms').select('room_password').eq('tournament_id',Number(id)).eq('published',true).maybeSingle(); await navigator.clipboard.writeText(String(data?.room_password||'')); toast('Room password copied'); } catch { toast('Could not copy password'); } });
   $('#adminQuickJoinReminder')?.addEventListener('click', () => { const a=$('#adminBroadcastAudience'), t=$('#adminBroadcastTitle'), m=$('#adminBroadcastMessage'); if(a) a.value='match'; syncBroadcastAudience(); if(t) t.value='Match starting soon'; if(m) m.value='Your Free Fire match is starting soon. Open BattleForge and get ready to join the room.'; $('#adminBroadcastTournament')?.focus(); });
@@ -608,11 +615,45 @@ async function showAdmin() {
   const roomSelect = $('#adminRoomTournament');
   if (roomSelect) roomSelect.value = $('#adminTournament')?.value || roomSelect.value;
   openAdminPage('home');
-  await loadAdminRoom(); syncAdminSelectedSummary(); await loadAdminSchedule();
+  await loadAdminRoom(); syncAdminSelectedSummary(); await loadAdminSchedule(); await loadAdminSocialLinks();
 }
 
-async function loadAdminSocialLinks(){if(!isAdmin)return;const {data,error}=await supabase.rpc('get_battleforge_social_links');if(error){console.warn(error);return;}const x=Array.isArray(data)?(data[0]||{}):(data||{});if($('#adminSocialTelegram'))$('#adminSocialTelegram').value=x.telegram_url||'https://t.me/battleforgeff';if($('#adminSocialInstagram'))$('#adminSocialInstagram').value=x.instagram_url||'https://www.instagram.com/battleforgeff?vrfl=MXAxeXhubTd4OTZrZQ==';if($('#adminSocialYoutube'))$('#adminSocialYoutube').value=x.youtube_url||'';const {data:download}=await supabase.rpc('get_battleforge_referral_download_url');const d=Array.isArray(download)?download[0]:download;if($('#adminReferralDownloadUrl'))$('#adminReferralDownloadUrl').value=d?.download_url||'https://www.dropbox.com/scl/fi/rdkpfx9lggtvavhzntc6k/BattleForge.apk?rlkey=klsepxvg2ejzjh70tcugy3bmn&st=528fxegd&dl=0';}
-async function saveAdminSocialLinks(){if(!isAdmin)return toast('Admin access required.');const args={p_telegram_url:$('#adminSocialTelegram')?.value.trim()||'',p_instagram_url:$('#adminSocialInstagram')?.value.trim()||'',p_youtube_url:$('#adminSocialYoutube')?.value.trim()||null};for(const [label,url] of [['Telegram',args.p_telegram_url],['Instagram',args.p_instagram_url],['YouTube',args.p_youtube_url]])if(url&&!/^https:\/\/[^\s]+$/i.test(url))return toast(label+' must be a valid https URL.');const b=$('#adminSaveSocialLinks');if(b){b.disabled=true;b.textContent='Saving…';}const {error}=await supabase.rpc('admin_update_battleforge_social_links',args);if(b){b.disabled=false;b.textContent='Save social links';}if(error)return toast('Could not save links: '+error.message);const downloadUrl=$('#adminReferralDownloadUrl')?.value.trim()||'';if(!/^https:\/\/[^\s]+$/i.test(downloadUrl))return toast('Referral APK link must be a valid https URL.');const {error:downloadError}=await supabase.rpc('admin_update_battleforge_referral_download_url',{p_download_url:downloadUrl});if(downloadError)return toast('Social links saved, but referral link failed: '+downloadError.message);if($('#adminSocialStatus'))$('#adminSocialStatus').textContent='Social links and referral APK link saved.';toast('Social links and referral APK link updated.');}
+async function loadAdminSocialLinks(){
+  if(!isAdmin)return;
+  const {data,error}=await supabase.rpc('get_battleforge_social_links');
+  if(error){console.warn('Could not load social links',error);toast('Could not load social links: '+error.message);}
+  const x=Array.isArray(data)?(data[0]||{}):(data||{});
+  if($('#adminSocialTelegram'))$('#adminSocialTelegram').value=x.telegram_url||'';
+  if($('#adminSocialInstagram'))$('#adminSocialInstagram').value=x.instagram_url||'';
+  if($('#adminSocialYoutube'))$('#adminSocialYoutube').value=x.youtube_url||'';
+  const {data:download,error:downloadError}=await supabase.rpc('get_battleforge_referral_download_url');
+  if(downloadError){console.warn('Could not load referral APK URL',downloadError);return;}
+  const d=Array.isArray(download)?download[0]:download;
+  if($('#adminReferralDownloadUrl'))$('#adminReferralDownloadUrl').value=d?.download_url||'';
+}
+function validAdminHttpsUrl(url){return /^https:\/\/[^\s]+$/i.test(String(url||'').trim());}
+async function saveAdminSocialLinks(){
+  if(!isAdmin)return toast('Admin access required.');
+  const args={p_telegram_url:$('#adminSocialTelegram')?.value.trim()||'',p_instagram_url:$('#adminSocialInstagram')?.value.trim()||'',p_youtube_url:$('#adminSocialYoutube')?.value.trim()||null};
+  for(const [label,url] of [['Telegram',args.p_telegram_url],['Instagram',args.p_instagram_url],['YouTube',args.p_youtube_url]])if(url&&!validAdminHttpsUrl(url))return toast(label+' must be a valid https URL.');
+  const b=$('#adminSaveSocialLinks');if(b){b.disabled=true;b.textContent='Saving social links…';}
+  const {error}=await supabase.rpc('admin_update_battleforge_social_links',args);
+  if(b){b.disabled=false;b.textContent='Save social links';}
+  if(error){if($('#adminSocialStatus'))$('#adminSocialStatus').textContent='Social links were not saved: '+error.message;return toast('Could not save social links: '+error.message);}
+  if($('#adminSocialStatus'))$('#adminSocialStatus').textContent='Social links saved. YouTube is '+(args.p_youtube_url?'enabled.':'removed from the profile.');
+  toast(args.p_youtube_url?'Social links saved.':'Social links saved; YouTube removed.');
+}
+async function saveAdminReferralUrl(){
+  if(!isAdmin)return toast('Admin access required.');
+  const url=$('#adminReferralDownloadUrl')?.value.trim()||'';
+  if(!validAdminHttpsUrl(url))return toast('Enter a valid https APK download URL.');
+  const b=$('#adminSaveReferralUrl');if(b){b.disabled=true;b.textContent='Saving download link…';}
+  const {error}=await supabase.rpc('admin_update_battleforge_referral_download_url',{p_download_url:url});
+  if(b){b.disabled=false;b.textContent='Save APK download link';}
+  if(error){if($('#adminSocialStatus'))$('#adminSocialStatus').textContent='APK link was not saved: '+error.message;return toast('Could not save APK link: '+error.message);}
+  if($('#adminSocialStatus'))$('#adminSocialStatus').textContent='BattleForge APK download link saved successfully.';
+  toast('Referral APK download link updated.');
+}
 
 function syncBroadcastAudience() {
   const audience = $('#adminBroadcastAudience')?.value || 'all';
@@ -890,6 +931,8 @@ $('#modalContent').addEventListener('click', async e => {
     button.disabled = false; if (error) return toast(error.message);
     await refreshData(); await showAdmin(); toast('Match date and time updated.'); return;
   }
+  if (button.id === 'adminSaveSocialLinks') { await saveAdminSocialLinks(); return; }
+  if (button.id === 'adminSaveReferralUrl') { await saveAdminReferralUrl(); return; }
   if (button.id === 'adminSaveRewards') {
     if (!isAdmin) return toast('Admin access required.');
     const id = Number($('#adminTournament').value);
