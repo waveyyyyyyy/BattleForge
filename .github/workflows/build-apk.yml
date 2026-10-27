@@ -2,6 +2,8 @@ name: Build BattleForge Android APK
 on:
   workflow_dispatch:
   push:
+    branches: [main, ui-3d-force-update]
+  pull_request:
     branches: [main]
 permissions:
   contents: read

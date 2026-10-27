@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
+import { version as APP_VERSION } from './package.json';
 
 const SUPABASE_URL = 'https://izyttrbspxrcacwuhwer.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_79ln_ouADVGWi6H5ZTc6Qg_c3ifNfQ7';
@@ -16,6 +17,35 @@ let currentUser = null;
 let isAdmin = false;
 let pendingResultEntry = null;
 let counts = {};
+let updateConfig = { force_update: false, min_version: APP_VERSION, download_url: '', message: 'A new version of BattleForge is available.' };
+let updateBlockVisible = false;
+
+function versionAtLeast(current, minimum) {
+  const parse = value => String(value || '0').replace(/^v/i, '').split(/[.+-]/).slice(0, 3).map(part => Number.parseInt(part, 10) || 0);
+  const a = parse(current), b = parse(minimum);
+  for (let i = 0; i < 3; i++) { if (a[i] > b[i]) return true; if (a[i] < b[i]) return false; }
+  return true;
+}
+function renderForcedUpdate() {
+  if (!updateConfig.force_update || versionAtLeast(APP_VERSION, updateConfig.min_version)) {
+    document.getElementById('forcedUpdateScreen')?.remove(); updateBlockVisible = false; return;
+  }
+  updateBlockVisible = true;
+  let screen = document.getElementById('forcedUpdateScreen');
+  if (!screen) { screen = document.createElement('div'); screen.id = 'forcedUpdateScreen'; screen.className = 'forced-update-screen'; document.body.appendChild(screen); }
+  screen.innerHTML = '<div class="forced-update-card"><div class="update-orb">↻</div><div class="eyebrow">BATTLEFORGE UPDATE REQUIRED</div><h1>New version.<br><span class="accent">New arena.</span></h1><p>' + esc(updateConfig.message || 'Please update BattleForge to continue.') + '</p><div class="update-version-row"><span>Installed <b>' + esc(APP_VERSION) + '</b></span><span>Required <b>' + esc(updateConfig.min_version) + '</b></span></div>' + (updateConfig.download_url ? '<button id="forcedUpdateDownload" class="join full">Download latest version ↗</button>' : '<p class="notice">The update link is not available yet. Please contact BattleForge support.</p>') + '<button id="forcedUpdateRetry" class="outline full">I updated — check again</button><small class="update-footnote">Updating is required to keep using BattleForge.</small></div>';
+  screen.querySelector('#forcedUpdateDownload')?.addEventListener('click', () => { const url = updateConfig.download_url; if (/^https:\/\//i.test(url)) { if (Capacitor.isNativePlatform()) Browser.open({ url }).catch(() => toast('Could not open the download link.')); else window.open(url, '_blank', 'noopener,noreferrer'); } else toast('Admin has not configured a valid HTTPS download link.'); });
+  screen.querySelector('#forcedUpdateRetry')?.addEventListener('click', async () => { const button = screen.querySelector('#forcedUpdateRetry'); button.disabled = true; await checkForForcedUpdate(); if (updateBlockVisible) button.disabled = false; });
+}
+async function checkForForcedUpdate() {
+  try {
+    const { data, error } = await supabase.rpc('get_app_update_config');
+    if (error) { console.warn('Remote update settings unavailable; apply supabase/007_app_update_control.sql.', error.message); return; }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) updateConfig = { force_update: row.force_update === true, min_version: row.min_version || APP_VERSION, download_url: row.download_url || '', message: row.message || 'Please update BattleForge to continue.' };
+    renderForcedUpdate();
+  } catch (error) { console.warn('Could not check app version.', error); }
+}
 
 function read(k, fallback) {
   try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; }
@@ -233,7 +263,7 @@ async function handleNativeAuthCallback(rawUrl) {
     googleAuthCodesHandled.add(code);
     await Browser.close().catch(() => {});
     close();
-    await refreshData();
+    refreshData();
     toast('Signed in successfully with Google.');
   } catch (error) {
     await Browser.close().catch(() => {});
@@ -328,6 +358,14 @@ async function showAdmin() {
   modal(`<div class="admin-dashboard-head"><div class="eyebrow"><span class="live-dot"></span> ORGANISER CONTROL CENTRE</div><h2>Admin dashboard</h2><p>Everything you need to run a match, from one place.</p></div>
     <div class="admin-metrics"><div><small>TOURNAMENTS</small><b>${tournaments.length}</b></div><div><small>OPEN</small><b>${openCount}</b></div><div><small>REGISTRATIONS</small><b>${playerTotal}</b></div><div><small>CLOSED / FULL</small><b>${closedCount}</b></div></div>
     <div class="admin-quick-grid"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div>
+    <div id="adminUpdateSection" class="admin-section update-admin-section"><div class="admin-section-title"><span>↻</span><div><h3>App version & forced updates</h3><p>Control the minimum app version and download destination remotely.</p></div></div>
+    <div class="admin-update-status" id="adminUpdateStatus">Loading current update settings…</div>
+    <label class="admin-check"><input id="adminForceUpdate" type="checkbox"><span><b>Force update for older versions</b><small>When enabled, versions below the minimum are blocked until they update.</small></span></label>
+    <label class="field">MINIMUM REQUIRED VERSION<input id="adminMinVersion" maxlength="20" placeholder="1.2.0" value="1.2.0"></label>
+    <label class="field">APK DOWNLOAD LINK<input id="adminDownloadUrl" type="url" maxlength="2000" placeholder="https://…/BattleForge.apk"></label>
+    <label class="field">UPDATE MESSAGE<textarea id="adminUpdateMessage" maxlength="300" rows="2" placeholder="A new version is available. Update to continue."></textarea></label>
+    <p class="admin-helper">Use a direct HTTPS link to the latest APK. Existing app builds without the version-check code cannot be remotely blocked until players install a build that includes this system.</p>
+    <button id="adminSaveUpdateSettings" class="join full">Save update settings</button></div>
     <div id="adminCreateSection" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
     <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
     <div class="admin-form-grid"><label class="field">GAME MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label></div>
@@ -353,8 +391,23 @@ async function showAdmin() {
   $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
   document.querySelectorAll('[data-admin-jump]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'})));
   await loadAdminRoom(); syncAdminSelectedSummary();
+  await loadAdminUpdateSettings();
 }
 
+
+async function loadAdminUpdateSettings() {
+  if (!isAdmin) return;
+  const status = $('#adminUpdateStatus');
+  const { data, error } = await supabase.rpc('get_app_update_config');
+  if (error) { if (status) status.textContent = 'Update settings table is not ready. Apply supabase/007_app_update_control.sql in the Supabase SQL Editor.'; return; }
+  const row = Array.isArray(data) ? data[0] : data;
+  updateConfig = row ? { force_update: row.force_update === true, min_version: row.min_version || APP_VERSION, download_url: row.download_url || '', message: row.message || '' } : updateConfig;
+  if ($('#adminForceUpdate')) $('#adminForceUpdate').checked = updateConfig.force_update;
+  if ($('#adminMinVersion')) $('#adminMinVersion').value = updateConfig.min_version;
+  if ($('#adminDownloadUrl')) $('#adminDownloadUrl').value = updateConfig.download_url;
+  if ($('#adminUpdateMessage')) $('#adminUpdateMessage').value = updateConfig.message;
+  if (status) status.textContent = 'Installed app version: ' + APP_VERSION + ' · ' + (updateConfig.force_update ? 'Forced updates ON' : 'Forced updates OFF');
+}
 function syncAdminSelectedSummary() {
   const id = Number($('#adminTournament')?.value);
   const t = tournaments.find(item => Number(item.id) === id);
@@ -499,6 +552,24 @@ $('#modalContent').addEventListener('change', async e => {
 $('#modalContent').addEventListener('click', async e => {
   const button = e.target.closest('button');
   if (!button) return;
+  if (button.id === 'adminSaveUpdateSettings') {
+    if (!isAdmin) return toast('Admin access required.');
+    const forceUpdate = $('#adminForceUpdate').checked;
+    const minVersion = $('#adminMinVersion').value.trim();
+    const downloadUrl = $('#adminDownloadUrl').value.trim();
+    const message = $('#adminUpdateMessage').value.trim();
+    if (!/^\\d+\\.\\d+\\.\\d+$/.test(minVersion)) return toast('Use a version like 1.2.0.');
+    if (downloadUrl && !/^https:\\/\\//i.test(downloadUrl)) return toast('Download link must start with https://.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_save_app_update_config', { p_force_update: forceUpdate, p_min_version: minVersion, p_download_url: downloadUrl || null, p_message: message || 'Please update BattleForge to continue.' });
+    button.disabled = false;
+    if (error) return toast('Could not save update settings. Apply supabase/007_app_update_control.sql and check admin permissions.');
+    updateConfig = { force_update: forceUpdate, min_version: minVersion, download_url: downloadUrl, message: message || 'Please update BattleForge to continue.' };
+    renderForcedUpdate();
+    await loadAdminUpdateSettings();
+    toast('App update settings saved.');
+    return;
+  }
   if (button.id === 'adminCreateTournament') {
     if (!isAdmin) return toast('Admin access required.');
     const title = $('#adminTitle').value.trim();
@@ -596,4 +667,8 @@ $('#modalContent').addEventListener('click', async event => {
 });
 supabase.auth.onAuthStateChange(() => { setTimeout(() => refreshData(), 0); });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
+checkForForcedUpdate();
 refreshData();
+window.addEventListener('focus', () => { if (!document.hidden) checkForForcedUpdate(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForForcedUpdate(); });
+setInterval(() => { if (!document.hidden) checkForForcedUpdate(); }, 60000);
