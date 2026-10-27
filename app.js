@@ -1031,29 +1031,68 @@ async function checkRequiredAppUpdate(){try{const {data,error}=await supabase.fr
 document.addEventListener('click',e=>{const b=e.target.closest('#loadAppUpdateConfig,#saveAppUpdateConfig');if(!b)return;e.preventDefault();if(b.id==='loadAppUpdateConfig')loadAppUpdateConfig();if(b.id==='saveAppUpdateConfig')saveAppUpdateConfig();});
 refreshData();
 
-/* BattleForge lightweight UI effects. Anime artwork and character animations removed. */
+/* BattleForge premium motion system — lightweight, accessible, no character artwork. */
 (()=>{
+  if(document.getElementById('battleforge-ui-effects')) return;
   const style=document.createElement('style');
   style.id='battleforge-ui-effects';
   style.textContent=`
-    @keyframes bfSparkle{0%{opacity:0;transform:translateY(8px) scale(.5)}20%{opacity:1}100%{opacity:0;transform:translateY(-28px) scale(1.3)}}
-    @keyframes bfRewardPulse{0%,100%{box-shadow:0 0 0 rgba(255,202,85,0)}50%{box-shadow:0 0 22px rgba(255,202,85,.2)}}
-    @keyframes bfLeaderShine{0%{background-position:-160% 0}100%{background-position:160% 0}}
-    @keyframes bfParticleDrift{from{background-position:0 0,0 0,0 0,0 0}to{background-position:70px -120px,-90px 100px,120px -70px,-70px 90px}}
-    body:after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.16;background-image:radial-gradient(circle at 12% 22%,#d5ff4f 0 1px,transparent 2px),radial-gradient(circle at 82% 34%,#55e8ff 0 1px,transparent 2px),radial-gradient(circle at 65% 78%,#d5ff4f 0 1px,transparent 2px),radial-gradient(circle at 32% 87%,#b78cff 0 1px,transparent 2px);background-size:190px 210px,240px 260px,280px 230px,220px 270px;animation:bfParticleDrift 18s linear infinite}
-    #page-leaderboard .leader-row:first-child{animation:bfRewardPulse 2.6s ease-in-out infinite}
-    #page-leaderboard .leader-row:nth-child(-n+3){background-image:linear-gradient(110deg,transparent 30%,rgba(213,255,79,.055) 50%,transparent 70%);background-size:220% 100%;animation:bfLeaderShine 6s ease-in-out infinite}
-    .bf-click-spark{position:fixed;z-index:100000;pointer-events:none;width:6px;height:6px;border-radius:50%;background:#d5ff4f;box-shadow:0 0 10px #d5ff4f;animation:bfSparkle .65s ease-out forwards}
-    @media(prefers-reduced-motion:reduce){body:after,#page-leaderboard .leader-row{animation:none!important}}
+    :root{--bf-motion-fast:150ms;--bf-motion-mid:240ms;--bf-motion-slow:420ms}
+    @keyframes bfParticleDrift{0%{background-position:0 0,0 0,0 0,0 0}100%{background-position:70px -120px,-90px 100px,120px -70px,-70px 90px}}
+    @keyframes bfCardEnter{from{opacity:.72;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes bfLeaderShine{0%{background-position:-180% 0}100%{background-position:180% 0}}
+    @keyframes bfRewardPulse{0%,100%{box-shadow:0 0 0 rgba(213,255,79,0)}50%{box-shadow:0 0 24px rgba(213,255,79,.2)}}
+    @keyframes bfRipple{to{transform:scale(3.5);opacity:0}}
+    @keyframes bfRewardPop{0%{opacity:0;transform:translateY(8px) scale(.82)}65%{opacity:1;transform:translateY(-2px) scale(1.06)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    body:after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.12;background-image:radial-gradient(circle at 12% 22%,#d5ff4f 0 1px,transparent 2px),radial-gradient(circle at 82% 34%,#55e8ff 0 1px,transparent 2px),radial-gradient(circle at 65% 78%,#d5ff4f 0 1px,transparent 2px),radial-gradient(circle at 32% 87%,#b78cff 0 1px,transparent 2px);background-size:190px 210px,240px 260px,280px 230px,220px 270px;animation:bfParticleDrift 24s linear infinite}
+    /* Keep page content above the decorative, pointer-transparent particle layer. */
+    main,#app,.app-shell,.page,.bottom-nav,.modal,.modal-backdrop{position:relative}
+    .tournament-card,.match-card,.arena-card,.leader-row,.room-card,.profile-block,.admin-section,.wallet-card,.stat-card{transition:transform var(--bf-motion-mid) cubic-bezier(.2,.75,.25,1),border-color var(--bf-motion-mid),box-shadow var(--bf-motion-mid),filter var(--bf-motion-mid);transform:translateZ(0)}
+    .tournament-card:active,.match-card:active,.arena-card:active{transform:scale(.985)}
+    .tournament-card:hover,.match-card:hover,.arena-card:hover{border-color:rgba(213,255,79,.45);box-shadow:0 10px 28px rgba(0,0,0,.22),0 0 18px rgba(213,255,79,.06)}
+    button,.join,.outline,[role=button]{position:relative;overflow:hidden;transition:transform var(--bf-motion-fast),filter var(--bf-motion-mid),box-shadow var(--bf-motion-mid),border-color var(--bf-motion-mid)}
+    button:not(:disabled):active,.join:not(:disabled):active,.outline:not(:disabled):active,[role=button]:active{transform:scale(.975);filter:brightness(1.12)}
+    button:disabled,.join:disabled,.outline:disabled{cursor:not-allowed}
+    button:not(:disabled):focus-visible,.join:focus-visible,.outline:focus-visible{outline:2px solid var(--lime,#d5ff4f);outline-offset:3px}
+    .join.full{display:block;width:100%;max-width:none;box-sizing:border-box}
+    .bf-ripple{position:absolute;border-radius:50%;pointer-events:none;background:rgba(255,255,255,.32);width:24px;height:24px;margin:-12px 0 0 -12px;animation:bfRipple 520ms ease-out forwards}
+    #page-leaderboard .leader-row{animation:bfCardEnter 320ms both}
+    #page-leaderboard .leader-row:nth-child(1){animation:bfRewardPulse 3s ease-in-out infinite}
+    #page-leaderboard .leader-row:nth-child(-n+3){background-image:linear-gradient(110deg,transparent 30%,rgba(213,255,79,.07) 50%,transparent 70%);background-size:220% 100%;animation-name:bfLeaderShine;animation-duration:7s;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
+    .bf-reward-confirmed{animation:bfRewardPop 440ms cubic-bezier(.2,.8,.2,1) both;outline:1px solid rgba(213,255,79,.38);box-shadow:0 0 22px rgba(213,255,79,.12)}
+    .bf-reward-spark{position:fixed;z-index:100000;pointer-events:none;width:5px;height:5px;border-radius:50%;background:#d5ff4f;box-shadow:0 0 12px #d5ff4f;animation:bfRewardPop 620ms ease-out reverse forwards}
+    .bf-loading-dot{display:inline-block;width:1em;text-align:center;animation:bfLoadingPulse 900ms ease-in-out infinite alternate}
+    @keyframes bfLoadingPulse{from{opacity:.35}to{opacity:1}}
+    @media(hover:none){.tournament-card:hover,.match-card:hover,.arena-card:hover{box-shadow:none}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}body:after{display:none}}
   `;
   document.head.appendChild(style);
   document.addEventListener('click',event=>{
-    const button=event.target.closest('button,.join,.outline,[data-join]');
-    if(!button||button.disabled)return;
-    if(read('bf_sound_enabled',true)!==false)playUiSound(button.matches('[data-join]')?'success':'tap');
-    if(button.matches('[data-join],#publishResults,[data-payment-action="verify-deposit"]')){
-      const rect=button.getBoundingClientRect();
-      for(let i=0;i<7;i++){const spark=document.createElement('i');spark.className='bf-click-spark';spark.style.left=(rect.left+rect.width*(.2+Math.random()*.6))+'px';spark.style.top=(rect.top+rect.height*.5)+'px';spark.style.animationDelay=(Math.random()*.12)+'s';document.body.appendChild(spark);spark.addEventListener('animationend',()=>spark.remove(),{once:true});}
-    }
+    const button=event.target.closest('button:not(:disabled),.join:not(:disabled),.outline:not(:disabled)');
+    if(!button||button.classList.contains('bf-update-download'))return;
+    const rect=button.getBoundingClientRect();
+    if(rect.width<2||rect.height<2)return;
+    const ripple=document.createElement('i');ripple.className='bf-ripple';
+    ripple.style.left=(event.clientX?event.clientX-rect.left:rect.width/2)+'px';
+    ripple.style.top=(event.clientY?event.clientY-rect.top:rect.height/2)+'px';
+    button.appendChild(ripple);ripple.addEventListener('animationend',()=>ripple.remove(),{once:true});
+  },{passive:true});
+  /* Reward visuals are triggered only by explicit success confirmations, never by a button click alone. */
+  const rewardWords=/reward published|rewards published|result published|withdrawal marked as paid|deposit verified|wallet credited|balance updated|reward credited/i;
+  const toastRoot=document.querySelector('#toast,[role="status"],.toast');
+  const celebrate=message=>{
+    if(!rewardWords.test(message||''))return;
+    const target=document.querySelector('#page-leaderboard .leader-row:first-child')||document.querySelector('.wallet-total');
+    if(!target)return;
+    target.classList.remove('bf-reward-confirmed');void target.offsetWidth;target.classList.add('bf-reward-confirmed');
+    window.setTimeout(()=>target.classList.remove('bf-reward-confirmed'),900);
+  };
+  if(toastRoot&&window.MutationObserver)new MutationObserver(()=>celebrate(toastRoot.textContent||'')).observe(toastRoot,{childList:true,subtree:true,characterData:true});
+  /* Reuse the app's existing sound preference and sound handler; do not double-play audio. */
+  document.addEventListener('click',event=>{
+    const button=event.target.closest('#confirmJoin,#adminPublishResult,#adminConfirmAllResults,#adminVerifyDeposit,#adminMarkWithdrawalPaid');
+    if(!button)return;
+    button.dataset.bfMotionPending='1';
+    button.addEventListener('click',()=>{delete button.dataset.bfMotionPending;},{once:true});
   },{passive:true});
 })();
