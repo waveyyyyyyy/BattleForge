@@ -3,7 +3,7 @@
 create table if not exists public.app_update_config (
   id integer primary key default 1 check (id = 1),
   force_update boolean not null default false,
-  min_version text not null default '1.2.0' check (min_version ~ '^\\d+\\.\\d+\\.\\d+$'),
+  min_version text not null default '1.2.0' check (min_version ~ '^[0-9]+[.][0-9]+[.][0-9]+$'),
   download_url text,
   message text not null default 'A new version of BattleForge is available.' check (char_length(message) <= 300),
   updated_at timestamptz not null default now()
@@ -36,7 +36,7 @@ begin
   if auth.uid() is null or not coalesce(public.is_battleforge_admin(), false) then
     raise exception 'Admin access required';
   end if;
-  if p_min_version is null or p_min_version !~ '^\\d+\\.\\d+\\.\\d+$' then
+  if p_min_version is null or p_min_version !~ '^[0-9]+[.][0-9]+[.][0-9]+$' then
     raise exception 'Minimum version must use major.minor.patch format, e.g. 1.2.0';
   end if;
   if p_download_url is not null and length(btrim(p_download_url)) > 0 and p_download_url !~* '^https://[^[:space:]]+$' then
