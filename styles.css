@@ -310,3 +310,20 @@ main{max-width:980px;padding:18px 20px 34px}
 .navitem.active{background:rgba(213,255,79,.08);color:#d5ff4f}
 @media(min-width:760px){.hero-premium{padding:34px 34px 26px;min-height:340px}.tournaments{grid-template-columns:repeat(2,minmax(0,1fr))!important}.tour-body{padding:22px!important}}
 @media(max-width:520px){main{padding:12px 15px 28px}.hero-premium{padding:25px 18px 20px;margin:12px 0 25px;border-radius:22px;min-height:0}.hero-emblem{opacity:.24;right:-15px;top:22px;transform:scale(.8);transform-origin:top right}.hero-premium h1{font-size:clamp(45px,12vw,60px)}.hero-stats{max-width:100%;margin-top:24px}.hero-stats>div{padding-right:10px;margin-right:10px}.hero-stats b{font-size:17px}.hero-stats small{font-size:8px;letter-spacing:.6px}.section-head h2{font-size:22px!important}.tour-body{padding:17px!important}.tour h3{font-size:19px!important}.wallet-hero{padding:19px!important}.wallet-actions{gap:9px!important}.wallet-action{padding:13px 10px!important}.bottom .navitem{min-width:56px}}
+
+@keyframes bfRiseIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.page-view.active{animation:bfRiseIn .34s cubic-bezier(.2,.75,.25,1) both}
+.tour,.wallet-hero,.admin-section,.admin-metrics>div,.admin-quick{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,background .22s ease}
+.tour{transform:translateZ(0);box-shadow:0 12px 30px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.045)}
+.tour:hover,.admin-quick:hover{transform:translateY(-3px);border-color:rgba(213,255,79,.35);box-shadow:0 16px 36px rgba(0,0,0,.25)}
+button,.join,.outline{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+button:active,.join:active,.outline:active{transform:scale(.975)}
+.admin-section.app-update-admin{border:1px solid rgba(213,255,79,.22);background:linear-gradient(145deg,rgba(213,255,79,.055),rgba(15,22,30,.9) 45%);box-shadow:inset 0 1px rgba(255,255,255,.055),0 12px 32px rgba(0,0,0,.16)}
+.checkbox-row{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted,#a9b4c0)}.checkbox-row input{width:18px;height:18px;accent-color:#d5ff4f}
+.bf-force-update-gate{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:22px;background:rgba(3,7,12,.94);backdrop-filter:blur(18px);animation:bfRiseIn .28s ease both}
+.bf-force-update-card{width:min(100%,440px);padding:30px 24px;border:1px solid rgba(213,255,79,.25);border-radius:26px;background:linear-gradient(145deg,#17212b,#0b1118 70%);box-shadow:0 28px 90px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.08);text-align:center}
+.bf-update-logo{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 18px;border-radius:20px;background:linear-gradient(145deg,#e2ff7b,#9fc42e);color:#10170a;font-weight:900;font-size:24px;box-shadow:0 8px 30px rgba(213,255,79,.18)}
+.bf-force-update-card h2{margin:12px 0;font-size:clamp(26px,7vw,34px)}.bf-force-update-card p{color:#b8c2cc;line-height:1.6}
+.bf-version-pair{display:flex;justify-content:space-between;gap:14px;margin:22px 0;padding:14px;border-radius:14px;background:rgba(255,255,255,.045);font-size:12px;color:#aeb9c4}.bf-version-pair span{display:grid;gap:5px}.bf-version-pair b{color:#f3f7fa;font-size:15px}
+.bf-update-download{display:block;text-decoration:none;text-align:center;padding:15px!important}.bf-force-update-card small{display:block;margin-top:14px;color:#7f8b98}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
