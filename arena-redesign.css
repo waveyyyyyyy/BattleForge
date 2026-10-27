@@ -194,3 +194,34 @@ input::placeholder,textarea::placeholder{color:#87939e!important;opacity:1!impor
 .tour:nth-child(3n) .tour-banner{background-image:linear-gradient(90deg,rgba(9,8,17,.2),rgba(9,8,17,.5)),url("https://images.moneycontrol.com/static-mcnews/2024/09/20240909013009_garena4.jpeg?height=900&impolicy=website&width=1600")!important;background-position:center 26%!important}
 .history-card.past-match-card:nth-child(even):before{background-image:linear-gradient(0deg,rgba(8,8,13,.5),rgba(8,8,13,.06)),url("https://i.cdn.newsbytesapp.com/images/l320220822093338.png")!important;background-position:center 28%!important}
 #adminModal .admin-dashboard-head{background-image:linear-gradient(110deg,rgba(9,10,17,.94),rgba(35,12,20,.82)),url("https://images.moneycontrol.com/static-mcnews/2024/09/20240909013009_garena4.jpeg?height=900&impolicy=website&width=1600");background-size:cover;background-position:center 22%;border-radius:16px;padding:16px}
+
+
+/* BattleForge match-card conversion: stronger hierarchy, visible entry fee, clear availability */
+#tournaments{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:18px;align-items:stretch}
+#tournaments .tour{position:relative;overflow:hidden;border:1px solid rgba(255,190,55,.30)!important;border-radius:20px!important;background:linear-gradient(145deg,rgba(25,20,31,.98),rgba(9,10,17,.98))!important;box-shadow:0 12px 34px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.05);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+#tournaments .tour:hover,#tournaments .tour:focus-visible{transform:translateY(-3px);border-color:rgba(255,198,69,.8)!important;box-shadow:0 18px 38px rgba(0,0,0,.4),0 0 22px rgba(255,173,38,.10);outline:none}
+#tournaments .tour:after{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#ffb629,#fff0a1,#f16b22);pointer-events:none}
+#tournaments .tour .tour-banner{height:158px!important;min-height:158px!important;position:relative;background-size:cover!important;background-position:center 28%!important}
+#tournaments .tour .tour-banner:after{content:"BATTLEFORGE  •  FREE FIRE";position:absolute;left:14px;bottom:12px;color:#fff;font-size:10px;font-weight:900;letter-spacing:1.5px;text-shadow:0 2px 8px #000;background:rgba(8,8,13,.55);border:1px solid rgba(255,255,255,.18);padding:6px 9px;border-radius:7px}
+#tournaments .tour .tour-body{padding:16px!important;display:flex;flex-direction:column;gap:13px}
+#tournaments .tour .tour-top{align-items:flex-start;gap:10px;margin:0!important}
+#tournaments .tour .tour-top h3{font-size:19px!important;line-height:1.2;margin:0 0 5px!important;font-weight:900;letter-spacing:-.25px}
+#tournaments .tour .tour-top p{font-size:12px!important;opacity:.72;margin:0!important}
+#tournaments .tour .tag{border:1px solid rgba(255,190,55,.35);background:rgba(255,174,31,.12);color:#ffd36b;border-radius:8px;padding:6px 8px;font-size:10px;font-weight:900;letter-spacing:.7px;white-space:nowrap}
+#tournaments .tour-entry-strip{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid rgba(255,190,55,.35);border-radius:13px;background:linear-gradient(100deg,rgba(255,179,39,.16),rgba(255,255,255,.025));min-width:0}
+#tournaments .entry-label{font-size:9px;letter-spacing:1.2px;font-weight:900;color:#f5c96c;white-space:nowrap}
+#tournaments .tour-entry-strip strong{font-size:21px;line-height:1;color:#ffe19a;white-space:nowrap;text-shadow:0 0 16px rgba(255,183,44,.16)}
+#tournaments .tour-entry-strip strong small{font-size:9px;letter-spacing:.8px}
+#tournaments .entry-action{margin-left:auto;font-size:9px;font-weight:800;letter-spacing:.45px;text-align:right;color:rgba(255,255,255,.72)}
+#tournaments .tour .match-time{display:flex;gap:10px;align-items:center;padding:10px 11px;border-radius:11px;background:rgba(255,255,255,.035);margin:0!important}
+#tournaments .tour .match-time small{display:block;font-size:9px;letter-spacing:1px;opacity:.6;margin-bottom:4px}
+#tournaments .tour .match-time b{font-size:12px;line-height:1.35}
+#tournaments .tour .meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:10px!important;font-weight:800;letter-spacing:.25px;opacity:.82;margin:0!important}
+#tournaments .tour .prize-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0!important;align-items:stretch}
+#tournaments .tour .prize{padding:11px 10px;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);min-width:0}
+#tournaments .tour .prize b{font-size:15px!important;color:#fff0bd;display:block;overflow-wrap:anywhere}
+#tournaments .tour .prize small{display:block;font-size:8px!important;line-height:1.35;letter-spacing:.8px;opacity:.65;margin-top:4px}
+#tournaments .tour .join{grid-column:1/-1;width:100%;min-height:45px;border-radius:11px!important;background:linear-gradient(100deg,#ffca55,#ff9e22)!important;color:#211306!important;font-weight:1000!important;letter-spacing:.5px;box-shadow:0 5px 16px rgba(255,157,28,.18);border:0!important}
+#tournaments .tour .join:disabled{opacity:.7;box-shadow:none;filter:saturate(.55)}
+@media(max-width:520px){#tournaments{grid-template-columns:1fr;gap:14px}#tournaments .tour .tour-banner{height:145px!important;min-height:145px!important}#tournaments .tour .tour-body{padding:14px!important}#tournaments .tour-entry-strip{gap:8px}}
+@media(prefers-reduced-motion:reduce){#tournaments .tour{transition:none}}
