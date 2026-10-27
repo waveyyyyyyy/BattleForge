@@ -349,10 +349,30 @@ async function showAdmin() {
     <label class="admin-check"><input id="adminRoomPublished" type="checkbox"><span><b>Publish room to registered players</b><small>Players will see room details and the eligible roster.</small></span></label>
     <button id="adminSaveRoom" class="join full">Save room settings</button></div>
     <div id="adminPlayersSection" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Players & results</h3><p>Load registered players and publish verified match results.</p></div></div><button id="adminLoadEntries" class="outline full">Load players / record results</button><div id="adminEntries" class="admin-entries"></div></div>
+    <div class="admin-section version-control-section"><div class="admin-section-title"><span>05</span><div><h3>App version & forced update</h3><p>Change the APK link and update rules without rebuilding this app.</p></div></div>
+    <label class="field">LATEST VERSION<input id="appLatestVersion" maxlength="30" placeholder="1.2.0"></label>
+    <label class="field">MINIMUM SUPPORTED VERSION<input id="appMinimumVersion" maxlength="30" placeholder="1.1.0"></label>
+    <label class="field">APK / UPDATE LINK<input id="appApkUrl" type="url" maxlength="1000" placeholder="https://example.com/battleforge.apk"></label>
+    <label class="field">UPDATE MESSAGE<textarea id="appUpdateMessage" maxlength="500" rows="3" placeholder="A new version is ready. Update to continue."></textarea></label>
+    <label class="admin-check"><input id="appForceUpdate" type="checkbox"><span><b>Force update to latest version</b><small>When enabled, older versions are blocked until the player opens the update link.</small></span></label>
+    <button id="loadAppUpdateConfig" class="outline full">Load saved settings</button><button id="saveAppUpdateConfig" class="join full">Save version settings</button>
+    <p class="notice">Use a direct HTTPS APK download link. Keep force update off until the APK is uploaded and tested.</p></div>
     <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Result publishing records results only; it does not transfer prize money or credit wallet coins.</p></div>`);
   $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
   document.querySelectorAll('[data-admin-jump]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'})));
-  await loadAdminRoom(); syncAdminSelectedSummary();
+  await loadAdminRoom(); syncAdminSelectedSummary(); await loadAppUpdateConfig();
+}
+
+async function loadAppUpdateConfig() {
+  if (!isAdmin) return;
+  const { data, error } = await supabase.from('app_update_config').select('latest_version,minimum_version,apk_url,update_message,force_update').eq('id',1).maybeSingle();
+  if (error) { toast('Could not load version settings. Run supabase/app_version_control.sql first.'); return; }
+  if (!data) return;
+  if ($('#appLatestVersion')) $('#appLatestVersion').value = data.latest_version || '';
+  if ($('#appMinimumVersion')) $('#appMinimumVersion').value = data.minimum_version || '';
+  if ($('#appApkUrl')) $('#appApkUrl').value = data.apk_url || '';
+  if ($('#appUpdateMessage')) $('#appUpdateMessage').value = data.update_message || '';
+  if ($('#appForceUpdate')) $('#appForceUpdate').checked = data.force_update === true;
 }
 
 function syncAdminSelectedSummary() {
@@ -499,6 +519,21 @@ $('#modalContent').addEventListener('change', async e => {
 $('#modalContent').addEventListener('click', async e => {
   const button = e.target.closest('button');
   if (!button) return;
+  if (button.id === 'loadAppUpdateConfig') { await loadAppUpdateConfig(); return; }
+  if (button.id === 'saveAppUpdateConfig') {
+    if (!isAdmin) return toast('Admin access required.');
+    const latest = $('#appLatestVersion').value.trim(), minimum = $('#appMinimumVersion').value.trim();
+    const apk = $('#appApkUrl').value.trim(), message = $('#appUpdateMessage').value.trim();
+    const force = $('#appForceUpdate').checked, pattern = /^\\d+(\\.\\d+){1,3}$/;
+    if (!pattern.test(latest) || !pattern.test(minimum)) return toast('Use version numbers like 1.2.0.');
+    if (apk && !/^https:\\/\\//i.test(apk)) return toast('APK link must start with https://');
+    if (force && !apk) return toast('Add and test the APK link before forcing updates.');
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_set_app_update_config', { p_latest_version:latest, p_minimum_version:minimum, p_apk_url:apk, p_update_message:message, p_force_update:force });
+    button.disabled = false;
+    if (error) return toast(error.message);
+    toast('App version settings saved.'); return;
+  }
   if (button.id === 'adminCreateTournament') {
     if (!isAdmin) return toast('Admin access required.');
     const title = $('#adminTitle').value.trim();
@@ -596,4 +631,35 @@ $('#modalContent').addEventListener('click', async event => {
 });
 supabase.auth.onAuthStateChange(() => { setTimeout(() => refreshData(), 0); });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
+const APP_FALLBACK_VERSION = '1.1.0';
+function parseVersion(value) {
+  const parts = String(value || '0').split('.').map(part => Number.parseInt(part, 10) || 0);
+  while (parts.length < 4) parts.push(0);
+  return parts;
+}
+function compareVersions(a, b) {
+  const left = parseVersion(a), right = parseVersion(b);
+  for (let i = 0; i < 4; i++) if (left[i] !== right[i]) return left[i] > right[i] ? 1 : -1;
+  return 0;
+}
+async function checkAppVersion() {
+  try {
+    const { data, error } = await supabase.from('app_update_config').select('latest_version,minimum_version,apk_url,update_message,force_update').eq('id',1).maybeSingle();
+    if (error || !data) return;
+    let installed = APP_FALLBACK_VERSION;
+    try { if (Capacitor.isNativePlatform()) installed = (await App.getInfo()).version || installed; } catch {}
+    const belowMinimum = compareVersions(installed, data.minimum_version) < 0;
+    const forcedLatest = data.force_update === true && compareVersions(installed, data.latest_version) < 0;
+    if (!((belowMinimum || forcedLatest) && data.apk_url)) return;
+    let gate = $('#forceUpdateGate');
+    if (!gate) { gate = document.createElement('section'); gate.id = 'forceUpdateGate'; gate.className = 'force-update-gate'; gate.setAttribute('role','dialog'); gate.setAttribute('aria-modal','true'); document.body.appendChild(gate); }
+    gate.innerHTML = '<div class="force-update-card"><div class="force-update-mark">BF</div><div class="eyebrow">UPDATE REQUIRED</div><h1>Update <span class="accent">BattleForge.</span></h1><p>' + esc(data.update_message || 'Please update BattleForge to continue.') + '</p><div class="force-version-row"><span>Installed <b>' + esc(installed) + '</b></span><span>Latest <b>' + esc(data.latest_version) + '</b></span></div><button id="forceUpdateOpenLink" class="join full">Update BattleForge ↗</button><p class="force-update-footnote">After installing the update, reopen BattleForge.</p></div>';
+    gate.classList.add('visible');
+    $('#forceUpdateOpenLink').addEventListener('click', async () => {
+      try { if (Capacitor.isNativePlatform()) await Browser.open({url:data.apk_url}); else window.open(data.apk_url,'_blank','noopener,noreferrer'); }
+      catch { window.open(data.apk_url,'_blank','noopener,noreferrer'); }
+    });
+  } catch (error) { console.warn('App version check failed', error); }
+}
+checkAppVersion();
 refreshData();
