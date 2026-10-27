@@ -263,8 +263,7 @@ async function handleNativeAuthCallback(rawUrl) {
     googleAuthCodesHandled.add(code);
     await Browser.close().catch(() => {});
     close();
-    await checkForForcedUpdate();
-refreshData();
+    refreshData();
     toast('Signed in successfully with Google.');
   } catch (error) {
     await Browser.close().catch(() => {});
@@ -668,4 +667,5 @@ $('#modalContent').addEventListener('click', async event => {
 });
 supabase.auth.onAuthStateChange(() => { setTimeout(() => refreshData(), 0); });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
+checkForForcedUpdate();
 refreshData();
