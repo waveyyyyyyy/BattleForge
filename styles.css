@@ -51,3 +51,30 @@ html{scroll-behavior:smooth;scroll-padding-top:90px}body{background:radial-gradi
 
 /* Player-facing deposit QR */
 .deposit-qr{display:block;width:min(100%,360px);height:auto;object-fit:contain;margin:14px auto 18px;border-radius:12px;background:#fff;border:1px solid var(--line);}
+
+
+/* Premium motion pass */
+@keyframes bfFadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bfGlow{0%,100%{box-shadow:0 0 0 rgba(199,255,61,0)}50%{box-shadow:0 0 24px rgba(199,255,61,.16)}}
+@keyframes bfPulse{0%,100%{opacity:.65;transform:scale(.96)}50%{opacity:1;transform:scale(1.04)}}
+.page-view.active{animation:bfFadeUp .28s ease both}
+.page-view.active .hero,.page-view.active .page-heading{animation:bfFadeUp .38s cubic-bezier(.2,.7,.2,1) both}
+.tour{animation:bfFadeUp .38s cubic-bezier(.2,.7,.2,1) both}
+.tour:nth-child(2){animation-delay:45ms}.tour:nth-child(3){animation-delay:90ms}.tour:nth-child(4){animation-delay:135ms}
+.join:not(:disabled):hover{filter:brightness(1.06);box-shadow:0 0 22px rgba(199,255,61,.18)}
+.join:not(:disabled):focus-visible{animation:bfGlow 1.1s ease-in-out infinite}
+.mark{animation:bfPulse 4s ease-in-out infinite}
+.toast.show{animation:bfFadeUp .2s ease both}
+.modal:not(.hidden) .modal-card{animation:bfFadeUp .22s cubic-bezier(.2,.7,.2,1) both}
+.admin-section{scroll-margin-top:16px}
+.version-control-section{border-color:rgba(199,255,61,.25);background:linear-gradient(145deg,rgba(199,255,61,.055),rgba(14,19,27,.96))}
+.version-control-section textarea{display:block;width:100%;margin-top:7px;padding:13px;background:#0a0f15;border:1px solid #2b3644;border-radius:11px;color:white;font:inherit;resize:vertical}
+.force-update-gate{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(5,8,12,.97);backdrop-filter:blur(22px)}
+.force-update-gate.visible{display:flex;animation:bfFadeUp .25s ease both}
+.force-update-card{width:min(100%,440px);padding:28px 22px;border:1px solid rgba(199,255,61,.28);border-radius:24px;background:radial-gradient(ellipse at 50% 0%,rgba(199,255,61,.12),transparent 55%),linear-gradient(155deg,#1a222d,#10151d);box-shadow:0 28px 100px #000a;text-align:center}
+.force-update-mark{display:grid;place-items:center;margin:0 auto 20px;width:62px;height:62px;border-radius:16px;background:var(--lime);color:#10150a;font-size:24px;font-weight:1000;box-shadow:0 0 38px rgba(199,255,61,.2)}
+.force-update-card .eyebrow{margin:auto}.force-update-card h1{font-size:clamp(40px,10vw,54px);margin:18px 0 12px}.force-update-card>p{line-height:1.7}
+.force-version-row{display:flex;justify-content:space-between;gap:12px;margin:22px 0;padding:14px;border:1px solid var(--line);border-radius:12px;background:#080c11aa;color:var(--muted);font-size:11px}
+.force-version-row b{display:block;color:var(--text);font-size:14px;margin-top:5px}
+.force-update-footnote{font-size:10px!important;margin-bottom:0}
+@media(prefers-reduced-motion:reduce){.page-view.active,.page-view.active .hero,.page-view.active .page-heading,.tour,.mark,.toast.show,.modal:not(.hidden) .modal-card,.force-update-gate.visible{animation:none!important}}
