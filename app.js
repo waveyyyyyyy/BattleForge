@@ -669,3 +669,6 @@ supabase.auth.onAuthStateChange(() => { setTimeout(() => refreshData(), 0); });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
 checkForForcedUpdate();
 refreshData();
+window.addEventListener('focus', () => { if (!document.hidden) checkForForcedUpdate(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForForcedUpdate(); });
+setInterval(() => { if (!document.hidden) checkForForcedUpdate(); }, 60000);
