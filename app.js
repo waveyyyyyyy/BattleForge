@@ -524,9 +524,13 @@ $('#modalContent').addEventListener('click', async e => {
     if (!isAdmin) return toast('Admin access required.');
     const latest = $('#appLatestVersion').value.trim(), minimum = $('#appMinimumVersion').value.trim();
     const apk = $('#appApkUrl').value.trim(), message = $('#appUpdateMessage').value.trim();
-    const force = $('#appForceUpdate').checked, pattern = /^\\d+(\\.\\d+){1,3}$/;
-    if (!pattern.test(latest) || !pattern.test(minimum)) return toast('Use version numbers like 1.2.0.');
-    if (apk && !/^https:\\/\\//i.test(apk)) return toast('APK link must start with https://');
+    const force = $('#appForceUpdate').checked;
+    const validVersion = value => {
+      const parts = value.split('.');
+      return parts.length >= 2 && parts.length <= 4 && parts.every(part => /^\d+$/.test(part));
+    };
+    if (!validVersion(latest) || !validVersion(minimum)) return toast('Use version numbers like 1.2.0.');
+    if (apk && !apk.startsWith('https://')) return toast('APK link must start with https://');
     if (force && !apk) return toast('Add and test the APK link before forcing updates.');
     button.disabled = true;
     const { error } = await supabase.rpc('admin_set_app_update_config', { p_latest_version:latest, p_minimum_version:minimum, p_apk_url:apk, p_update_message:message, p_force_update:force });
