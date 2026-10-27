@@ -2,7 +2,7 @@ name: Build BattleForge Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main, "feature/payment-minimums-earned-withdrawal-policy"]
+    branches: [main]
 permissions:
   contents: read
 jobs:
