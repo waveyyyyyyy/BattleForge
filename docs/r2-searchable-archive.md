@@ -19,11 +19,11 @@ Keep archived historical data in Cloudflare R2 while admins can still search a p
 
 ## Implementation status (2026-10-28)
 - The additive `r2_archive_manifest` table has been applied to Supabase and verified to exist with zero rows.
-- The JWT-protected `r2-player-archive` Edge Function is deployed. It checks the user's authenticated identity and verifies membership in `admin_users` before every action.
+- The JWT-protected `r2-player-archive` Edge Function (version 2) is deployed. It checks the user's authenticated identity and verifies membership in `admin_users` before every action; uploads are read back and SHA-256 checked before the manifest is marked verified.
 - The admin dashboard now has player search by username or exact player number, live-history viewing, archive upload, and checksum-verified archive reading.
 - The Edge Function source is versioned at `supabase/functions/r2-player-archive/index.ts` on the feature branch.
 - No real player data has been archived, and no original rows have been deleted.
-- A live end-to-end invocation using an authenticated admin session is still required to confirm the R2 secrets and UI path in the deployed app.
+- The app JavaScript syntax check passed in GitHub Actions. A live end-to-end invocation using an authenticated admin session is still required to confirm the R2 secrets and UI path in the deployed app. A full Vite build could not run because npm returned a 404 for the resolved Rollup tarball, so CI currently runs the dependency-free syntax check.
 
 ## Rollout / validation
 1. Verify the four server-side R2 secrets are configured: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_BUCKET_NAME`. Never place them in the client.
