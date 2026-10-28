@@ -121,9 +121,12 @@ Deno.serve(async (req: Request) => {
     const objectKey = `players/${player.user_id}/tournament-history/${Date.now()}-${crypto.randomUUID()}.json`;
     try {
       await s3.send(new PutObjectCommand({ Bucket: bucketName, Key: objectKey, Body: bytes, ContentType: "application/json", Metadata: { sha256: checksum, player_id: player.user_id, archive_version: "1" } }));
+      const uploaded = await s3.send(new GetObjectCommand({ Bucket: bucketName, Key: objectKey }));
+      const uploadedBytes = await uploaded.Body?.transformToByteArray();
+      if (!uploadedBytes || await sha256(uploadedBytes) !== checksum) throw new Error("R2 read-back checksum mismatch");
     } catch (error) {
-      console.error("R2 archive upload failed", error instanceof Error ? error.message : "unknown");
-      return reply({ error: "Could not upload archive to private R2 storage. Original database records were not changed." }, 502);
+      console.error("R2 archive upload/read-back verification failed", error instanceof Error ? error.message : "unknown");
+      return reply({ error: "Could not verify the uploaded archive in private R2 storage. Original database records were not changed." }, 502);
     }
     const { data: manifest, error: insertError } = await db.from("r2_archive_manifest").insert({
       player_id: player.user_id, record_type: "tournament_history", object_key: objectKey,
