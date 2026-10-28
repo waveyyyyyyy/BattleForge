@@ -17,13 +17,20 @@ Keep archived historical data in Cloudflare R2 while admins can still search a p
 4. The function reads the corresponding private R2 JSON objects and verifies SHA-256 checksums.
 5. The admin UI shows live and archived history together, clearly labelled and paginated.
 
-## Rollout
-1. Add the archive manifest in a reviewed migration and test it in staging first.
-2. Build an admin-only Edge Function with strict archive types, size limits, checksums, and audit logging. R2 credentials must never reach the app.
-3. Integrate the read-only player search/history API into the actual admin UI.
-4. Test with synthetic data: authorization, missing objects, checksum mismatch, pagination, and rollback.
-5. Copy eligible historical data to R2, read it back, and compare counts/checksums before marking it verified.
-6. Retain original database rows by default. Any deletion requires a separate reviewed migration, backup, and explicit approval.
+## Implementation status (2026-10-28)
+- The additive `r2_archive_manifest` table has been applied to Supabase and verified to exist with zero rows.
+- The JWT-protected `r2-player-archive` Edge Function is deployed. It checks the user's authenticated identity and verifies membership in `admin_users` before every action.
+- The admin dashboard now has player search by username or exact player number, live-history viewing, archive upload, and checksum-verified archive reading.
+- The Edge Function source is versioned at `supabase/functions/r2-player-archive/index.ts` on the feature branch.
+- No real player data has been archived, and no original rows have been deleted.
+- A live end-to-end invocation using an authenticated admin session is still required to confirm the R2 secrets and UI path in the deployed app.
+
+## Rollout / validation
+1. Verify the four server-side R2 secrets are configured: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_BUCKET_NAME`. Never place them in the client.
+2. Test with a dedicated test admin and a synthetic past-match result. Verify search, upload, read-back, and checksum.
+3. Test rejection for non-admin users, missing objects, checksum mismatch, and oversized payloads.
+4. Only after those checks, archive eligible historical results from matches marked as past.
+5. Retain original database rows by default. Any deletion requires a separate reviewed migration, backup, and explicit approval.
 
 ## Never archive as a substitute for live database records
 Wallet balances, ledger entries, pending deposit/withdrawal requests, auth users, player identities, and active tournament state stay in PostgreSQL until a separately engineered and tested replacement exists.
