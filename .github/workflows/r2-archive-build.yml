@@ -1,0 +1,15 @@
+name: BattleForge archive integration syntax check
+on:
+  push:
+    branches:
+      - r2-searchable-archive-foundation
+  pull_request:
+    branches:
+      - main
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check app JavaScript syntax
+        run: node --check app.js

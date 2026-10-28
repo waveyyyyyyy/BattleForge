@@ -51,3 +51,16 @@ html{scroll-behavior:smooth;scroll-padding-top:90px}body{background:radial-gradi
 
 /* Player-facing deposit QR */
 .deposit-qr{display:block;width:min(100%,360px);height:auto;object-fit:contain;margin:14px auto 18px;border-radius:12px;background:#fff;border:1px solid var(--line);}
+
+/* Admin searchable R2 archive */
+.archive-search-panel{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}
+.archive-search-panel h4{margin:0 0 8px;font-size:14px}
+.archive-search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:12px 0}
+.archive-search-row input{min-width:0;width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface,rgba(255,255,255,.04));color:var(--text,#fff);font:inherit}
+.archive-player-row{gap:8px;flex-wrap:wrap}
+.archive-player-row>div{flex:1;min-width:130px}
+.archive-player-row button{font-size:11px;padding:9px 10px}
+#archivePlayerHistory{margin-top:14px}
+#archivePlayerHistory h4{margin:18px 0 9px}
+#archivePlayerHistory .admin-current-summary{margin:8px 0}
+@media(max-width:480px){.archive-search-panel{padding:10px}.archive-search-row{grid-template-columns:minmax(0,1fr)}.archive-player-row button{flex:1}}
