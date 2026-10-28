@@ -301,6 +301,78 @@ async function showHistory() {
   }).join('') : '<div class="empty-state"><span>◷</span><h3>No matches yet</h3><p>Join a tournament from the Arena page and your registration will show up here.</p><button class="join" data-go="arena">Explore tournaments</button></div>';
 }
 
+async function callR2Archive(action, payload = {}) {
+  const { data, error } = await supabase.functions.invoke('r2-player-archive', { body: { action, ...payload } });
+  if (error) {
+    let message = error.message || 'Archive service request failed.';
+    try { const detail = await error.context?.json?.(); if (detail?.error) message = detail.error; } catch {}
+    throw new Error(message);
+  }
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+async function searchArchivePlayers() {
+  if (!isAdmin) return toast('Admin access required.');
+  const input = $('#archivePlayerSearch');
+  const output = $('#archivePlayerSearchResults');
+  const term = input?.value.trim() || '';
+  if (!term) return toast('Enter a username or player number.');
+  output.textContent = 'Searching players…';
+  try {
+    const data = await callR2Archive('search-player', { search: term });
+    output.innerHTML = data.players?.length ? data.players.map(p => `<div class="entry archive-player-row"><div><b>${esc(p.username || 'Unnamed player')}</b><small>Player #${esc(p.player_number)} · Joined ${esc(new Date(p.created_at).toLocaleDateString())}</small></div><button class="outline" data-archive-view="${esc(p.user_id)}">View history</button><button class="outline" data-archive-copy="${esc(p.user_id)}">Archive past results</button></div>`).join('') : '<p class="admin-helper">No matching players found.</p>';
+  } catch (error) {
+    output.textContent = error.message || 'Player search failed.';
+  }
+}
+
+async function showArchivePlayerHistory(playerId) {
+  if (!isAdmin) return toast('Admin access required.');
+  const output = $('#archivePlayerHistory');
+  if (!output) return;
+  output.textContent = 'Loading live and archived history…';
+  try {
+    const data = await callR2Archive('player-history', { player_id: playerId });
+    const titles = new Map((data.live_tournaments || []).map(t => [Number(t.id), t]));
+    const live = (data.live_results || []).map(r => {
+      const t = titles.get(Number(r.tournament_id));
+      return `<div class="activity-row"><div><b>${esc(t?.title || ('Match #' + r.tournament_id))}</b><small>${esc(t?.game_mode || 'Match')} · ${r.placement ? 'Place #' + Number(r.placement) + ' · ' : ''}${Number(r.kills || 0)} kills</small><small>${esc(new Date(r.created_at).toLocaleString())}</small></div><strong>${Number(r.earned_points || 0)} coins</strong></div>`;
+    }).join('');
+    const archived = (data.archives || []).map(a => {
+      if (a.status !== 'verified') return `<div class="admin-current-summary"><b>Archive needs attention</b><small>Archive ${esc(a.manifest_id)} · ${esc(a.status)}</small></div>`;
+      const payload = a.payload || {};
+      const archiveTitles = new Map((payload.tournaments || []).map(t => [Number(t.id), t]));
+      const rows = (payload.results || []).map(r => {
+        const t = archiveTitles.get(Number(r.tournament_id));
+        return `<div class="activity-row"><div><b>${esc(t?.title || ('Match #' + r.tournament_id))}</b><small>Archived result · ${r.placement ? 'Place #' + Number(r.placement) + ' · ' : ''}${Number(r.kills || 0)} kills</small><small>${esc(new Date(r.created_at).toLocaleString())}</small></div><strong>${Number(r.earned_points || 0)} coins</strong></div>`;
+      }).join('');
+      return `<div class="admin-current-summary"><b>Verified R2 archive</b><small>${Number(a.record_count || 0)} records · archived ${esc(new Date(a.archived_at).toLocaleString())}</small></div>${rows || '<p>No result rows in this archive.</p>'}`;
+    }).join('');
+    output.innerHTML = `<h4>Live history (${(data.live_results || []).length})</h4>${live || '<p class="admin-helper">No live published results.</p>'}<h4>R2 archived history (${(data.archives || []).length} archive files)</h4>${archived || '<p class="admin-helper">No verified R2 archives for this player yet.</p>'}`;
+  } catch (error) {
+    output.textContent = error.message || 'Could not load player history.';
+  }
+}
+
+async function archivePlayerHistory(playerId, button) {
+  if (!isAdmin) return toast('Admin access required.');
+  if (!window.confirm('Copy this player’s published results from matches marked as past to private R2 storage? Original database records will remain unchanged.')) return;
+  button.disabled = true;
+  const oldLabel = button.textContent;
+  button.textContent = 'Archiving…';
+  try {
+    const result = await callR2Archive('archive-history', { player_id: playerId });
+    toast(result.message || 'Archive request completed.');
+    if (result.archived) await showArchivePlayerHistory(playerId);
+  } catch (error) {
+    toast(error.message || 'Archive failed. Original records were not changed.');
+  } finally {
+    button.disabled = false;
+    button.textContent = oldLabel;
+  }
+}
+
 async function loadAdminRoom() {
   if (!isAdmin) return;
   const id = Number($('#adminTournament')?.value);
@@ -348,7 +420,7 @@ async function showAdmin() {
     <label class="field">ROOM ID<input id="adminRoomId" maxlength="80" placeholder="Enter room ID"></label><label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80" placeholder="Enter room password"></label>
     <label class="admin-check"><input id="adminRoomPublished" type="checkbox"><span><b>Publish room to registered players</b><small>Players will see room details and the eligible roster.</small></span></label>
     <button id="adminSaveRoom" class="join full">Save room settings</button></div>
-    <div id="adminPlayersSection" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Players & results</h3><p>Load registered players and publish verified match results.</p></div></div><button id="adminLoadEntries" class="outline full">Load players / record results</button><div id="adminEntries" class="admin-entries"></div></div>
+    <div id="adminPlayersSection" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Players & results</h3><p>Load registered players and publish verified match results.</p></div></div><div class="archive-search-panel"><h4>Player history & R2 archive</h4><p class="admin-helper">Search by username or exact player number. Archived records are copied to private R2 and original database rows are retained.</p><div class="archive-search-row"><input id="archivePlayerSearch" maxlength="80" autocomplete="off" placeholder="Username or player number"><button id="archivePlayerSearchButton" class="join">Search</button></div><div id="archivePlayerSearchResults" class="admin-entries"></div><div id="archivePlayerHistory" class="admin-entries"></div></div><button id="adminLoadEntries" class="outline full">Load tournament players / record results</button><div id="adminEntries" class="admin-entries"></div></div>
     <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Result publishing records results only; it does not transfer prize money or credit wallet coins.</p></div>`);
   $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
   document.querySelectorAll('[data-admin-jump]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'})));
@@ -499,6 +571,10 @@ $('#modalContent').addEventListener('change', async e => {
 $('#modalContent').addEventListener('click', async e => {
   const button = e.target.closest('button');
   if (!button) return;
+  if (button.id === 'archivePlayerSearchButton') { await searchArchivePlayers(); return; }
+  if (button.id === 'archivePlayerSearch') { return; }
+  if (button.dataset.archiveView) { await showArchivePlayerHistory(button.dataset.archiveView); return; }
+  if (button.dataset.archiveCopy) { await archivePlayerHistory(button.dataset.archiveCopy, button); return; }
   if (button.id === 'adminCreateTournament') {
     if (!isAdmin) return toast('Admin access required.');
     const title = $('#adminTitle').value.trim();
