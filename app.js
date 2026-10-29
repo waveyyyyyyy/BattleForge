@@ -39,12 +39,20 @@ function toast(message) {
   setTimeout(() => el.classList.remove('show'), 2600);
 }
 function modal(html) {
+  // Keep dialogs anchored to the visible viewport even when the Arena page was scrolled far down.
+  window.scrollTo(0, 0);
+  const overlay = $('#modal');
   $('#modalContent').innerHTML = html;
-  $('#modal').classList.toggle('profile-modal', html.includes('profile-sheet'));
-  $('#modal').classList.remove('hidden');
-  // Every newly opened panel starts at the top; this prevents the admin portal opening at an old scroll position.
+  overlay.classList.toggle('profile-modal', html.includes('profile-sheet'));
+  overlay.classList.remove('hidden');
+  overlay.scrollTop = 0;
+  // Reset both scroll containers; Android WebViews can otherwise retain the prior dialog's position.
   const card = $('#modal .modal-card');
-  if (card) card.scrollTop = 0;
+  if (card) {
+    card.scrollTop = 0;
+    card.style.marginTop = '0';
+    card.style.alignSelf = 'flex-start';
+  }
 }
 function close() { $('#modal').classList.add('hidden'); $('#modal').classList.remove('profile-modal'); }
 function setPage(tab) {
@@ -527,7 +535,11 @@ async function loadLeaderboard(period = leaderboardPeriod) {
   leaderboardPeriod = period; const target = $('#leaderboardContent'); if (!target) return; target.innerHTML = '<p class="notice">Loading leaderboard…</p>';
   document.querySelectorAll('[data-lb-period]').forEach(b => { const active = b.dataset.lbPeriod === period; b.classList.toggle('join', active); b.classList.toggle('outline', !active); });
   const { data, error } = await supabase.rpc('get_earnings_leaderboard', { p_period: period });
-  if (error) { console.warn('Leaderboard unavailable', error); target.innerHTML = '<p class="notice">Leaderboard is not available yet. Please try again later.</p>'; return; }
+  if (error) {
+    console.warn('Leaderboard RPC failed:', error);
+    target.innerHTML = '<div class="empty-state"><span>⚠</span><b>Could not load the leaderboard</b><p>' + esc(error.message || 'Connection error') + '</p><p>Try tapping Overall, Monthly, or Daily again.</p></div>';
+    return;
+  }
   const rows = Array.isArray(data) ? data : [];
   target.innerHTML = rows.length ? rows.map((r,i) => `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player"><b>${esc(String(r.username || '').trim() || ('Player '+(r.player_number || '')))}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}</small></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
 }
