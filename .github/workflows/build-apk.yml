@@ -40,12 +40,12 @@ jobs:
           version_code = parts[0] * 1000000 + parts[1] * 1000 + parts[2]
           path = Path("android/app/build.gradle")
           gradle = path.read_text()
-          if not re.search(r"\\bversionCode\\s+\\d+", gradle):
+          if not re.search(r"\bversionCode\s+\d+", gradle):
               raise SystemExit("Could not find Android versionCode in generated build.gradle")
-          if not re.search(r"\\bversionName\\s+[\"'][^\"']+[\"']", gradle):
+          if not re.search(r"\bversionName\s+[\"'][^\"']+[\"']", gradle):
               raise SystemExit("Could not find Android versionName in generated build.gradle")
-          gradle = re.sub(r"\\bversionCode\\s+\\d+", f"versionCode {version_code}", gradle, count=1)
-          gradle = re.sub(r"\\bversionName\\s+[\"'][^\"']+[\"']", f'versionName "{version}"', gradle, count=1)
+          gradle = re.sub(r"\bversionCode\s+\d+", f"versionCode {version_code}", gradle, count=1)
+          gradle = re.sub(r"\bversionName\s+[\"'][^\"']+[\"']", f'versionName "{version}"', gradle, count=1)
           path.write_text(gradle)
           print(f"Configured Android versionName={version}, versionCode={version_code}")
           PY
