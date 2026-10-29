@@ -32,7 +32,10 @@ begin
     raise exception 'Admin access required';
   end if;
   if p_latest_version !~ '^\d+(\.\d+){1,3}$' or p_minimum_version !~ '^\d+(\.\d+){1,3}$' then
-    raise exception 'Versions must look like 1.2.0';
+    raise exception 'Versions must look like 1.2.1';
+  end if;
+  if string_to_array(p_minimum_version, '.')::int[] > string_to_array(p_latest_version, '.')::int[] then
+    raise exception 'Minimum supported version cannot be newer than latest version';
   end if;
   if coalesce(p_apk_url,'') <> '' and p_apk_url !~ '^https://' then
     raise exception 'APK URL must use HTTPS';
