@@ -39,7 +39,7 @@ jobs:
               raise SystemExit("package.json version must contain major.minor.patch")
           version = f"{int(parts[0])}.{int(parts[1])}.{int(os.environ['BUILD_NUMBER'])}"
           package["version"] = version
-          package_path.write_text(json.dumps(package, indent=2) + "\\n")
+          package_path.write_text(json.dumps(package, indent=2) + "\n")
 
           app_path = Path("app.js")
           app_source = app_path.read_text()
