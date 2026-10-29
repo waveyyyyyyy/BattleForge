@@ -1118,10 +1118,10 @@ async function loadAppUpdateConfig(){if(!isAdmin)return toast('Admin access requ
 async function saveAppUpdateConfig(){
   if(!isAdmin)return toast('Admin access required.');
   const latest=$('#appLatestVersion')?.value.trim(),minimum=$('#appMinimumVersion')?.value.trim(),apk=$('#appApkUrl')?.value.trim(),message=$('#appUpdateMessage')?.value.trim()||'',force=$('#appForceUpdate')?.checked===true;
-  const valid=v=>/^[0-9]+(?:\\.[0-9]+){1,3}$/.test(v||'');
+  const valid=v=>/^[0-9]+([.][0-9]+){1,3}$/.test(v||'');
   if(!valid(latest)||!valid(minimum))return toast('Use versions like 1.2.125.');
   if(compareAppVersions(minimum,latest)>0)return toast('Minimum supported version cannot be newer than latest version.');
-  if(apk&&!/^https:\\/\\//i.test(apk))return toast('APK link must start with https://');
+  if(apk&&!apk.toLowerCase().startsWith('https://'))return toast('APK link must start with https://');
   if(force&&!apk)return toast('Add the direct APK download link before forcing updates.');
   const b=$('#saveAppUpdateConfig');
   if(b){b.disabled=true;b.textContent='Saving…';}
