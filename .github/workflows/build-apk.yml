@@ -58,6 +58,23 @@ jobs:
         run: npm run build
       - name: Add Android platform
         run: npx cap add android
+      - name: Ensure Android notification runtime permission is declared
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
+          tree = ET.parse(path)
+          root = tree.getroot()
+          android = '{http://schemas.android.com/apk/res/android}'
+          permission = 'android.permission.POST_NOTIFICATIONS'
+          if not any(node.tag == 'uses-permission' and node.get(android + 'name') == permission for node in root):
+              node = ET.Element('uses-permission', {android + 'name': permission})
+              root.insert(0, node)
+          tree.write(path, encoding='utf-8', xml_declaration=True)
+          print('Verified POST_NOTIFICATIONS is declared in AndroidManifest.xml')
+          PY
       - name: Set Android version from package.json
         run: |
           python - <<'PY'
