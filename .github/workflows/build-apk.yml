@@ -22,6 +22,38 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: npm install
+      - name: Assign a unique version to every APK build
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          package_path = Path("package.json")
+          package = json.loads(package_path.read_text())
+          parts = package["version"].split(".")
+          if len(parts) < 2:
+              raise SystemExit("package.json version must contain major.minor.patch")
+          version = f"{int(parts[0])}.{int(parts[1])}.{int(os.environ['BUILD_NUMBER'])}"
+          package["version"] = version
+          package_path.write_text(json.dumps(package, indent=2) + "\n")
+
+          app_path = Path("app.js")
+          app_source = app_path.read_text()
+          app_source, count = re.subn(
+              r"const APP_FALLBACK_VERSION='[^']+';",
+              f"const APP_FALLBACK_VERSION='{version}';",
+              app_source,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit("Could not set the runtime fallback app version")
+          app_path.write_text(app_source)
+          print(f"Assigned unique APK version {version} for workflow run {os.environ['BUILD_NUMBER']}")
+          PY
       - name: Build web app
         run: npm run build
       - name: Add Android platform
@@ -36,8 +68,11 @@ jobs:
           version = json.loads(Path("package.json").read_text())["version"]
           parts = [int(part) for part in version.split(".")]
           parts += [0] * (3 - len(parts))
-          # Monotonically increases for normal major.minor.patch releases.
-          version_code = parts[0] * 1000000 + parts[1] * 1000 + parts[2]
+          # Reserve six digits for the build-number patch so every workflow run
+          # gets a higher Android versionCode than previous builds.
+          if parts[2] >= 1000000 or parts[1] >= 100:
+              raise SystemExit("Version exceeds the supported versionCode range")
+          version_code = parts[0] * 100000000 + parts[1] * 1000000 + parts[2]
           path = Path("android/app/build.gradle")
           gradle = path.read_text()
           if not re.search(r"\bversionCode\s+\d+", gradle):
