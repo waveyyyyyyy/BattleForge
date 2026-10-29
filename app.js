@@ -27,6 +27,8 @@ function playUiSound(kind = 'tap') { if (read('bf_sound_enabled', true) !== true
 function read(k, fallback) {
   try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; }
 }
+function notificationSeenKey() { return 'bf_notifications_seen_ids_' + (currentUser?.id || 'guest'); }
+function getSeenNotificationIds() { const value = read(notificationSeenKey(), []); return Array.isArray(value) ? value.map(String) : []; }
 function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -40,10 +42,9 @@ function modal(html) {
   $('#modalContent').innerHTML = html;
   $('#modal').classList.toggle('profile-modal', html.includes('profile-sheet'));
   $('#modal').classList.remove('hidden');
-  if (html.includes('profile-sheet')) {
-    const card = $('#modal .modal-card');
-    if (card) card.scrollTop = 0;
-  }
+  // Every newly opened panel starts at the top; this prevents the admin portal opening at an old scroll position.
+  const card = $('#modal .modal-card');
+  if (card) card.scrollTop = 0;
 }
 function close() { $('#modal').classList.add('hidden'); $('#modal').classList.remove('profile-modal'); }
 function setPage(tab) {
@@ -231,7 +232,7 @@ async function saveRequiredUsername() {
   finally{if(button)button.disabled=false;}
 }
 
-async function setupBattleForgePush() {
+async function setupBattleForgePush(requestPermission = false) {
   if (!currentUser || !Capacitor.isNativePlatform() || pushRegistrationInProgress || pushRegisteredUserId === currentUser.id) return;
   pushRegistrationInProgress = true;
   try {
@@ -256,10 +257,23 @@ async function setupBattleForgePush() {
       });
     }
     let permission = await PushNotifications.checkPermissions();
-    if (permission.receive === 'prompt' || permission.receive === 'prompt-with-rationale') permission = await PushNotifications.requestPermissions();
-    if (permission.receive === 'granted') { await PushNotifications.register(); pushRegisteredUserId = currentUser.id; }
+    // Never trigger Android's permission dialog just because a user signs in again.
+    // Ask only after the user explicitly taps "Enable phone notifications".
+    if (requestPermission && (permission.receive === 'prompt' || permission.receive === 'prompt-with-rationale')) {
+      permission = await PushNotifications.requestPermissions();
+    }
+    if (permission.receive === 'granted') {
+      await PushNotifications.register();
+      pushRegisteredUserId = currentUser.id;
+      if (requestPermission) toast('Phone notifications enabled.');
+    } else if (requestPermission) {
+      toast(permission.receive === 'denied'
+        ? 'Notifications are blocked. Enable them in Android Settings → Apps → BattleForge → Notifications.'
+        : 'Notification permission was not granted.');
+    }
   } catch (error) {
-    console.warn('Push notifications are not configured on this build yet:', error);
+    console.warn('Push notification setup failed:', error);
+    if (requestPermission) toast('Could not enable phone notifications. Please try again.');
   } finally { pushRegistrationInProgress = false; }
 }
 
@@ -292,7 +306,7 @@ async function refreshData() {
         const prior = window.battleForgeBroadcasts || [];
         const priorIds = new Set(prior.map(n=>String(n.id)));
         window.battleForgeBroadcasts = notices;
-        const seen = read('bf_notifications_seen_ids',[]).map(String);
+        const seen = getSeenNotificationIds();
         const newest = notices.find(n=>!priorIds.has(String(n.id)) && !seen.includes(String(n.id)));
         // Seen IDs are persisted locally, so read announcements never retrigger the alert on refresh.
         if (newest && prior.length) toast('📣 ' + newest.title);
@@ -482,12 +496,33 @@ async function savePlayerProfile() {
 }
 
 function showNotifications() {
-  const items=window.battleForgeBroadcasts||[];
-  const seen=read('bf_notifications_seen_ids',[]); const ids=Array.isArray(seen)?seen.map(String):[];
-  modal(`<div class="notification-sheet"><div class="eyebrow">BATTLEFORGE UPDATES</div><h2>Notifications</h2><p class="profile-help">Announcements from the BattleForge admins.</p>${items.length?items.map(n=>`<article class="notification-card ${ids.includes(String(n.id))?'':'unread'}"><div class="notification-card-top"><b>${esc(n.title)}</b><small>${esc(new Date(n.created_at).toLocaleString())}</small></div><p>${esc(n.message)}</p></article>`).join(''):'<div class="empty-state"><span>♢</span><h3>You’re all caught up</h3><p>Admin announcements will appear here.</p></div>'}<button id="markNotificationsRead" class="join full">Mark all as read</button></div>`);
-  $('#markNotificationsRead')?.addEventListener('click',()=>{localStorage.setItem('bf_notifications_seen_ids',JSON.stringify(items.map(n=>String(n.id))));updateNotificationBadge();close();toast('Notifications marked as read.');});
+  const items = window.battleForgeBroadcasts || [];
+  const ids = getSeenNotificationIds();
+  const pushAction = Capacitor.isNativePlatform()
+    ? '<button id="enablePhoneNotifications" class="outline full">Enable phone notifications</button>'
+    : '';
+  modal(`<div class="notification-sheet"><div class="eyebrow">BATTLEFORGE UPDATES</div><h2>Notifications</h2><p class="profile-help">Announcements from the BattleForge admins.</p>${items.length ? items.map(n => `<article class="notification-card ${ids.includes(String(n.id)) ? '' : 'unread'}"><div class="notification-card-top"><b>${esc(n.title)}</b><small>${esc(new Date(n.created_at).toLocaleString())}</small></div><p>${esc(n.message)}</p></article>`).join('') : '<div class="empty-state"><span>♢</span><h3>You’re all caught up</h3><p>Admin announcements will appear here.</p></div>'}${pushAction}<button id="markNotificationsRead" class="join full">Mark all as read</button></div>`);
+  $('#markNotificationsRead')?.addEventListener('click', () => {
+    const allSeen = [...new Set([...getSeenNotificationIds(), ...items.map(n => String(n.id))])];
+    try { localStorage.setItem(notificationSeenKey(), JSON.stringify(allSeen)); }
+    catch (error) { console.warn('Could not persist read notification IDs', error); }
+    updateNotificationBadge();
+    close();
+    toast('Notifications marked as read.');
+  });
 }
-function updateNotificationBadge(){const items=window.battleForgeBroadcasts||[];const seen=read('bf_notifications_seen_ids',[]);const unread=items.filter(n=>!seen.map(String).includes(String(n.id))).length;const badge=$('#notificationBadge');if(badge){badge.textContent=unread>99?'99+':String(unread);badge.classList.toggle('hidden',unread===0);}}
+
+function updateNotificationBadge() {
+  const items = window.battleForgeBroadcasts || [];
+  const seen = getSeenNotificationIds();
+  const unread = items.filter(n => !seen.includes(String(n.id))).length;
+  const badge = $('#notificationBadge');
+  if (badge) {
+    badge.textContent = unread > 99 ? '99+' : String(unread);
+    badge.classList.toggle('hidden', unread === 0);
+  }
+}
+
 async function loadLeaderboard(period = leaderboardPeriod) {
   leaderboardPeriod = period; const target = $('#leaderboardContent'); if (!target) return; target.innerHTML = '<p class="notice">Loading leaderboard…</p>';
   document.querySelectorAll('[data-lb-period]').forEach(b => { const active = b.dataset.lbPeriod === period; b.classList.toggle('join', active); b.classList.toggle('outline', !active); });
@@ -552,8 +587,9 @@ async function loadAdminRoom() {
 
 async function showAdmin() {
   if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
-  const { data: adminTournamentRows, error: adminTournamentError } = await supabase.from('tournaments').select('id,title,game_mode,status,is_past_match,starts_at').order('id', { ascending: false });
+  const { data: adminTournamentRows, error: adminTournamentError } = await supabase.from('tournaments').select('id,title,description,game_mode,status,is_past_match,starts_at,entry_points,per_kill_points,prize_pool_points,max_players').order('id', { ascending: false });
   const adminAllTournaments = adminTournamentError ? tournaments : (adminTournamentRows || []);
+  window.battleForgeAdminTournaments = adminAllTournaments;
   const options = adminAllTournaments.map(t => `<option value="${esc(t.id)}">${esc(t.title)} (${esc(t.game_mode || 'Match')})${t.is_past_match ? ' · Past' : ''}</option>`).join('');
   const openCount = tournaments.filter(t => t.status === 'open').length;
   const closedCount = tournaments.filter(t => t.status === 'closed' || t.status === 'full').length;
@@ -572,6 +608,9 @@ async function showAdmin() {
     <button id="adminCreateTournament" class="join full">＋ Create tournament</button></div>
     <div id="adminManageSection" data-admin-page="manage" class="admin-section"><div class="admin-section-title"><span>02</span><div><h3>Manage tournament</h3><p>Select a match first, then edit its settings.</p></div></div>
     <label class="field">SELECT TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
+    <label class="field">MATCH NAME / TITLE<input id="adminEditTitle" maxlength="80" placeholder="Tournament title"></label>
+    <button id="adminSaveTitle" class="outline full">Save match name</button>
+    <p class="admin-helper">This renames the selected match without deleting its registrations, results, room details, or wallet history.</p>
     <div class="schedule-editor"><div class="schedule-editor-head"><span class="schedule-icon">◷</span><div><h4>Match schedule</h4><p>Change the date and exact start time, including for past matches.</p></div></div><label class="field">DATE & START TIME<input id="adminEditStarts" type="datetime-local"></label><button id="adminSaveSchedule" class="join full">Save match date & time</button><p class="admin-helper">The updated time will be visible directly on the match card.</p></div>
     <button id="adminMarkPastMatch" class="outline full">Move selected match to Past Matches</button><p class="admin-helper">This works even with just one registered player. Players will see Pending Results until you publish the rankings.</p>
     <div class="admin-current-summary" id="adminSelectedSummary">${tournaments.length ? 'Select a tournament to load its current settings.' : 'No tournaments yet.'}</div>
@@ -713,13 +752,14 @@ async function sendAdminBroadcast() {
 
 function syncAdminSelectedSummary() {
   const id = Number($('#adminTournament')?.value);
-  const t = tournaments.find(item => Number(item.id) === id);
+  const t = (window.battleForgeAdminTournaments || tournaments).find(item => Number(item.id) === id);
   const el = $('#adminSelectedSummary');
   if (!el) return;
   if (!t) { el.textContent = 'Select a tournament to load its current settings.'; return; }
   const count = Number(counts[String(id)] ?? 0);
   const status = String(t.status || 'open').toUpperCase();
   el.innerHTML = `<div><b>${esc(t.title)}</b><small>${esc(t.game_mode || 'SOLO')} · ${count}/${Number(t.max_players || 0)} players</small></div><span class="status-chip">${esc(status)}</span><div><small>ENTRY FEE</small><b>${Number(t.entry_points || 0)} COINS</b></div><div><small>PER KILL</small><b>${Number(t.per_kill_points || 0)} COINS</b></div><div><small>PRIZE DISPLAY</small><b>${Number(t.prize_pool_points || 0)} coins</b></div>`;
+  if ($('#adminEditTitle')) $('#adminEditTitle').value = t.title || '';
   if ($('#adminEditDescription')) $('#adminEditDescription').value = t.description || '';
   if ($('#adminEditEntry')) $('#adminEditEntry').value = Number(t.entry_points || 0);
   if ($('#adminEditPerKill')) $('#adminEditPerKill').value = Number(t.per_kill_points || 0);
@@ -873,6 +913,7 @@ $('#modalContent').addEventListener('click', async e => {
   if (e.target.id === 'copyDepositUpi') { try { await navigator.clipboard.writeText(RECEIVING_UPI_ID); toast('UPI ID copied.'); } catch { toast('UPI ID: '+RECEIVING_UPI_ID); } }
   if (e.target.id === 'createDepositRequest' && e.target.form?.id !== 'depositRequestForm') await createPaymentRequest('deposit');
   if (e.target.id === 'createWithdrawalRequest' && e.target.form?.id !== 'withdrawalRequestForm') await createPaymentRequest('withdrawal');
+  if (e.target.closest('#enablePhoneNotifications')) { await setupBattleForgePush(true); return; }
   if (e.target.id === 'googleSignInBtn') await googleSignIn();
   if (e.target.id === 'saveRequiredUsername') await saveRequiredUsername();
   if (e.target.id === 'requiredUsernameLogout') { usernameSetupOpen=false; await supabase.auth.signOut(); close(); await refreshData(); showAuth(); }
@@ -924,6 +965,24 @@ $('#modalContent').addEventListener('click', async e => {
     button.disabled = false;
     if (error) return toast(error.message);
     await refreshData(); showAdmin(); toast('Tournament created.');
+  }
+  if (button.id === 'adminSaveTitle') {
+    if (!isAdmin) return toast('Admin access required.');
+    const id = Number($('#adminTournament')?.value);
+    const title = ($('#adminEditTitle')?.value || '').trim();
+    if (!id) return toast('Choose a match first.');
+    if (title.length < 3 || title.length > 80) return toast('Match name must be 3–80 characters.');
+    const current = (window.battleForgeAdminTournaments || tournaments).find(t => Number(t.id) === id);
+    if (title === String(current?.title || '').trim()) return toast('Match name is unchanged.');
+    if (!window.confirm('Rename this match to "' + title + '"? Existing registrations and results will be kept.')) return;
+    button.disabled = true;
+    const { error } = await supabase.rpc('admin_rename_tournament', { p_tournament_id: id, p_title: title });
+    button.disabled = false;
+    if (error) return toast(error.message || 'Could not rename match. Apply supabase/010_admin_rename_tournament.sql first.');
+    await refreshData();
+    await showAdmin();
+    toast('Match renamed successfully.');
+    return;
   }
   if (button.id === 'adminSaveSchedule') {
     if (!isAdmin) return toast('Admin access required.');
@@ -1020,6 +1079,22 @@ $('#modalContent').addEventListener('click', async event => {
   catch { const area=document.createElement('textarea'); area.value=rules; area.style.position='fixed'; area.style.opacity='0'; document.body.appendChild(area); area.select(); const ok=document.execCommand('copy'); area.remove(); toast(ok?'Match rules copied.':'Select and copy the rules manually.'); }
 });
 supabase.auth.onAuthStateChange(() => { setTimeout(() => refreshData(), 0); });
+// Native WebViews can pause timers while backgrounded. Refresh an expiring session on resume
+// instead of forcing users to sign in again after leaving BattleForge idle.
+if (Capacitor.isNativePlatform()) {
+  App.addListener('appStateChange', async ({ isActive }) => {
+    if (!isActive) return;
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) console.warn('Could not read session on resume:', error);
+      if (session?.refresh_token && session.expires_at && session.expires_at * 1000 < Date.now() + 5 * 60 * 1000) {
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) console.warn('Session refresh on resume failed:', refreshError);
+      }
+      await refreshData();
+    } catch (error) { console.warn('Resume refresh failed:', error); }
+  });
+}
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
 checkRequiredAppUpdate();
 
