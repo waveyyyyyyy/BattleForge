@@ -240,6 +240,64 @@ async function saveRequiredUsername() {
   finally{if(button)button.disabled=false;}
 }
 
+async function enforceMandatoryNotificationPermission() {
+  if (!Capacitor.isNativePlatform()) return true;
+  const gateId='bf-notification-required-gate';
+  const showGate=(message,needsSettings=false)=>{
+    let gate=document.getElementById(gateId);
+    if(!gate){
+      gate=document.createElement('div');
+      gate.id=gateId;
+      gate.className='bf-force-update-gate';
+      gate.setAttribute('role','dialog');
+      gate.setAttribute('aria-modal','true');
+      gate.setAttribute('aria-label','Notifications permission required');
+      document.body.appendChild(gate);
+    }
+    gate.innerHTML='<div class="bf-force-update-card"><div class="bf-update-logo">BF</div><span class="eyebrow">REQUIRED PERMISSION</span><h2>Enable notifications</h2><p>'+message+'</p><button type="button" class="join full" id="bf-notification-allow">Allow notifications</button>'+(needsSettings?'<p class="admin-helper">Android has blocked the permission request. Open your phone Settings → Apps → BattleForge → Notifications, allow notifications, then return here.</p>':'')+'<button type="button" class="outline full" id="bf-notification-recheck">I enabled notifications — check again</button></div>';
+    document.body.style.overflow='hidden';
+    const allow=gate.querySelector('#bf-notification-allow');
+    if(allow)allow.onclick=async()=>{
+      allow.disabled=true;allow.textContent='Requesting…';
+      try{
+        let p=await PushNotifications.checkPermissions();
+        if(p.receive!=='granted'&&(p.receive==='prompt'||p.receive==='prompt-with-rationale'))p=await PushNotifications.requestPermissions();
+        if(p.receive==='granted'){
+          gate.remove();document.body.style.overflow='';
+          if(currentUser)setupBattleForgePush(true).catch(err=>console.warn('Push setup after permission failed:',err));
+        }else{
+          showGate('BattleForge requires notification permission so you do not miss tournament rooms, match reminders, and important updates.',true);
+        }
+      }catch(err){console.warn('Notification permission request failed:',err);showGate('Could not request notification permission. Please check Android Settings and try again.',true);}
+    };
+    const recheck=gate.querySelector('#bf-notification-recheck');
+    if(recheck)recheck.onclick=async()=>{
+      try{
+        const p=await PushNotifications.checkPermissions();
+        if(p.receive==='granted'){gate.remove();document.body.style.overflow='';if(currentUser)setupBattleForgePush(true).catch(err=>console.warn(err));}
+        else showGate('BattleForge requires notification permission so you do not miss tournament rooms, match reminders, and important updates.',true);
+      }catch(err){showGate('Could not check notification permission. Please try again in Android Settings.',true);}
+    };
+  };
+  try{
+    let permission=await PushNotifications.checkPermissions();
+    if(permission.receive!=='granted'&&(permission.receive==='prompt'||permission.receive==='prompt-with-rationale')){
+      permission=await PushNotifications.requestPermissions();
+    }
+    if(permission.receive==='granted'){
+      document.getElementById(gateId)?.remove();
+      document.body.style.overflow='';
+      return true;
+    }
+    showGate('BattleForge requires notification permission so you do not miss tournament rooms, match reminders, and important updates.',permission.receive==='denied');
+    return false;
+  }catch(error){
+    console.warn('Mandatory notification permission check failed:',error);
+    showGate('BattleForge needs notification permission to continue. Please enable it in Android Settings, then check again.',true);
+    return false;
+  }
+}
+
 async function setupBattleForgePush(requestPermission = false) {
   if (!currentUser || !Capacitor.isNativePlatform() || pushRegistrationInProgress || pushRegisteredUserId === currentUser.id) return;
   pushRegistrationInProgress = true;
@@ -608,7 +666,7 @@ async function showAdmin() {
   const playerTotal = Object.values(counts).reduce((sum, n) => sum + Number(n || 0), 0);
   modal(`<div class="admin-dashboard-head"><div class="eyebrow"><span class="live-dot"></span> ORGANISER CONTROL CENTRE</div><h2>Admin dashboard</h2><p>Everything you need to run a match, from one place.</p><div class="admin-section" data-admin-page="players" id="adminPlayerManager"><div class="admin-section-title"><div><h3>Player account manager</h3><p>Search by numeric Player ID, inspect full histories, and adjust balances.</p></div></div><label class="field">PLAYER ID<input id="adminPlayerNumber" type="number" min="1" step="1" placeholder="100001"></label><button id="adminFindPlayer" class="join full">Find player & load full history</button><div class="admin-form-grid"><label class="field">BAN REASON (OPTIONAL)<input id="adminBanReason" maxlength="300" placeholder="Reason for moderation"></label><div class="field"><span>ACCOUNT MODERATION</span><button id="adminBanPlayer" class="outline danger-button full">Ban this Player ID</button><button id="adminUnbanPlayer" class="outline full">Unban this Player ID</button><label class="field">SELECT MATCH<select id="adminKickMatchId"><option value="">Choose a match</option>${tournaments.map(t=>`<option value="${esc(t.id)}">${esc(t.title)} · #${esc(t.id)}</option>`).join('')}</select></label><button id="adminKickFromMatch" class="outline danger-button full">Kick Player ID from selected match</button><button id="adminClearKick" class="outline full">Clear kick record (admin)</button></div></div><div id="adminPlayerDetails"></div><div class="admin-form-grid"><label class="field">BALANCE TYPE<select id="adminBalanceBucket"><option value="deposited">Entry-fee-only balance</option><option value="earned">Withdrawable match earnings</option></select></label><label class="field">AMOUNT (+ add / − deduct)<input id="adminBalanceAmount" type="number" step="0.01" placeholder="50 or -20"></label></div><label class="field">REASON / AUDIT NOTE<input id="adminBalanceNote" maxlength="300" placeholder="Correction reason"></label><button id="adminAdjustBalance" class="join full">Apply balance adjustment</button></div><p></p></div>
     <div class="admin-metrics"><div><small>TOURNAMENTS</small><b>${tournaments.length}</b></div><div><small>OPEN</small><b>${openCount}</b></div><div><small>REGISTRATIONS</small><b>${playerTotal}</b></div><div><small>CLOSED / FULL</small><b>${closedCount}</b></div></div>
-    <div class="admin-section" data-admin-page="payments"><div class="admin-section-title"><span>₹</span><div><h3>Payments & withdrawals</h3><p>Review full request details, verify UPI deposits, credit deposited coins, and mark manually sent withdrawals as paid.</p></div></div><button id="adminLoadPayments" class="join full">Open payment request queue</button><div id="adminPaymentRequests"></div></div><div class="admin-quick-grid admin-home-menu"><button class="admin-quick" data-admin-page-open="create"><span>＋</span><b>Create match</b><small>New tournament setup</small></button><button class="admin-quick" data-admin-page-open="manage"><span>⚙</span><b>Manage matches</b><small>Edit status and rewards</small></button><button class="admin-quick" data-admin-page-open="players"><span>♙</span><b>Search players</b><small>Player lookup & results</small></button><button class="admin-quick" data-admin-page-open="results"><span>🏆</span><b>Match rankings</b><small>Drag ranks, edit kills & prizes</small></button><button class="admin-quick" data-admin-page-open="payments"><span>₹</span><b>Payments</b><small>Deposits & withdrawals</small></button><button class="admin-quick" data-admin-page-open="room"><span>🎮</span><b>Room & lobby</b><small>Room ID and password</small></button><button class="admin-quick" data-admin-page-open="notifications"><span>✉</span><b>Announcements</b><small>Send or delete broadcasts</small></button><button class=\"admin-quick\" data-admin-page-open=\"social\"><span>↗</span><b>Social links</b><small>Edit profile links</small></button><button class="admin-quick" data-admin-page-open="updates"><span>⬆</span><b>App updates</b><small>Version & force update</small></button></div><div class="admin-page-back hidden" id="adminPageBack"><button class="outline" id="adminBackHome">← All admin options</button><span id="adminPageTitle">Admin section</span></div>    <div class="admin-section app-update-admin" data-admin-page="updates"><div class="admin-section-title"><span>⬆</span><div><h3>App version & forced updates</h3><p>Set latest/minimum versions, change the APK link, and force or unforce updates.</p></div></div><button id="loadAppUpdateConfig" class="outline full">Load current settings</button><div class="admin-form-grid"><label class="field">LATEST VERSION<input id="appLatestVersion" inputmode="decimal" placeholder="1.2.0"></label><label class="field">MINIMUM SUPPORTED VERSION<input id="appMinimumVersion" inputmode="decimal" placeholder="1.1.0"></label></div><label class="field">DIRECT HTTPS APK DOWNLOAD LINK<input id="appApkUrl" type="url" placeholder="https://your-host/BattleForge.apk"></label><label class="field">UPDATE MESSAGE<textarea id="appUpdateMessage" rows="2" maxlength="500" placeholder="Please install the latest BattleForge update to continue."></textarea></label><label class="checkbox-row"><input id="appForceUpdate" type="checkbox"> Force older app versions to update</label><button id="saveAppUpdateConfig" class="join full">Save app update settings</button><p class="admin-helper">This build version: <b>${esc(APP_FALLBACK_VERSION)}</b>. Set LATEST VERSION to this value and MINIMUM SUPPORTED VERSION to the oldest allowed build. Test the direct APK link before forcing updates. Versions built before remote version-checking was added cannot be remotely blocked; those users must install a newer APK once manually.</p></div><div class="admin-legacy-quick hidden"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div></div>
+    <div class="admin-section" data-admin-page="payments"><div class="admin-section-title"><span>₹</span><div><h3>Payments & withdrawals</h3><p>Review full request details, verify UPI deposits, credit deposited coins, and mark manually sent withdrawals as paid.</p></div></div><button id="adminLoadPayments" class="join full">Open payment request queue</button><div id="adminPaymentRequests"></div></div><div class="admin-quick-grid admin-home-menu"><button class="admin-quick" data-admin-page-open="create"><span>＋</span><b>Create match</b><small>New tournament setup</small></button><button class="admin-quick" data-admin-page-open="manage"><span>⚙</span><b>Manage matches</b><small>Edit status and rewards</small></button><button class="admin-quick" data-admin-page-open="players"><span>♙</span><b>Search players</b><small>Player lookup & results</small></button><button class="admin-quick" data-admin-page-open="results"><span>🏆</span><b>Match rankings</b><small>Drag ranks, edit kills & prizes</small></button><button class="admin-quick" data-admin-page-open="payments"><span>₹</span><b>Payments</b><small>Deposits & withdrawals</small></button><button class="admin-quick" data-admin-page-open="room"><span>🎮</span><b>Room & lobby</b><small>Room ID and password</small></button><button class="admin-quick" data-admin-page-open="notifications"><span>✉</span><b>Announcements</b><small>Send or delete broadcasts</small></button><button class=\"admin-quick\" data-admin-page-open=\"social\"><span>↗</span><b>Social links</b><small>Edit profile links</small></button><button class="admin-quick" data-admin-page-open="updates"><span>⬆</span><b>App updates</b><small>Version & force update</small></button></div><div class="admin-page-back hidden" id="adminPageBack"><button class="outline" id="adminBackHome">← All admin options</button><span id="adminPageTitle">Admin section</span></div>    <div class="admin-section app-update-admin" data-admin-page="updates"><div class="admin-section-title"><span>⬆</span><div><h3>App version & forced updates</h3><p>Set latest/minimum versions, change the APK link, and force or unforce updates.</p></div></div><button type="button" id="loadAppUpdateConfig" class="outline full">Load current settings</button><div class="admin-form-grid"><label class="field">LATEST VERSION<input id="appLatestVersion" inputmode="decimal" placeholder="1.2.0"></label><label class="field">MINIMUM SUPPORTED VERSION<input id="appMinimumVersion" inputmode="decimal" placeholder="1.1.0"></label></div><label class="field">DIRECT HTTPS APK DOWNLOAD LINK<input id="appApkUrl" type="url" placeholder="https://your-host/BattleForge.apk"></label><label class="field">UPDATE MESSAGE<textarea id="appUpdateMessage" rows="2" maxlength="500" placeholder="Please install the latest BattleForge update to continue."></textarea></label><label class="checkbox-row"><input id="appForceUpdate" type="checkbox"> Force older app versions to update</label><button type="button" id="saveAppUpdateConfig" class="join full">Save app update settings</button><p class="admin-helper">This build version: <b>${esc(APP_FALLBACK_VERSION)}</b>. Set LATEST VERSION to this value and MINIMUM SUPPORTED VERSION to the oldest allowed build. Test the direct APK link before forcing updates. Versions built before remote version-checking was added cannot be remotely blocked; those users must install a newer APK once manually.</p></div><div class="admin-legacy-quick hidden"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div></div>
     <div class="admin-section" data-admin-page="notifications" id="adminBroadcastSection"><div class="admin-section-title"><span>✉</span><div><h3>Push notifications</h3><p>Send a phone notification and add it to the in-app notification feed.</p></div></div><label class="field">AUDIENCE<select id="adminBroadcastAudience"><option value="all">All users — announcement</option><option value="match">Players registered for a match</option></select></label><label class="field hidden" id="adminBroadcastMatchWrap">MATCH<select id="adminBroadcastTournament"><option value="">Choose a match</option></select></label><label class="field">NOTIFICATION TITLE<input id="adminBroadcastTitle" maxlength="80" placeholder="Tournament update"></label><label class="field">MESSAGE<textarea id="adminBroadcastMessage" maxlength="1000" rows="4" placeholder="Write your announcement…"></textarea></label><p class="admin-helper">Match alerts go only to registered players. Published room credentials are included in that match push notification. Never send private room details to all users.</p><button id="adminSendBroadcast" class="join full">Send notification</button><div id="adminBroadcastStatus" class="admin-helper" aria-live="polite"></div></div><div class="admin-section-title" data-admin-page="notifications"><div><h3>Manage sent notifications</h3><p>Remove an outdated announcement from every user’s feed.</p></div></div><button id="adminLoadBroadcasts" data-admin-page="notifications" class="outline full">Load sent notifications</button><div id="adminBroadcastList" data-admin-page="notifications"></div>
     <div id="adminCreateSection" data-admin-page="create" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
     <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
@@ -1168,8 +1226,16 @@ async function checkRequiredAppUpdate(){
     document.body.appendChild(gate);
   } catch(e) { console.warn('App update check failed',e); }
 }
-document.addEventListener('click',e=>{const b=e.target.closest('#loadAppUpdateConfig,#saveAppUpdateConfig');if(!b)return;e.preventDefault();if(b.id==='loadAppUpdateConfig')loadAppUpdateConfig();if(b.id==='saveAppUpdateConfig')saveAppUpdateConfig();});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('#loadAppUpdateConfig,#saveAppUpdateConfig');
+  if(!b)return;
+  e.preventDefault();
+  e.stopPropagation();
+  if(b.id==='loadAppUpdateConfig')loadAppUpdateConfig().catch(error=>{console.error(error);toast('Could not load update settings.');});
+  if(b.id==='saveAppUpdateConfig')saveAppUpdateConfig().catch(error=>{console.error(error);toast('Could not save update settings. Check connection and try again.');});
+},true);
 refreshData();
+if(Capacitor.isNativePlatform()) enforceMandatoryNotificationPermission();
 
 /* BattleForge premium motion system — lightweight, accessible, no character artwork. */
 (()=>{
