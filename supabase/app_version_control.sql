@@ -31,7 +31,57 @@ begin
   if auth.uid() is null or not public.is_battleforge_admin() then
     raise exception 'Admin access required';
   end if;
-  if p_latest_version !~ '^\d+(\.\d+){1,3}$' or p_minimum_version !~ '^\d+(\.\d+){1,3}$' then
+  if p_latest_version !~ '^[0-9]+([.][0-9]+){1,3}
+    raise exception 'Versions must look like 1.2.1';
+  end if;
+  if string_to_array(p_minimum_version, '.')::int[] > string_to_array(p_latest_version, '.')::int[] then
+    raise exception 'Minimum supported version cannot be newer than latest version';
+  end if;
+  if coalesce(p_apk_url,'') <> '' and p_apk_url !~ '^https://' then
+    raise exception 'APK URL must use HTTPS';
+  end if;
+  if p_force_update and coalesce(p_apk_url,'') = '' then
+    raise exception 'APK URL is required before forcing updates';
+  end if;
+  update public.app_update_config
+    set latest_version=p_latest_version,
+        minimum_version=p_minimum_version,
+        apk_url=coalesce(p_apk_url,''),
+        update_message=left(coalesce(p_update_message,''),500),
+        force_update=p_force_update,
+        updated_at=now(),
+        updated_by=auth.uid()
+    where id=1;
+end;
+$$;
+revoke all on function public.admin_set_app_update_config(text,text,text,text,boolean) from public;
+grant execute on function public.admin_set_app_update_config(text,text,text,text,boolean) to authenticated;
+ or p_minimum_version !~ '^[0-9]+([.][0-9]+){1,3}
+    raise exception 'Versions must look like 1.2.1';
+  end if;
+  if string_to_array(p_minimum_version, '.')::int[] > string_to_array(p_latest_version, '.')::int[] then
+    raise exception 'Minimum supported version cannot be newer than latest version';
+  end if;
+  if coalesce(p_apk_url,'') <> '' and p_apk_url !~ '^https://' then
+    raise exception 'APK URL must use HTTPS';
+  end if;
+  if p_force_update and coalesce(p_apk_url,'') = '' then
+    raise exception 'APK URL is required before forcing updates';
+  end if;
+  update public.app_update_config
+    set latest_version=p_latest_version,
+        minimum_version=p_minimum_version,
+        apk_url=coalesce(p_apk_url,''),
+        update_message=left(coalesce(p_update_message,''),500),
+        force_update=p_force_update,
+        updated_at=now(),
+        updated_by=auth.uid()
+    where id=1;
+end;
+$$;
+revoke all on function public.admin_set_app_update_config(text,text,text,text,boolean) from public;
+grant execute on function public.admin_set_app_update_config(text,text,text,text,boolean) to authenticated;
+ then
     raise exception 'Versions must look like 1.2.1';
   end if;
   if string_to_array(p_minimum_version, '.')::int[] > string_to_array(p_latest_version, '.')::int[] then
