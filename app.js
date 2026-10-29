@@ -22,7 +22,7 @@ let pendingResultEntry = null;
 let counts = {};
 let leaderboardPeriod = 'all';
 let audioContext = null;
-function playUiSound(kind = 'tap') { if (read('bf_sound_enabled', true) !== true) return; try { const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return; audioContext ||= new Ctx(); const osc = audioContext.createOscillator(); const gain = audioContext.createGain(); osc.type = 'sine'; osc.frequency.value = kind === 'success' ? 660 : 420; gain.gain.setValueAtTime(0.025, audioContext.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09); osc.connect(gain); gain.connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + 0.1); } catch {} }
+function playUiSound(kind = 'tap') { if (read('bf_sound_enabled', false) !== true) return; try { const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return; audioContext ||= new Ctx(); const osc = audioContext.createOscillator(); const gain = audioContext.createGain(); osc.type = 'sine'; osc.frequency.value = kind === 'success' ? 660 : 420; gain.gain.setValueAtTime(0.025, audioContext.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09); osc.connect(gain); gain.connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + 0.1); } catch {} }
 
 function read(k, fallback) {
   try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; }
@@ -63,8 +63,8 @@ function setPage(tab) {
   close();
   if (target === 'history') showHistory();
   if (target === 'wallet') renderWallet();
-  if (tab === 'arena-list') $('#arena-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  else window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (tab === 'arena-list') $('#arena-list')?.scrollIntoView({ behavior: 'auto', block: 'start' });
+  else window.scrollTo({ top: 0, behavior: 'auto' });
 }
 const RECEIVING_UPI_ID = 'kjaman@fam';
 let depositTimerInterval = null;
