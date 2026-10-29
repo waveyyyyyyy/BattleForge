@@ -1168,8 +1168,6 @@ if (Capacitor.isNativePlatform()) {
 }
 window.addEventListener('online', () => { checkRequiredAppUpdate(); });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
-checkRequiredAppUpdate();
-
 const APP_FALLBACK_VERSION='1.2.1';
 function compareAppVersions(a,b){const l=String(a||'0').split('.').map(n=>parseInt(n,10)||0),r=String(b||'0').split('.').map(n=>parseInt(n,10)||0);while(l.length<4)l.push(0);while(r.length<4)r.push(0);for(let i=0;i<4;i++)if(l[i]!==r[i])return l[i]>r[i]?1:-1;return 0;}
 async function loadAppUpdateConfig(){if(!isAdmin)return toast('Admin access required.');const {data,error}=await supabase.from('app_update_config').select('latest_version,minimum_version,apk_url,update_message,force_update').eq('id',1).maybeSingle();if(error)return toast('Apply supabase/app_version_control.sql in Supabase SQL Editor first.');if(!data)return toast('No update settings found.');$('#appLatestVersion').value=data.latest_version||APP_FALLBACK_VERSION;$('#appMinimumVersion').value=data.minimum_version||APP_FALLBACK_VERSION;$('#appApkUrl').value=data.apk_url||'';$('#appUpdateMessage').value=data.update_message||'';$('#appForceUpdate').checked=data.force_update===true;toast('Current update settings loaded.');}
@@ -1243,7 +1241,7 @@ document.addEventListener('click',e=>{
   if(b.id==='saveAppUpdateConfig')saveAppUpdateConfig().catch(error=>{console.error(error);toast('Could not save update settings. Check connection and try again.');});
 },true);
 refreshData();
-if(Capacitor.isNativePlatform()) enforceMandatoryNotificationPermission();
+(async()=>{await checkRequiredAppUpdate();if(!document.getElementById('bf-force-update-gate'))await enforceMandatoryNotificationPermission();})();
 
 /* BattleForge premium motion system — lightweight, accessible, no character artwork. */
 (()=>{
