@@ -1,0 +1,69 @@
+/* BattleForge: high-energy interaction layer. Keep effects compositor-friendly for Android. */
+:root{
+  --bf-energy:#ff3d4f;
+  --bf-energy-2:#ff8a2a;
+  --bf-electric:#7b5cff;
+  --bf-impact:cubic-bezier(.18,.82,.22,1);
+}
+html{scroll-behavior:auto!important}
+button,.join,.outline,.admin-button,.navitem,.wallet-action,.text-button,.notification-bell,.avatar{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+button:not(:disabled),.join:not(:disabled),.outline,.admin-button,.wallet-action,.text-button,.notification-bell,.avatar{
+  transition:transform .16s var(--bf-impact),filter .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+button:not(:disabled):active,.join:not(:disabled):active,.outline:active,.admin-button:active,.wallet-action:active,.text-button:active,.notification-bell:active,.avatar:active{
+  transform:scale(.955);
+  filter:brightness(1.16);
+}
+.join:not(:disabled),.admin-button{
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 5px 0 #5b7b18,0 9px 22px #c8ff3d1c;
+}
+.join:not(:disabled)::after,.admin-button::after{
+  content:"";position:absolute;inset:-1px;pointer-events:none;
+  background:linear-gradient(112deg,transparent 18%,#ffffff25 42%,transparent 62%);
+  transform:translateX(-130%);
+}
+.join:not(:disabled):active::after,.admin-button:active::after{animation:bf-button-sweep .38s ease-out}
+@keyframes bf-button-sweep{to{transform:translateX(130%)}}
+.page-view{will-change:opacity;transition:opacity .2s ease,transform .2s var(--bf-impact)}
+.page-view:not(.active){display:none!important}
+.page-view.active{animation:bf-screen-enter .26s var(--bf-impact) both}
+@keyframes bf-screen-enter{from{opacity:.55;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.tour,.tour[data-detail],.leader-row,.history-item,.activity-item,.rule-card,.wallet-hero,.panel,.room-card{
+  transition:transform .2s var(--bf-impact),border-color .2s ease,box-shadow .2s ease;
+}
+.tour,.leader-row,.history-item,.activity-item,.rule-card{animation:bf-card-enter .32s var(--bf-impact) both}
+.tour:nth-child(2),.leader-row:nth-child(2),.history-item:nth-child(2),.activity-item:nth-child(2){animation-delay:35ms}
+.tour:nth-child(3),.leader-row:nth-child(3),.history-item:nth-child(3),.activity-item:nth-child(3){animation-delay:65ms}
+.tour:nth-child(4),.leader-row:nth-child(4),.history-item:nth-child(4),.activity-item:nth-child(4){animation-delay:95ms}
+@keyframes bf-card-enter{from{opacity:.45;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(hover:hover) and (pointer:fine){
+  .tour:hover,.leader-row:hover,.history-item:hover,.activity-item:hover,.rule-card:hover{
+    transform:translateY(-3px);border-color:#ff3d4f66;box-shadow:0 14px 28px #0005,0 0 0 1px #ff3d4f12;
+  }
+  .join:not(:disabled):hover,.admin-button:hover{filter:brightness(1.08);box-shadow:0 5px 0 #5b7b18,0 0 22px #ff3d4f22}
+}
+.leaderboard-tabs button{transition:transform .16s ease,background .16s ease,border-color .16s ease}
+.leaderboard-tabs button:active{transform:scale(.96)}
+.leader-row:first-child{border-color:#ffb12e55!important;box-shadow:inset 3px 0 #ffb12e,0 0 18px #ffb12e0c}
+.leader-row:nth-child(2){border-left:2px solid #c7d5e6!important}
+.leader-row:nth-child(3){border-left:2px solid #d18b58!important}
+.toast.show{animation:bf-reward-pop .32s var(--bf-impact) both;border-color:#ff8a2a88;box-shadow:0 8px 30px #ff3d4f22}
+@keyframes bf-reward-pop{0%{opacity:0;transform:translate(-50%,12px) scale(.92)}70%{opacity:1;transform:translate(-50%,-2px) scale(1.015)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+/* Reduce expensive paint/compositing costs on phones and Android WebView. */
+@media(max-width:700px){
+  .top,.bottom,.modal{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .top{background:#080d14!important}
+  .bottom{background:#0b1018!important}
+  .modal{background:#000b!important}
+  .wallet-glow{filter:none!important;opacity:.65}
+  .tour,.leader-row,.history-item,.activity-item,.rule-card{box-shadow:0 7px 18px #0003!important}
+  .page-view{will-change:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important;transform:none!important;filter:none!important}
+}
