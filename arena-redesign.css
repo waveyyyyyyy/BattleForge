@@ -225,3 +225,36 @@ input::placeholder,textarea::placeholder{color:#87939e!important;opacity:1!impor
 #tournaments .tour .join:disabled{opacity:.7;box-shadow:none;filter:saturate(.55)}
 @media(max-width:520px){#tournaments{grid-template-columns:1fr;gap:14px}#tournaments .tour .tour-banner{height:145px!important;min-height:145px!important}#tournaments .tour .tour-body{padding:14px!important}#tournaments .tour-entry-strip{gap:8px}}
 @media(prefers-reduced-motion:reduce){#tournaments .tour{transition:none}}
+
+
+/* Navigation/dialog regression fix: dialogs must overlay the viewport, never sit at the Arena document's scroll position. */
+#modal:not(.hidden) {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  z-index: 10000 !important;
+  padding: calc(8px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom)) !important;
+  margin: 0 !important;
+}
+#modal:not(.hidden) > .modal-card {
+  position: relative !important;
+  flex: 0 1 auto !important;
+  align-self: center !important;
+  margin: 0 auto !important;
+  max-height: calc(100vh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  max-height: calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scroll-margin-top: 0 !important;
+}
