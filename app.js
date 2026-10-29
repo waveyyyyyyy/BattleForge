@@ -1115,7 +1115,25 @@ checkRequiredAppUpdate();
 const APP_FALLBACK_VERSION='1.2.1';
 function compareAppVersions(a,b){const l=String(a||'0').split('.').map(n=>parseInt(n,10)||0),r=String(b||'0').split('.').map(n=>parseInt(n,10)||0);while(l.length<4)l.push(0);while(r.length<4)r.push(0);for(let i=0;i<4;i++)if(l[i]!==r[i])return l[i]>r[i]?1:-1;return 0;}
 async function loadAppUpdateConfig(){if(!isAdmin)return toast('Admin access required.');const {data,error}=await supabase.from('app_update_config').select('latest_version,minimum_version,apk_url,update_message,force_update').eq('id',1).maybeSingle();if(error)return toast('Apply supabase/app_version_control.sql in Supabase SQL Editor first.');if(!data)return toast('No update settings found.');$('#appLatestVersion').value=data.latest_version||APP_FALLBACK_VERSION;$('#appMinimumVersion').value=data.minimum_version||APP_FALLBACK_VERSION;$('#appApkUrl').value=data.apk_url||'';$('#appUpdateMessage').value=data.update_message||'';$('#appForceUpdate').checked=data.force_update===true;toast('Current update settings loaded.');}
-async function saveAppUpdateConfig(){if(!isAdmin)return toast('Admin access required.');const latest=$('#appLatestVersion')?.value.trim(),minimum=$('#appMinimumVersion')?.value.trim(),apk=$('#appApkUrl')?.value.trim(),message=$('#appUpdateMessage')?.value.trim()||'',force=$('#appForceUpdate')?.checked===true;const valid=v=>/^\d+(?:\.\d+){1,3}$/.test(v||'');if(!valid(latest)||!valid(minimum))return toast('Use versions like 1.2.1.');if(compareAppVersions(minimum,latest)>0)return toast('Minimum supported version cannot be newer than the latest version.');if(apk&&!/^https:\/\//i.test(apk))return toast('APK link must start with https://');if(force&&!apk)return toast('Add the APK link before forcing updates.');const b=$('#saveAppUpdateConfig');if(b)b.disabled=true;const {error}=await supabase.rpc('admin_set_app_update_config',{p_latest_version:latest,p_minimum_version:minimum,p_apk_url:apk,p_update_message:message,p_force_update:force});if(b)b.disabled=false;if(error)return toast(error.message||'Could not save settings; apply the SQL migration.');toast('App update settings saved.');}
+async function saveAppUpdateConfig(){
+  if(!isAdmin)return toast('Admin access required.');
+  const latest=$('#appLatestVersion')?.value.trim(),minimum=$('#appMinimumVersion')?.value.trim(),apk=$('#appApkUrl')?.value.trim(),message=$('#appUpdateMessage')?.value.trim()||'',force=$('#appForceUpdate')?.checked===true;
+  const valid=v=>/^[0-9]+(?:\\.[0-9]+){1,3}$/.test(v||'');
+  if(!valid(latest)||!valid(minimum))return toast('Use versions like 1.2.125.');
+  if(compareAppVersions(minimum,latest)>0)return toast('Minimum supported version cannot be newer than latest version.');
+  if(apk&&!/^https:\\/\\//i.test(apk))return toast('APK link must start with https://');
+  if(force&&!apk)return toast('Add the direct APK download link before forcing updates.');
+  const b=$('#saveAppUpdateConfig');
+  if(b){b.disabled=true;b.textContent='Saving…';}
+  try{
+    const {error}=await supabase.rpc('admin_set_app_update_config',{p_latest_version:latest,p_minimum_version:minimum,p_apk_url:apk,p_update_message:message,p_force_update:force});
+    if(error){console.error('Saving app update config failed:',error);return toast('Save failed: '+error.message);}
+    toast('Update settings saved successfully.');
+    await loadAppUpdateConfig();
+    await checkRequiredAppUpdate();
+  }catch(error){console.error('Unexpected update-settings save error:',error);toast('Save failed. Check your connection and try again.');}
+  finally{if(b){b.disabled=false;b.textContent='Save app update settings';}}
+}
 async function checkRequiredAppUpdate(){
   try {
     const {data,error}=await supabase.from('app_update_config').select('latest_version,minimum_version,apk_url,update_message,force_update').eq('id',1).maybeSingle();
