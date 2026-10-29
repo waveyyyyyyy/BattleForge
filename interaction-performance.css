@@ -67,3 +67,43 @@ button:not(:disabled):active,.join:not(:disabled):active,.outline:active,.admin-
 @media(prefers-reduced-motion:reduce){
   *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important;transform:none!important;filter:none!important}
 }
+
+
+/* Mandatory update: a true, non-dismissible viewport gate, not an ordinary div at the end of the page. */
+#bf-force-update-gate{
+  position:fixed!important;inset:0!important;z-index:2147483647!important;
+  display:grid!important;place-items:center!important;
+  width:100%!important;height:100%!important;min-height:100dvh!important;
+  overflow:auto!important;overscroll-behavior:contain!important;
+  padding:calc(24px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom))!important;
+  margin:0!important;box-sizing:border-box!important;
+  background:rgba(5,7,11,.985)!important;color:#f4f6fa!important;
+  isolation:isolate!important;pointer-events:auto!important;touch-action:pan-y!important;
+}
+#bf-force-update-gate .bf-force-update-card{
+  width:min(100%,440px)!important;box-sizing:border-box!important;
+  margin:auto!important;padding:26px 22px!important;border-radius:22px!important;
+  border:1px solid rgba(255,90,67,.48)!important;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,73,63,.14),transparent 58%),linear-gradient(155deg,#171c26,#0c1017)!important;
+  box-shadow:0 28px 90px rgba(0,0,0,.65),0 0 35px rgba(255,73,63,.10)!important;
+  text-align:center!important;
+}
+#bf-force-update-gate .bf-update-logo{
+  display:grid!important;place-items:center!important;width:58px!important;height:58px!important;
+  margin:0 auto 18px!important;border-radius:15px!important;
+  background:linear-gradient(145deg,#ff7047,#b81d36)!important;color:#fff!important;
+  font-weight:1000!important;font-size:24px!important;letter-spacing:-1px!important;
+  clip-path:polygon(0 0,100% 0,100% 75%,75% 100%,0 100%)!important;
+}
+#bf-force-update-gate .eyebrow{display:block!important;color:#ff8c75!important;font-size:10px!important;letter-spacing:2px!important;font-weight:900!important}
+#bf-force-update-gate h2{margin:12px 0!important;color:#fff!important;font-size:clamp(25px,7vw,32px)!important;line-height:1.08!important;font-weight:1000!important}
+#bf-force-update-gate p{margin:0 0 18px!important;color:#b4bdc9!important;font-size:13px!important;line-height:1.65!important}
+#bf-force-update-gate .bf-version-pair{display:grid!important;grid-template-columns:1fr 1fr!important;gap:9px!important;margin:18px 0!important}
+#bf-force-update-gate .bf-version-pair span{display:block!important;min-width:0!important;padding:11px 8px!important;border:1px solid #ffffff15!important;border-radius:10px!important;background:#080c12!important;color:#9da7b5!important;font-size:10px!important}
+#bf-force-update-gate .bf-version-pair b{display:block!important;margin-top:5px!important;color:#fff!important;font-size:15px!important;overflow-wrap:anywhere!important}
+#bf-force-update-gate .bf-update-download{display:flex!important;align-items:center!important;justify-content:center!important;min-height:50px!important;width:100%!important;margin:14px 0 12px!important;padding:13px 16px!important;border:0!important;border-radius:11px!important;background:linear-gradient(100deg,#ff6644,#ffb52e)!important;color:#1b0d0a!important;font-weight:1000!important;text-decoration:none!important;box-shadow:0 5px 0 #87311f,0 10px 25px #ff493f20!important}
+#bf-force-update-gate small{display:block!important;color:#929baa!important;font-size:10px!important;line-height:1.6!important}
+#bf-force-update-gate .join.full{position:static!important;transform:none!important;scroll-margin:0!important}
+#modal.profile-modal:not(.hidden){align-items:center!important;justify-content:flex-start!important;padding-left:12px!important;padding-right:12px!important}
+#modal.profile-modal:not(.hidden)>.modal-card{align-self:center!important;margin-left:auto!important;margin-right:auto!important;width:min(100%,570px)!important;max-width:570px!important;flex:0 1 auto!important}
+#modal.profile-modal .profile-sheet{width:100%!important;min-width:0!important;box-sizing:border-box!important}
