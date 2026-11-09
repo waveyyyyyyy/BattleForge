@@ -53,9 +53,10 @@ button:disabled{cursor:not-allowed}
 .bf-kill-rank-contender{filter:drop-shadow(0 0 4px rgba(202,220,236,.3))}
 .bf-kill-rank-veteran{filter:drop-shadow(0 0 5px rgba(89,174,226,.38))}
 .bf-kill-rank-elite{filter:drop-shadow(0 0 6px rgba(66,183,165,.52));animation:bf-rank-breathe 3.4s ease-in-out infinite}
-.bf-kill-rank-master{filter:drop-shadow(0 0 7px rgba(161,218,240,.55));animation:bf-rank-breathe 2.8s ease-in-out infinite}
+.bf-kill-rank-master{filter:drop-shadow(0 0 7px rgba(161,218,240,.55));animation:bf-master-breathe 2.8s ease-in-out infinite}
 .bf-kill-rank-legend{filter:drop-shadow(0 0 8px rgba(112,231,223,.72));animation:bf-legend-shine 3.2s ease-in-out infinite}
 .bf-profile-player-name{display:flex;align-items:center;flex-wrap:wrap;gap:2px}
 @keyframes bf-rank-breathe{0%,100%{filter:drop-shadow(0 0 4px rgba(66,183,165,.32))}50%{filter:drop-shadow(0 0 9px rgba(66,183,165,.72))}}
+@keyframes bf-master-breathe{0%,100%{filter:drop-shadow(0 0 5px rgba(140,210,244,.35))}50%{filter:drop-shadow(0 0 12px rgba(205,241,255,.9))}}
 @keyframes bf-legend-shine{0%,100%{filter:drop-shadow(0 0 5px rgba(112,231,223,.4)) brightness(1)}50%{filter:drop-shadow(0 0 13px rgba(160,255,246,.9)) brightness(1.16)}}
 @media(prefers-reduced-motion:reduce){.bf-kill-rank-elite,.bf-kill-rank-master,.bf-kill-rank-legend{animation:none!important}}
