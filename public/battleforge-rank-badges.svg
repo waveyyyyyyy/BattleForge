@@ -39,7 +39,7 @@
     <path d="m32 26 3 5-3 9-3-9Z" fill="#e8fbff"/>
     <circle cx="18" cy="24" r="3" fill="#fff"/><circle cx="46" cy="24" r="3" fill="#fff"/><circle cx="32" cy="12" r="3" fill="#fff"/>
   </symbol>
-  <symbol id="legendGradient" viewBox="0 0 64 64">
+  <symbol id="legend" viewBox="0 0 64 64">
     <path d="M4 25 18 8l14 10L46 8l14 17-8 25-20 12L12 50Z" fill="#0d1b2c" stroke="url(#legendGradient)" stroke-width="2.8" stroke-linejoin="round"/>
     <path d="m12 25 9-11 11 8 11-8 9 11-7 20-13 10-13-10Z" fill="url(#legendGradient)" stroke="#d8fffc" stroke-width="1.5"/>
     <path d="m32 13 7 17-7 22-7-22Z" fill="#eaffff" opacity=".9"/>
