@@ -110,3 +110,21 @@ button:disabled{cursor:not-allowed}
 .bf-ticket-resolved-list{padding-top:8px}.bf-ticket-card-resolved{border-color:rgba(132,147,163,.16);background:rgba(132,147,163,.035)}
 .bf-ticket-archived-note{color:#91a2b1;font-size:.78rem}
 @media(max-width:380px){.bf-bot-avatar{width:64px;height:64px;flex-basis:64px}.bf-chat-header{padding:10px;gap:10px}}
+
+
+/* BLAZE floating launcher: show the same robot avatar beside Ask Blaze. */
+.bf-faq-launch{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 8px!important;border:1px solid rgba(66,183,165,.55)!important;background:linear-gradient(135deg,#1d3557,#101c2c)!important;color:#f1f5f7!important;box-shadow:0 8px 26px rgba(0,0,0,.42),0 0 18px rgba(66,183,165,.12)!important}
+.bf-launcher-avatar{width:34px;height:34px;flex:0 0 34px;filter:drop-shadow(0 2px 5px rgba(66,183,165,.22))}
+.bf-launcher-spark{color:#8ff5e7;font-size:13px}
+.bf-fullscreen-chat{padding:0!important;display:block!important;overflow:hidden!important;background:rgba(2,6,11,.96)!important;backdrop-filter:blur(14px)!important}
+.bf-fullscreen-chat .modal-card{width:100%!important;max-width:none!important;height:100vh!important;height:100dvh!important;max-height:100vh!important;max-height:100dvh!important;min-height:0!important;margin:0!important;padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom))!important;border:0!important;border-radius:0!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;align-self:stretch!important;background:linear-gradient(155deg,#172635 0%,#101c2c 58%,#0a121c 100%)!important}
+.bf-fullscreen-chat .modal-card>#closeModal{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:5;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);color:#f1f5f7;border:1px solid rgba(255,255,255,.12);font-size:26px}
+.bf-fullscreen-chat .bf-faq-chat{flex:1;min-height:0;height:100%;gap:14px;padding-top:42px;box-sizing:border-box}
+.bf-fullscreen-chat .bf-chat-header{flex:0 0 auto}
+.bf-fullscreen-chat .bf-chat-intro{flex:0 0 auto}
+.bf-fullscreen-chat .bf-faq-messages{flex:1 1 auto;min-height:100px;max-height:none!important;overflow-y:auto;overscroll-behavior:contain}
+.bf-fullscreen-chat .bf-faq-form{flex:0 0 auto;padding-bottom:env(safe-area-inset-bottom)}
+.bf-fullscreen-chat .bf-chat-disclaimer{flex:0 0 auto}
+.bf-fullscreen-chat .bf-faq-chat>.outline,.bf-fullscreen-chat .bf-faq-chat>.support-cta{flex:0 0 auto}
+@media(min-width:700px){.bf-fullscreen-chat .modal-card{max-width:none!important;padding-left:max(24px,calc((100vw - 760px)/2))!important;padding-right:max(24px,calc((100vw - 760px)/2))!important}}
+@media(prefers-reduced-motion:reduce){.bf-faq-launch{transition:none!important}}

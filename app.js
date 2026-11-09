@@ -263,6 +263,7 @@ function modal(html) {
   const overlay = $('#modal');
   $('#modalContent').innerHTML = html;
   overlay.classList.toggle('profile-modal', html.includes('profile-sheet'));
+  overlay.classList.toggle('bf-fullscreen-chat', html.includes('bf-chat-header'));
   overlay.classList.remove('hidden');
   overlay.scrollTop = 0;
   // Reset both scroll containers; Android WebViews can otherwise retain the prior dialog's position.
