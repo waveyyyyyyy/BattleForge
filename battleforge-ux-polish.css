@@ -60,3 +60,28 @@ button:disabled{cursor:not-allowed}
 @keyframes bf-master-breathe{0%,100%{filter:drop-shadow(0 0 5px rgba(140,210,244,.35))}50%{filter:drop-shadow(0 0 12px rgba(205,241,255,.9))}}
 @keyframes bf-legend-shine{0%,100%{filter:drop-shadow(0 0 5px rgba(112,231,223,.4)) brightness(1)}50%{filter:drop-shadow(0 0 13px rgba(160,255,246,.9)) brightness(1.16)}}
 @media(prefers-reduced-motion:reduce){.bf-kill-rank-elite,.bf-kill-rank-master,.bf-kill-rank-legend{animation:none!important}}
+
+/* BattleForge streak, FAQ helper, admin audit and emergency surfaces */
+.bf-streak-card{padding:16px;border:1px solid rgba(66,183,165,.28);border-radius:16px;background:linear-gradient(135deg,rgba(29,53,87,.48),rgba(16,28,44,.9))}
+.bf-streak-card h3{margin:6px 0;font-size:1.45rem;color:#f1f5f7}
+.bf-streak-card p,.bf-streak-card small{display:block;color:#aab8c6;font-size:.82rem;line-height:1.45}
+.bf-streak-progress{height:7px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;margin:12px 0}
+.bf-streak-progress span{display:block;height:100%;background:#42b7a5;border-radius:inherit}
+.bf-faq-launch{border:1px solid rgba(66,183,165,.5);background:#1d3557;color:#f1f5f7;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));font:inherit;font-weight:700;cursor:pointer}
+.bf-faq-chat{display:flex;flex-direction:column;gap:12px;min-height:55vh}
+.bf-faq-messages{display:flex;flex-direction:column;gap:9px;max-height:42vh;overflow:auto;padding:4px}
+.bf-faq-bubble{max-width:90%;padding:11px 13px;border-radius:14px;font-size:.9rem;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.bf-faq-bubble.bot{align-self:flex-start;background:#1d3557;color:#f1f5f7;border-bottom-left-radius:4px}
+.bf-faq-bubble.user{align-self:flex-end;background:#dcece9;color:#102333;border-bottom-right-radius:4px}
+.bf-faq-form{display:flex;gap:8px;align-items:center}
+.bf-faq-form input{min-width:0;flex:1}
+.bf-admin-role-row,.bf-admin-audit-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(132,147,163,.2)}
+.bf-admin-role-row span{min-width:0;display:flex;flex-direction:column;overflow-wrap:anywhere}
+.bf-admin-role-row small,.bf-admin-audit-row small{display:block;color:#8493a3;font-size:.75rem;margin-top:4px;overflow-wrap:anywhere}
+.bf-admin-audit-row{display:block}
+.bf-emergency-banner{position:sticky;top:0;z-index:1000;padding:9px 14px;text-align:center;background:#1d3557;color:#f1f5f7;border-bottom:1px solid #42b7a5;font-size:.84rem;font-weight:700}
+.bf-maintenance-gate{position:fixed;inset:0;z-index:999999;background:#101c2c;color:#f1f5f7;display:grid;place-items:center;padding:24px;text-align:center}
+.bf-maintenance-gate>div{max-width:420px}
+.bf-maintenance-gate p{color:#b9c6d2;line-height:1.6}
+.bf-maintenance-gate a{color:#70d7c7;font-weight:700}
+@media(prefers-reduced-motion:reduce){.bf-streak-progress span{transition:none!important}}
