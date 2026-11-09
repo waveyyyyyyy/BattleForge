@@ -67,7 +67,7 @@ button:disabled{cursor:not-allowed}
 .bf-streak-card p,.bf-streak-card small{display:block;color:#aab8c6;font-size:.82rem;line-height:1.45}
 .bf-streak-progress{height:7px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;margin:12px 0}
 .bf-streak-progress span{display:block;height:100%;background:#42b7a5;border-radius:inherit}
-.bf-faq-launch{border:1px solid rgba(66,183,165,.5);background:#1d3557;color:#f1f5f7;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));font:inherit;font-weight:700;cursor:pointer}
+.bf-faq-launch{border:1px solid rgba(66,183,165,.5);background:#1d3557;color:#f1f5f7;right:14px;bottom:calc(142px + env(safe-area-inset-bottom));font:inherit;font-weight:700;cursor:pointer}
 .bf-faq-chat{display:flex;flex-direction:column;gap:12px;min-height:55vh}
 .bf-faq-messages{display:flex;flex-direction:column;gap:9px;max-height:42vh;overflow:auto;padding:4px}
 .bf-faq-bubble{max-width:90%;padding:11px 13px;border-radius:14px;font-size:.9rem;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -89,3 +89,5 @@ button:disabled{cursor:not-allowed}
 .bf-ticket-card{padding:14px;margin:12px 0;border:1px solid rgba(132,147,163,.22);border-radius:14px}
 .bf-ticket-card>small{display:block;color:#8493a3;margin:6px 0 10px;overflow-wrap:anywhere}
 .bf-ticket-card>p{white-space:pre-wrap;overflow-wrap:anywhere}
+
+.bf-ticket-card{overflow-wrap:anywhere}
