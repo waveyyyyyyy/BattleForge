@@ -1,0 +1,45 @@
+/* BattleForge interaction polish — additive, safe UI layer */
+:root{
+  --bf-ease:cubic-bezier(.2,.75,.25,1);
+  --bf-glow:rgba(200,255,61,.16);
+}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:contain}
+button,a,[role="button"]{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{transition:transform .16s var(--bf-ease),filter .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease}
+button:active:not(:disabled){transform:scale(.965);filter:brightness(1.08)}
+button:disabled{cursor:not-allowed}
+:where(button,a,[role="button"],input,select,textarea):focus-visible{outline:2px solid var(--lime,#c8ff3d);outline-offset:3px}
+:where(.join,.outline,.admin-button,.wallet-action,.navitem,.notification-bell,.avatar){min-height:44px}
+.page-view.active{animation:bf-page-in .32s var(--bf-ease) both}
+@keyframes bf-page-in{from{opacity:0;transform:translate3d(0,8px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+.hero-premium{isolation:isolate}
+.hero-premium:after{content:"";position:absolute;inset:-1px;z-index:-1;pointer-events:none;background:linear-gradient(115deg,transparent 15%,rgba(255,255,255,.035) 42%,transparent 68%);transform:translateX(-100%);animation:bf-hero-sheen 9s ease-in-out infinite}
+@keyframes bf-hero-sheen{0%,65%,100%{transform:translateX(-100%)}82%{transform:translateX(100%)}}
+.tour,.leaderboard-row,.activity-row,.rule-card,.admin-quick,.wallet-action,.support-cta{transition:transform .2s var(--bf-ease),border-color .2s ease,box-shadow .2s ease,background-color .2s ease}
+.tour:active,.admin-quick:active,.wallet-action:active{transform:scale(.988)}
+.tour:focus-within,.tour:focus-visible{border-color:rgba(200,255,61,.42);box-shadow:0 12px 34px rgba(0,0,0,.24),0 0 0 1px rgba(200,255,61,.08)}
+.join:not(:disabled){box-shadow:0 5px 18px rgba(200,255,61,.11)}
+.join:not(:disabled):hover{filter:brightness(1.06);box-shadow:0 7px 24px rgba(200,255,61,.18)}
+.navitem{min-height:54px;transition:color .18s ease,background .18s ease,transform .16s ease}
+.navitem:active{transform:scale(.94)}
+.notification-bell{display:grid;place-items:center}
+.modal-card{animation:bf-modal-in .22s var(--bf-ease) both}
+@keyframes bf-modal-in{from{opacity:0;transform:translate3d(0,12px,0) scale(.99)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+.field input,.field select,.field textarea{transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
+.field input:focus,.field select:focus,.field textarea:focus{background:#0c1219}
+.toast.show{animation:bf-toast-in .2s var(--bf-ease) both}
+@keyframes bf-toast-in{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(hover:hover) and (pointer:fine){
+ .tour:hover,.rule-card:hover,.leaderboard-row:hover,.activity-row:hover{transform:translateY(-2px);border-color:rgba(200,255,61,.22);box-shadow:0 14px 34px rgba(0,0,0,.2)}
+}
+@media(max-width:520px){
+ .app-shell{padding-left:14px;padding-right:14px}
+ .hero-premium{border-radius:22px}
+ .navitem{min-width:0}
+ .modal-card{max-height:calc(92dvh - env(safe-area-inset-top));overscroll-behavior:contain}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
