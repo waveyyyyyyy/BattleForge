@@ -52,7 +52,7 @@ function rankBadgeHtml(kills, size = 'sm') {
   if (!rank) return '';
   const total = Math.max(0, Number(kills) || 0);
   const totalLabel = total.toLocaleString('en-IN');
-  return '<span class="bf-kill-rank bf-kill-rank-' + rank.key + ' bf-kill-rank-' + size + '" role="img" title="' + rank.label + ' · ' + totalLabel + ' lifetime kills" aria-label="' + rank.label + ' rank, ' + totalLabel + ' lifetime kills"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><use href="/battleforge-rank-badges.svg#' + rank.key + '"></use></svg></span>';
+  return '<span class="bf-kill-rank bf-kill-rank-' + rank.key + ' bf-kill-rank-' + size + '" role="img" title="' + rank.label + ' · ' + totalLabel + ' lifetime kills" aria-label="' + rank.label + ' rank, ' + totalLabel + ' lifetime kills"><svg xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><use href="/battleforge-rank-badges.svg#' + rank.key + '" xlink:href="/battleforge-rank-badges.svg#' + rank.key + '"></use></svg></span>';
 }
 async function loadLifetimeKillRanks(force = false) {
   if (!currentUser) { lifetimeKillRanks = new Map(); lifetimeKillRanksUserId = null; return lifetimeKillRanks; }
