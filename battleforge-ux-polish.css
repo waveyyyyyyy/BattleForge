@@ -85,3 +85,7 @@ button:disabled{cursor:not-allowed}
 .bf-maintenance-gate p{color:#b9c6d2;line-height:1.6}
 .bf-maintenance-gate a{color:#70d7c7;font-weight:700}
 @media(prefers-reduced-motion:reduce){.bf-streak-progress span{transition:none!important}}
+
+.bf-ticket-card{padding:14px;margin:12px 0;border:1px solid rgba(132,147,163,.22);border-radius:14px}
+.bf-ticket-card>small{display:block;color:#8493a3;margin:6px 0 10px;overflow-wrap:anywhere}
+.bf-ticket-card>p{white-space:pre-wrap;overflow-wrap:anywhere}
