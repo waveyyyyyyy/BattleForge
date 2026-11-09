@@ -91,3 +91,22 @@ button:disabled{cursor:not-allowed}
 .bf-ticket-card>p{white-space:pre-wrap;overflow-wrap:anywhere}
 
 .bf-ticket-card{overflow-wrap:anywhere}
+
+/* Professional ForgeBot chat identity */
+.bf-chat-header{display:flex;align-items:center;gap:14px;padding:14px;border:1px solid rgba(66,183,165,.24);border-radius:18px;background:linear-gradient(135deg,rgba(29,53,87,.78),rgba(16,28,44,.96))}
+.bf-bot-avatar{width:76px;height:76px;flex:0 0 76px;filter:drop-shadow(0 5px 12px rgba(0,0,0,.28))}
+.bf-chat-identity{min-width:0}.bf-chat-identity h2{margin:2px 0 4px;font-size:1.35rem;letter-spacing:.01em;color:#f1f5f7}
+.bf-chat-online{display:flex;align-items:center;gap:6px;color:#a8c5c7;font-size:.76rem}.bf-chat-online i{width:7px;height:7px;border-radius:50%;background:#42b7a5;box-shadow:0 0 8px rgba(66,183,165,.65)}
+.bf-chat-intro{margin:0;color:#aebdca;font-size:.86rem;line-height:1.5}.bf-chat-disclaimer{margin:0;color:#8493a3;font-size:.7rem;text-align:center}
+.bf-faq-messages{min-height:160px;padding:12px;border:1px solid rgba(132,147,163,.16);border-radius:16px;background:rgba(8,17,27,.46)}
+.bf-faq-bubble.bot{border:1px solid rgba(66,183,165,.2);background:linear-gradient(135deg,#1d3557,#172a40)}
+.bf-faq-form input{border-radius:12px;min-height:46px}.bf-faq-form button{min-height:44px;padding-left:20px;padding-right:20px}
+.bf-ticket-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.bf-ticket-status{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;background:rgba(66,183,165,.12);color:#a8dcd4;font-size:.72rem;font-weight:700;text-transform:capitalize}
+.bf-ticket-status.is-resolved{background:rgba(132,147,163,.14);color:#c0cbd4}.bf-ticket-section-title h4{margin:16px 0 4px;color:#f1f5f7;font-size:1rem}
+.bf-ticket-section-title h4 span,.bf-ticket-resolved summary span{margin-left:6px;padding:2px 8px;border-radius:99px;background:rgba(66,183,165,.14);color:#8ed9cc;font-size:.75rem}
+.bf-ticket-section-title p{margin:0 0 8px;color:#8493a3;font-size:.78rem}.bf-ticket-resolved{margin-top:18px;border:1px solid rgba(132,147,163,.22);border-radius:14px;padding:12px;background:rgba(132,147,163,.04)}
+.bf-ticket-resolved summary{cursor:pointer;list-style:none;color:#c8d2da;font-weight:700}.bf-ticket-resolved summary::-webkit-details-marker{display:none}
+.bf-ticket-resolved summary:after{content:"+";float:right;color:#8fa1b0}.bf-ticket-resolved[open] summary:after{content:"−"}
+.bf-ticket-resolved-list{padding-top:8px}.bf-ticket-card-resolved{border-color:rgba(132,147,163,.16);background:rgba(132,147,163,.035)}
+.bf-ticket-archived-note{color:#91a2b1;font-size:.78rem}
+@media(max-width:380px){.bf-bot-avatar{width:64px;height:64px;flex-basis:64px}.bf-chat-header{padding:10px;gap:10px}}
