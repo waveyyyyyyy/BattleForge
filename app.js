@@ -1373,7 +1373,7 @@ if(event.target.closest('#bfCreateSupportTicket')){openSupportTicketForm();retur
 document.addEventListener('change',event=>{
  if(event.target.id==='bfDisableTournament'){const id=Number(event.target.value);const t=(window.battleForgeAdminTournaments||[]).find(x=>Number(x.id)===id);if($('#bfTournamentDisabled'))$('#bfTournamentDisabled').checked=!!t?.is_cancelled;}
 });
-document.addEventListener('submit',event=>{
+document.addEventListener('submit',async event=>{
  if(event.target.id==='bfFaqForm'){
   event.preventDefault();const input=$('#bfFaqInput');const question=input?.value.trim();if(!question)return;
   appendFaqMessage(question,'user');appendFaqMessage(battleForgeFaqAnswer(question),'bot');input.value='';input.focus();
