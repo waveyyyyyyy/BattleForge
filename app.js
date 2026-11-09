@@ -21,6 +21,8 @@ let pushRegisteredUserId = null;
 let pendingResultEntry = null;
 let counts = {};
 let leaderboardPeriod = 'all';
+let lifetimeKillRanks = new Map();
+let lifetimeKillRanksUserId = null;
 let audioContext = null;
 function playUiSound(kind = 'tap') { if (read('bf_sound_enabled', false) !== true) return; try { const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return; audioContext ||= new Ctx(); const osc = audioContext.createOscillator(); const gain = audioContext.createGain(); osc.type = 'sine'; osc.frequency.value = kind === 'success' ? 660 : 420; gain.gain.setValueAtTime(0.025, audioContext.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09); osc.connect(gain); gain.connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + 0.1); } catch {} }
 
@@ -31,6 +33,35 @@ function notificationSeenKey() { return 'bf_notifications_seen_ids_' + (currentU
 function getSeenNotificationIds() { const value = read(notificationSeenKey(), []); return Array.isArray(value) ? value.map(String) : []; }
 function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const KILL_RANKS = [
+  { key: 'rookie', label: 'Rookie', minimum: 10 },
+  { key: 'contender', label: 'Contender', minimum: 50 },
+  { key: 'veteran', label: 'Veteran', minimum: 100 },
+  { key: 'elite', label: 'Elite', minimum: 500 },
+  { key: 'master', label: 'Master', minimum: 1000 },
+  { key: 'legend', label: 'Legend', minimum: 10000 }
+];
+function killRankFor(kills) {
+  const total = Math.max(0, Number(kills) || 0);
+  for (let i = KILL_RANKS.length - 1; i >= 0; i--) if (total >= KILL_RANKS[i].minimum) return KILL_RANKS[i];
+  return null;
+}
+function rankBadgeHtml(kills, size = 'sm') {
+  const rank = killRankFor(kills);
+  if (!rank) return '';
+  const total = Math.max(0, Number(kills) || 0);
+  const totalLabel = total.toLocaleString('en-IN');
+  return '<span class="bf-kill-rank bf-kill-rank-' + rank.key + ' bf-kill-rank-' + size + '" role="img" title="' + rank.label + ' · ' + totalLabel + ' lifetime kills" aria-label="' + rank.label + ' rank, ' + totalLabel + ' lifetime kills"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><use href="/battleforge-rank-badges.svg#' + rank.key + '"></use></svg></span>';
+}
+async function loadLifetimeKillRanks(force = false) {
+  if (!currentUser) { lifetimeKillRanks = new Map(); lifetimeKillRanksUserId = null; return lifetimeKillRanks; }
+  if (!force && lifetimeKillRanksUserId === currentUser.id && lifetimeKillRanks.size) return lifetimeKillRanks;
+  const { data, error } = await supabase.rpc('get_lifetime_kill_ranks');
+  if (error) { console.warn('Lifetime kill ranks could not be loaded:', error); return lifetimeKillRanks; }
+  lifetimeKillRanks = new Map((Array.isArray(data) ? data : []).map(row => [String(row.user_id), { username: row.username, player_number: row.player_number, lifetime_kills: Number(row.lifetime_kills || 0) }]));
+  lifetimeKillRanksUserId = currentUser.id;
+  return lifetimeKillRanks;
 }
 function toast(message) {
   const el = $('#toast');
@@ -524,9 +555,10 @@ async function showProfile() {
   const referralStats=referralStatsResult||{}; const totalReferrals=Number(referralStats.invited_count||0), rewarded=Number(referralStats.rewarded_count||0);
   const {data:referralDownloadSetting}=await supabase.rpc('get_battleforge_referral_download_url'); const referralDownloadUrl=(Array.isArray(referralDownloadSetting)?referralDownloadSetting[0]?.download_url:referralDownloadSetting?.download_url)||'https://www.dropbox.com/scl/fi/rdkpfx9lggtvavhzntc6k/BattleForge.apk?rlkey=klsepxvg2ejzjh70tcugy3bmn&st=528fxegd&dl=0';
   const resultRows=myResults||[], wins=resultRows.filter(x=>Number(x.placement)===1).length, kills=resultRows.reduce((n,x)=>n+Number(x.kills||0),0);
+  const rankStats=await loadLifetimeKillRanks(true), lifetimeKills=Number(rankStats.get(currentUser.id)?.lifetime_kills ?? kills), currentRank=killRankFor(lifetimeKills);
   const led=ledger||[], withdrawals=paidWithdrawals||[];
-  modal(`<div class="profile-sheet"><div class="profile-top"><div><div class="eyebrow">PLAYER PROFILE</div><h2>${esc(a.username||currentUser.user_metadata?.full_name||'Player')}</h2><p>Player ID <b>${esc(a.player_number||'Loading')}</b></p></div></div>
-  <div class="profile-metrics"><div><small>TOTAL BALANCE</small><b>₹${(Number(w.deposited_balance||0)+Number(w.earned_balance||0)).toFixed(2)}</b></div><div><small>ENTRY-FEE CREDITS</small><b>₹${Number(w.deposited_balance||0).toFixed(2)}</b></div><div><small>MATCH EARNINGS</small><b>₹${Number(w.earned_balance||0).toFixed(2)}</b></div><div><small>MATCH RESULTS</small><b>${resultRows.length}</b></div><div><small>WINS / KILLS</small><b>${wins} / ${kills}</b></div><div><small>WITHDRAWALS</small><b>${withdrawals.length}</b></div></div>
+  modal(`<div class="profile-sheet"><div class="profile-top"><div><div class="eyebrow">PLAYER PROFILE</div><h2 class="bf-profile-player-name">${esc(a.username||currentUser.user_metadata?.full_name||'Player')}${rankBadgeHtml(lifetimeKills,'lg')}</h2><p>Player ID <b>${esc(a.player_number||'Loading')}</b>${currentRank?' · '+esc(currentRank.label):' · Unranked'}</p></div></div>
+  <div class="profile-metrics"><div><small>TOTAL BALANCE</small><b>₹${(Number(w.deposited_balance||0)+Number(w.earned_balance||0)).toFixed(2)}</b></div><div><small>ENTRY-FEE CREDITS</small><b>₹${Number(w.deposited_balance||0).toFixed(2)}</b></div><div><small>MATCH EARNINGS</small><b>₹${Number(w.earned_balance||0).toFixed(2)}</b></div><div><small>MATCH RESULTS</small><b>${resultRows.length}</b></div><div><small>WINS / KILLS</small><b>${wins} / ${kills}</b></div><div><small>LIFETIME KILLS</small><b>${lifetimeKills.toLocaleString('en-IN')}</b></div><div><small>WITHDRAWALS</small><b>${withdrawals.length}</b></div></div>
   <details class="profile-block profile-accordion" open><summary>Edit profile</summary><label class="field">USERNAME (LETTERS, NUMBERS, UNDERSCORES)<input id="profileUsername" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]{3,24}" value="${esc(a.username||'')}" placeholder="ChooseUniqueName" autocomplete="nickname"></label><p class="profile-help">${Number(a.username_change_count||0)===0?'Your first username change is free.':'Each additional username change costs ₹5 from entry-fee-only credits.'} Only letters, numbers, and underscores; no spaces or other special characters.</p><button id="savePlayerProfile" class="join full">Save profile</button><p id="profileSaveStatus" class="profile-help"></p>
   </details><details class="profile-block profile-accordion"><summary>Referral centre</summary><p>Your referral code: <b>${esc(a.player_number||'—')}</b></p>${a.referred_by_player_number?`<p class="notice">You were referred by Player ID <b>${esc(a.referred_by_player_number)}</b>. Referral code already used; it can never be changed.</p>`:`<label class="field">REFER CODE<input id="applyReferralCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="20" placeholder="Enter someone else's Player ID"></label><button id="applyReferralCodeBtn" class="join full">Apply refer code</button><p class="profile-help">You can apply only one referral code for your lifetime. Once applied, it cannot be changed.</p>`}<p><a class="support-cta" href="${esc(referralDownloadUrl)}" target="_blank" rel="noopener noreferrer"><b>Download BattleForge APK</b><span>↗</span></a></p><p class="profile-help">Share this APK link with friends so they can install BattleForge and use your referral code.</p><div class="profile-metrics"><div><small>INVITED PLAYERS</small><b>${totalReferrals}</b></div><div><small>REWARDS EARNED</small><b>${rewarded} · ₹${(rewarded*5).toFixed(2)}</b></div><div><small>WAITING FOR FIRST PAID WITHDRAWAL</small><b>${Math.max(0,totalReferrals-rewarded)}</b></div></div><p class="profile-help">₹5 referral rewards are credited as non-withdrawable entry-fee balance after a referred player completes their first withdrawal.</p></details><details class="profile-block profile-accordion"><summary>Full activity history</summary><div class="profile-history">${led.length?led.map(x=>`<div class="profile-history-row"><div><b>${esc(x.entry_type||'Wallet activity')}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.note?' · '+esc(x.note):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No wallet activity recorded yet.</p>'}</div></section>
   </details><details class="profile-block profile-accordion"><summary>Deposit history</summary><div class="profile-history">${(depositHistory||[]).length?(depositHistory||[]).map(x=>`<div class="profile-history-row"><div><b>${esc(String(x.status||'pending').toUpperCase())}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.payment_reference?' · Ref '+esc(x.payment_reference):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No deposit requests yet.</p>'}</div></section>
@@ -592,6 +624,7 @@ function updateNotificationBadge() {
 async function loadLeaderboard(period = leaderboardPeriod) {
   leaderboardPeriod = period; const target = $('#leaderboardContent'); if (!target) return; target.innerHTML = '<p class="notice">Loading leaderboard…</p>';
   document.querySelectorAll('[data-lb-period]').forEach(b => { const active = b.dataset.lbPeriod === period; b.classList.toggle('join', active); b.classList.toggle('outline', !active); });
+  await loadLifetimeKillRanks(true);
   const { data, error } = await supabase.rpc('get_earnings_leaderboard', { p_period: period });
   if (error) {
     console.warn('Leaderboard RPC failed:', error);
@@ -599,7 +632,7 @@ async function loadLeaderboard(period = leaderboardPeriod) {
     return;
   }
   const rows = Array.isArray(data) ? data : [];
-  target.innerHTML = rows.length ? rows.map((r,i) => `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player"><b>${esc(String(r.username || '').trim() || ('Player '+(r.player_number || '')))}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}</small></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
+  target.innerHTML = rows.length ? rows.map((r,i) => { const stats=lifetimeKillRanks.get(String(r.user_id)); const kills=Number(stats?.lifetime_kills||0); const name=String(r.username||stats?.username||'').trim()||('Player '+(r.player_number||'')); return `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player"><b>${esc(name)}${rankBadgeHtml(kills)}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}${kills?' · '+kills.toLocaleString('en-IN')+' LIFETIME KILLS':''}</small></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`; }).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
 }
 
 async function showHistory() {
