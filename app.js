@@ -15,6 +15,10 @@ let tournaments = [];
 let joined = [];
 let currentUser = null;
 let isAdmin = false;
+let adminIsOwner = false;
+let adminPermissions = new Set();
+let platformControls = {registrations_paused:false,deposits_paused:false,withdrawals_paused:false,maintenance_mode:false,emergency_message:''};
+let dailyStreakStatus = null;
 let pushListenersInstalled = false;
 let pushRegistrationInProgress = false;
 let pushRegisteredUserId = null;
@@ -63,6 +67,108 @@ async function loadLifetimeKillRanks(force = false) {
   lifetimeKillRanksUserId = currentUser.id;
   return lifetimeKillRanks;
 }
+
+function applyPlatformGates(){
+  let banner=document.getElementById('bf-emergency-banner');
+  const message=String(platformControls.emergency_message||'').trim();
+  if(message){if(!banner){banner=document.createElement('div');banner.id='bf-emergency-banner';banner.className='bf-emergency-banner';document.body.prepend(banner);}banner.textContent=message;}else banner?.remove();
+  let gate=document.getElementById('bf-maintenance-gate');
+  if(platformControls.maintenance_mode&&!isAdmin){if(!gate){gate=document.createElement('div');gate.id='bf-maintenance-gate';gate.className='bf-maintenance-gate';document.body.appendChild(gate);}gate.innerHTML='<div><span class="eyebrow">BATTLEFORGE MAINTENANCE</span><h2>We’ll be back soon.</h2><p>BattleForge is temporarily unavailable while we perform maintenance. Your account and wallet data remain safe.</p><a href="https://t.me/battleforgeff" target="_blank" rel="noopener noreferrer">Contact support ↗</a></div>';}else gate?.remove();
+}
+async function loadAdminControls(){
+  if(!isAdmin)return;
+  const {data:c,error}=await supabase.from('platform_controls').select('*').eq('id',1).maybeSingle();
+  if(error||!c){if($('#adminControlStatus'))$('#adminControlStatus').textContent='Could not load platform controls: '+(error?.message||'No control row');return;}
+  platformControls=c;
+  for(const [id,key] of [['bfPauseRegistrations','registrations_paused'],['bfPauseDeposits','deposits_paused'],['bfPauseWithdrawals','withdrawals_paused'],['bfMaintenanceMode','maintenance_mode']]){const el=$('#'+id);if(el){el.checked=!!c[key];el.disabled=key==='maintenance_mode'&&!adminIsOwner||(key==='registrations_paused'&&!adminIsOwner&&!adminPermissions.has('tournament_manage'))||((key==='deposits_paused'||key==='withdrawals_paused')&&!adminIsOwner&&!adminPermissions.has('finance'));}}
+  if($('#bfEmergencyMessage'))$('#bfEmergencyMessage').value=c.emergency_message||'';
+  const tournamentSelect=$('#bfDisableTournament');if(tournamentSelect)tournamentSelect.innerHTML='<option value="">Choose a tournament</option>'+(window.battleForgeAdminTournaments||[]).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.title)+' · #'+esc(t.id)+'</option>').join('');
+  if($('#bfRoleAdminPanel'))$('#bfRoleAdminPanel').classList.toggle('hidden',!adminIsOwner);
+  if($('#bfRoleAdminHeading'))$('#bfRoleAdminHeading').classList.toggle('hidden',!adminIsOwner);
+  if($('#bfAssignRole'))$('#bfAssignRole').classList.toggle('hidden',!adminIsOwner);
+  if($('#bfSaveTournamentDisabled'))$('#bfSaveTournamentDisabled').disabled=!adminIsOwner&&!adminPermissions.has('tournament_manage');
+  if($('#bfSendEmergencyAnnouncement'))$('#bfSendEmergencyAnnouncement').disabled=!adminIsOwner&&!adminPermissions.has('announcements_manage');
+  if($('#adminControlStatus'))$('#adminControlStatus').textContent='Live controls loaded. Your role: '+(adminIsOwner?'Owner':Array.from(adminPermissions).join(', '));
+  if(adminIsOwner)await loadAdminRoles();
+}
+async function saveAdminControls(){
+  const changes={};
+  for(const [id,key] of [['bfPauseRegistrations','registrations_paused'],['bfPauseDeposits','deposits_paused'],['bfPauseWithdrawals','withdrawals_paused'],['bfMaintenanceMode','maintenance_mode']]){const el=$('#'+id);if(el&&!el.disabled)changes[key]=el.checked;}
+  const message=$('#bfEmergencyMessage');if(message)changes.emergency_message=message.value.trim();
+  const b=$('#bfSaveControls');if(b){b.disabled=true;b.textContent='Saving…';}
+  const {data,error}=await supabase.rpc('admin_update_platform_controls',{p_changes:changes});
+  if(b){b.disabled=false;b.textContent='Save emergency controls';}
+  if(error){if($('#adminControlStatus'))$('#adminControlStatus').textContent='Not saved: '+error.message;return toast('Could not save emergency controls: '+error.message);}
+  platformControls=data||{...platformControls,...changes};applyPlatformGates();if($('#adminControlStatus'))$('#adminControlStatus').textContent='Saved and verified on the server.';toast('Emergency controls updated.');
+}
+async function saveTournamentDisabled(){
+  if(!adminIsOwner&&!adminPermissions.has('tournament_manage'))return toast('Tournament manager permission required.');
+  const id=Number($('#bfDisableTournament')?.value);if(!id)return toast('Choose a tournament.');
+  const disabled=$('#bfTournamentDisabled')?.checked===true;
+  const {error}=await supabase.rpc('admin_set_tournament_disabled',{p_tournament_id:id,p_disabled:disabled});
+  if(error)return toast(error.message);
+  toast(disabled?'Tournament disabled.':'Tournament re-enabled.');
+  await refreshData();await loadAdminControls();
+}
+async function loadAdminRoles(){
+  if(!adminIsOwner)return;
+  const {data,error}=await supabase.rpc('admin_list_roles');
+  const target=$('#bfRoleList');if(!target)return;
+  if(error){target.textContent='Could not load role assignments: '+error.message;return;}
+  target.innerHTML=(data||[]).length?(data||[]).map(x=>'<div class="bf-admin-role-row"><span><b>'+esc(x.role.replaceAll('_',' '))+'</b><small>'+esc(x.user_id)+'</small></span><button class="outline" data-remove-admin-role="'+esc(x.user_id)+'">Remove</button></div>').join(''):'<p class="admin-helper">No staff roles assigned.</p>';
+}
+async function assignAdminRole(){
+  if(!adminIsOwner)return toast('Owner access required.');
+  const userId=$('#bfRoleUserId')?.value.trim(),role=$('#bfRoleName')?.value;
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId||''))return toast('Enter a valid Auth User UUID.');
+  const {error}=await supabase.rpc('admin_assign_role',{p_user_id:userId,p_role:role});
+  if(error)return toast(error.message);
+  $('#bfRoleUserId').value='';await loadAdminRoles();toast('Admin role assigned.');
+}
+async function removeAdminRole(userId){
+  if(!adminIsOwner)return toast('Owner access required.');
+  const {error}=await supabase.rpc('admin_remove_role',{p_user_id:userId});
+  if(error)return toast(error.message);
+  await loadAdminRoles();toast('Admin role removed.');
+}
+async function loadAdminAudit(){
+  const target=$('#bfAuditList');if(!target)return;
+  const {data,error}=await supabase.rpc('admin_get_audit_log',{p_limit:100});
+  if(error){target.textContent='Audit log unavailable: '+error.message;return;}
+  target.innerHTML=(data||[]).map(x=>'<div class="bf-admin-audit-row"><b>'+esc(x.action)+' · '+esc(x.table_name)+'</b><small>'+esc(x.actor_user_id||'System')+' · '+esc(new Date(x.created_at).toLocaleString())+'</small><small>'+esc((x.changed_fields||[]).join(', '))+' · '+esc(x.record_key||'')+'</small></div>').join('')||'<p class="admin-helper">No audited changes yet.</p>';
+}
+async function loadAdminAnalytics(){
+  const target=$('#bfAnalytics');if(!target)return;
+  const {data,error}=await supabase.rpc('admin_get_analytics');
+  if(error){target.textContent='Analytics unavailable: '+error.message;return;}
+  target.innerHTML=Object.entries(data||{}).map(([k,v])=>'<div class="bf-admin-audit-row"><b>'+esc(k.replaceAll('_',' '))+'</b><strong>'+Number(v).toLocaleString('en-IN')+'</strong></div>').join('');
+}
+function openFaqChat(){
+  modal('<div class="bf-faq-chat"><div class="eyebrow">BATTLEFORGE HELP</div><h2>Ask BattleForge</h2><p class="admin-helper">Free automated FAQ helper. It answers from BattleForge rules and policies; it cannot access accounts or process payments.</p><div id="bfFaqMessages" class="bf-faq-messages"><div class="bf-faq-bubble bot">Hey! Ask me about tournaments, wallet, deposits, withdrawals, room details, results, streak rewards or ranks.</div></div><form id="bfFaqForm" class="bf-faq-form"><input id="bfFaqInput" maxlength="240" placeholder="Type your question…" autocomplete="off" required><button class="join" type="submit">Send</button></form><a class="support-cta" href="https://t.me/battleforgeff" target="_blank" rel="noopener noreferrer">Need a person? Contact Telegram support ↗</a></div>');
+}
+function battleForgeFaqAnswer(question){
+ const q=String(question||'').toLowerCase();
+ const faqs=[
+  {keys:['streak','daily reward','daily matches'],answer:'Daily streak: join at least 3 different matches each day for 7 consecutive days. Complete the 7th day and receive 20 coins. The reward is added to your entry-fee-only balance and cannot be withdrawn. Cancelled/disabled tournaments do not count.'},
+  {keys:['rank','badge','kills','rookie','legend','master','veteran','contender','elite'],answer:'Lifetime kill ranks are based on kills from published match results: Rookie 10+, Contender 50+, Veteran 100+, Elite 500+, Master 1,000+, and Legend 10,000+. Ranks update automatically after verified results are published.'},
+  {keys:['withdraw','payout','2%','fee'],answer:'Minimum withdrawal is 100 coins. Only match earnings are withdrawable; deposit credits and streak rewards are entry-fee-only. BattleForge deducts a 2% processing fee, and manual processing can take up to 24 hours.'},
+  {keys:['deposit','upi','payment','add money'],answer:'Minimum deposit is 30 coins. Pay the exact amount to the UPI ID shown in the Deposit screen, submit your UTR and payment confirmation, then wait for manual verification. Verification may take up to 24 hours. Never share your UPI PIN or OTP.'},
+  {keys:['wallet','balance','coins','entry fee'],answer:'Your wallet separates entry-fee-only credits from match earnings. Deposits and streak/referral rewards are not withdrawable. Match earnings can be withdrawn or used for entry fees. Tournament entry fees are shown on each match card.'},
+  {keys:['room id','password','room','lobby'],answer:'The match Room ID and password appear in the match details after the organiser publishes them. Only players registered for that match can see the room details in the app.'},
+  {keys:['result','ranking','pending','kills result'],answer:'Match results remain Pending Results until an admin publishes the final rankings. Once published, open Past Matches to see ranks, player IDs, kills and rewards.'},
+  {keys:['tournament','solo','duo','squad','join','register'],answer:'BattleForge currently supports Free Fire Solo, Duo and Squad tournaments. Open a match card to check its entry fee, schedule, slots and rules, then register while entries are open. You need enough wallet coins to cover the entry fee.'},
+  {keys:['referral','refer','invite'],answer:'Your BattleForge Player ID is also your referral code. A referred player can enter it during registration or in Profile if eligible. The referral reward is 5 entry-fee-only coins after the referred player completes their first withdrawal.'},
+  {keys:['username','name change','ign'],answer:'Your BattleForge username must be 3–24 characters using letters, numbers or underscores. Your first username change is free; later changes cost 5 entry-fee-only coins. Use your exact Free Fire IGN when joining a match.'},
+  {keys:['support','human','contact','help'],answer:'For account-specific help, payment checks or disputes, contact the BattleForge support team on Telegram: https://t.me/battleforgeff. This FAQ bot cannot inspect accounts or change balances.'}
+ ];
+ const match=faqs.find(f=>f.keys.some(k=>q.includes(k)));
+ return match?.answer||'I don’t have a verified answer for that yet. For account-specific help or an unanswered question, contact BattleForge support on Telegram: https://t.me/battleforgeff.';
+}
+function appendFaqMessage(textValue,kind){
+ const box=$('#bfFaqMessages');if(!box)return;
+ const bubble=document.createElement('div');bubble.className='bf-faq-bubble '+kind;bubble.textContent=textValue;box.appendChild(bubble);box.scrollTop=box.scrollHeight;
+}
+
 function toast(message) {
   const el = $('#toast');
   el.textContent = message;
@@ -157,10 +263,11 @@ async function createPaymentRequest(kind) {
 async function loadPaymentRequests() {
   const target=$('#paymentRequests'); if(!target) return;
   if(!currentUser) { target.innerHTML='<p class="notice">Sign in to view payment requests.</p>'; return; }
-  const [dep,wd]=await Promise.all([supabase.from('deposit_requests').select('id,amount,status,created_at,expires_at,payer_upi').order('created_at',{ascending:false}).limit(10),supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at,account_name,payout_upi').order('created_at',{ascending:false}).limit(10)]);
+  const [dep,wd]=await Promise.all([supabase.from('deposit_requests').select('id,amount,status,created_at,expires_at,payer_upi').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(10),supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at,account_name,payout_upi').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(10)]);
   if(dep.error||wd.error) { target.innerHTML='<p class="notice">Payment-request database is not ready. Apply supabase/006_payment_requests.sql in the Supabase SQL Editor.</p>'; return; }
   const rows=[...(dep.data||[]).map(x=>({...x,kind:'Deposit'})),...(wd.data||[]).map(x=>({...x,kind:'Withdrawal'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,10);
-  target.innerHTML=rows.length?rows.map(x=>'<div class="activity-row"><span class="activity-mark">'+(x.kind==='Deposit'?'＋':'↗')+'</span><div><b>'+x.kind+' · ₹'+Number(x.amount).toFixed(2)+'</b><small>'+esc(x.status.toUpperCase())+' · '+esc(new Date(x.created_at).toLocaleString())+'</small><small>Ref '+esc(x.id)+'</small></div><strong>'+(x.kind==='Withdrawal'?'Net ₹'+Number(x.net_amount).toFixed(2):'Pending check')+'</strong></div>').join(''):'<div class="empty-state"><b>No payment requests yet</b><p>Your requests will appear here.</p></div>';
+  const statusLabel={pending:'Pending review',reported_paid:'Payment reported · awaiting verification',verified:'Verified · wallet credited',approved:'Approved · awaiting payout',paid:'Paid',rejected:'Rejected',expired:'Expired'};
+  target.innerHTML=rows.length?rows.map(x=>'<div class="activity-row"><span class="activity-mark">'+(x.kind==='Deposit'?'＋':'↗')+'</span><div><b>'+x.kind+' · ₹'+Number(x.amount).toFixed(2)+'</b><small>'+esc(statusLabel[x.status]||x.status)+' · '+esc(new Date(x.created_at).toLocaleString())+'</small><small>Ref '+esc(x.id)+'</small></div><strong>'+(x.kind==='Withdrawal'?'Net ₹'+Number(x.net_amount).toFixed(2):x.status==='verified'?'Credited':'Deposit')+'</strong></div>').join(''):'<div class="empty-state"><b>No payment requests yet</b><p>Your requests will appear here.</p></div>';
 }
 
 
@@ -237,8 +344,9 @@ async function render() {
     const prize = Number(t.prize_pool_points ?? t.prize ?? 0);
     const perKill = Number(t.per_kill_points ?? 0);
     const count = counts[id] ?? joined.filter(e => String(e.tournament_id) === id).length;
-    const full = t.status === 'full' || count >= Number(t.max_players);
-    return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="tour-entry-strip"><span class="entry-label">ENTRY FEE</span><strong>◈ ' + entry + ' <small>COINS</small></strong><span class="entry-action">' + (has ? 'YOU’RE IN ✓' : full ? 'MATCH FULL' : 'TAP TO VIEW ↗') + '</span></div><div class="match-time"><span class="match-time-icon">◷</span><span><small>MATCH STARTS</small><b>' + (t.starts_at ? esc(new Date(t.starts_at).toLocaleString(undefined,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})) : 'Time to be announced') + '</b></span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>✦ ' + Math.max(0, Number(t.max_players) - count) + ' SPOTS LEFT</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' COINS</b><small>DISPLAYED PRIZE POOL</small></div><div class="prize"><b>' + perKill + ' COINS</b><small>PER KILL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open') ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' COINS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
+    const full = t.status === 'full' || count >= Number(t.max_players) || t.is_cancelled === true;
+    const globallyPaused = platformControls.registrations_paused || platformControls.maintenance_mode;
+    return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="tour-entry-strip"><span class="entry-label">ENTRY FEE</span><strong>◈ ' + entry + ' <small>COINS</small></strong><span class="entry-action">' + (has ? 'YOU’RE IN ✓' : full ? 'MATCH FULL' : 'TAP TO VIEW ↗') + '</span></div><div class="match-time"><span class="match-time-icon">◷</span><span><small>MATCH STARTS</small><b>' + (t.starts_at ? esc(new Date(t.starts_at).toLocaleString(undefined,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})) : 'Time to be announced') + '</b></span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>✦ ' + Math.max(0, Number(t.max_players) - count) + ' SPOTS LEFT</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' COINS</b><small>DISPLAYED PRIZE POOL</small></div><div class="prize"><b>' + perKill + ' COINS</b><small>PER KILL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open' || globallyPaused) ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : t.is_cancelled ? 'DISABLED' : globallyPaused ? 'REGISTRATIONS PAUSED' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' COINS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
   }).join('') : '<p class="notice">No tournaments are published yet.</p>';
   const profileBtn=$('#profileBtn'); if(profileBtn){ const {data:profileText}=currentUser?await supabase.from('player_accounts').select('username').eq('user_id',currentUser.id).maybeSingle():{data:null}; profileBtn.textContent=currentUser?(profileText?.username||'Profile'):'Sign in'; profileBtn.setAttribute('aria-label',currentUser?'Player profile':'Sign in'); }
 }
@@ -378,16 +486,20 @@ async function refreshData() {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) console.warn(sessionError);
   currentUser = session?.user ?? null;
-  isAdmin = false;
+  isAdmin = false; adminIsOwner = false; adminPermissions = new Set(); dailyStreakStatus = null;
   if (currentUser) setupBattleForgePush().catch(error => console.warn('Push setup skipped:', error));
   if (currentUser) {
-    const { data: adminFlag, error: adminError } = await supabase.rpc('is_battleforge_admin');
-    if (!adminError) isAdmin = adminFlag === true;
+    const { data: access, error: adminError } = await supabase.rpc('get_my_admin_access');
+    if (!adminError && access) { isAdmin = access.is_admin === true; adminIsOwner = access.is_owner === true; adminPermissions = new Set(Array.isArray(access.permissions) ? access.permissions : []); }
   }
+  const { data: controls, error: controlsError } = await supabase.from('platform_controls').select('registrations_paused,deposits_paused,withdrawals_paused,maintenance_mode,emergency_message').eq('id',1).maybeSingle();
+  if (!controlsError && controls) platformControls = controls;
+  if (currentUser) { const { data: streak, error: streakError } = await supabase.rpc('claim_daily_streak_reward'); if (!streakError && streak) { dailyStreakStatus = streak; if (Number(streak.rewards_credited_now||0)>0) toast('Daily streak completed! 20 entry-fee coins added.'); } }
+  applyPlatformGates();
   $('#adminBtn')?.classList.toggle('hidden', !isAdmin);
   if(currentUser){ await requireUsernameSetup(); if(usernameSetupOpen) return; }
   const { data, error } = await supabase.from('tournaments')
-    .select('id,title,description,game_mode,entry_points,per_kill_points,prize_pool_points,max_players,status,starts_at,is_past_match')
+    .select('id,title,description,game_mode,entry_points,per_kill_points,prize_pool_points,max_players,status,starts_at,is_past_match,is_cancelled')
     .eq('is_past_match', false)
     .order('starts_at', { ascending: true, nullsFirst: false }).order('id');
   if (error) {
@@ -556,9 +668,12 @@ async function showProfile() {
   const {data:referralDownloadSetting}=await supabase.rpc('get_battleforge_referral_download_url'); const referralDownloadUrl=(Array.isArray(referralDownloadSetting)?referralDownloadSetting[0]?.download_url:referralDownloadSetting?.download_url)||'https://www.dropbox.com/scl/fi/rdkpfx9lggtvavhzntc6k/BattleForge.apk?rlkey=klsepxvg2ejzjh70tcugy3bmn&st=528fxegd&dl=0';
   const resultRows=myResults||[], wins=resultRows.filter(x=>Number(x.placement)===1).length, kills=resultRows.reduce((n,x)=>n+Number(x.kills||0),0);
   const rankStats=await loadLifetimeKillRanks(true), lifetimeKills=Number(rankStats.get(currentUser.id)?.lifetime_kills ?? kills), currentRank=killRankFor(lifetimeKills);
+  const {data:streakStatus,error:streakError}=await supabase.rpc('claim_daily_streak_reward');
+  if(!streakError&&streakStatus)dailyStreakStatus=streakStatus;
   const led=ledger||[], withdrawals=paidWithdrawals||[];
   modal(`<div class="profile-sheet"><div class="profile-top"><div><div class="eyebrow">PLAYER PROFILE</div><h2 class="bf-profile-player-name">${esc(a.username||currentUser.user_metadata?.full_name||'Player')}${rankBadgeHtml(lifetimeKills,'lg')}</h2><p>Player ID <b>${esc(a.player_number||'Loading')}</b>${currentRank?' · '+esc(currentRank.label):' · Unranked'}</p></div></div>
   <div class="profile-metrics"><div><small>TOTAL BALANCE</small><b>₹${(Number(w.deposited_balance||0)+Number(w.earned_balance||0)).toFixed(2)}</b></div><div><small>ENTRY-FEE CREDITS</small><b>₹${Number(w.deposited_balance||0).toFixed(2)}</b></div><div><small>MATCH EARNINGS</small><b>₹${Number(w.earned_balance||0).toFixed(2)}</b></div><div><small>MATCH RESULTS</small><b>${resultRows.length}</b></div><div><small>WINS / KILLS</small><b>${wins} / ${kills}</b></div><div><small>LIFETIME KILLS</small><b>${lifetimeKills.toLocaleString('en-IN')}</b></div><div><small>WITHDRAWALS</small><b>${withdrawals.length}</b></div></div>
+  <section class="profile-block bf-streak-card"><div class="eyebrow">DAILY ARENA STREAK</div><h3>${Number(dailyStreakStatus?.current_streak||0)} / 7 days</h3><p>Join at least 3 different matches each day. Complete 7 consecutive days to earn 20 entry-fee-only coins.</p><div class="bf-streak-progress"><span style="width:${Math.min(100,(Number(dailyStreakStatus?.current_streak||0)%7)/7*100)}%"></span></div><small>TODAY: ${Number(dailyStreakStatus?.today_matches||0)} / 3 matches · ${Math.max(0,3-Number(dailyStreakStatus?.today_matches||0))} more to qualify</small><small>Cancelled tournaments do not count. Reward coins cannot be withdrawn.</small></section>
   <details class="profile-block profile-accordion" open><summary>Edit profile</summary><label class="field">USERNAME (LETTERS, NUMBERS, UNDERSCORES)<input id="profileUsername" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]{3,24}" value="${esc(a.username||'')}" placeholder="ChooseUniqueName" autocomplete="nickname"></label><p class="profile-help">${Number(a.username_change_count||0)===0?'Your first username change is free.':'Each additional username change costs ₹5 from entry-fee-only credits.'} Only letters, numbers, and underscores; no spaces or other special characters.</p><button id="savePlayerProfile" class="join full">Save profile</button><p id="profileSaveStatus" class="profile-help"></p>
   </details><details class="profile-block profile-accordion"><summary>Referral centre</summary><p>Your referral code: <b>${esc(a.player_number||'—')}</b></p>${a.referred_by_player_number?`<p class="notice">You were referred by Player ID <b>${esc(a.referred_by_player_number)}</b>. Referral code already used; it can never be changed.</p>`:`<label class="field">REFER CODE<input id="applyReferralCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="20" placeholder="Enter someone else's Player ID"></label><button id="applyReferralCodeBtn" class="join full">Apply refer code</button><p class="profile-help">You can apply only one referral code for your lifetime. Once applied, it cannot be changed.</p>`}<p><a class="support-cta" href="${esc(referralDownloadUrl)}" target="_blank" rel="noopener noreferrer"><b>Download BattleForge APK</b><span>↗</span></a></p><p class="profile-help">Share this APK link with friends so they can install BattleForge and use your referral code.</p><div class="profile-metrics"><div><small>INVITED PLAYERS</small><b>${totalReferrals}</b></div><div><small>REWARDS EARNED</small><b>${rewarded} · ₹${(rewarded*5).toFixed(2)}</b></div><div><small>WAITING FOR FIRST PAID WITHDRAWAL</small><b>${Math.max(0,totalReferrals-rewarded)}</b></div></div><p class="profile-help">₹5 referral rewards are credited as non-withdrawable entry-fee balance after a referred player completes their first withdrawal.</p></details><details class="profile-block profile-accordion"><summary>Full activity history</summary><div class="profile-history">${led.length?led.map(x=>`<div class="profile-history-row"><div><b>${esc(x.entry_type||'Wallet activity')}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.note?' · '+esc(x.note):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No wallet activity recorded yet.</p>'}</div></section>
   </details><details class="profile-block profile-accordion"><summary>Deposit history</summary><div class="profile-history">${(depositHistory||[]).length?(depositHistory||[]).map(x=>`<div class="profile-history-row"><div><b>${esc(String(x.status||'pending').toUpperCase())}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.payment_reference?' · Ref '+esc(x.payment_reference):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No deposit requests yet.</p>'}</div></section>
@@ -703,7 +818,7 @@ async function showAdmin() {
   const playerTotal = Object.values(counts).reduce((sum, n) => sum + Number(n || 0), 0);
   modal(`<div class="admin-dashboard-head"><div class="eyebrow"><span class="live-dot"></span> ORGANISER CONTROL CENTRE</div><h2>Admin dashboard</h2><p>Everything you need to run a match, from one place.</p><div class="admin-section" data-admin-page="players" id="adminPlayerManager"><div class="admin-section-title"><div><h3>Player account manager</h3><p>Search by numeric Player ID, inspect full histories, and adjust balances.</p></div></div><label class="field">PLAYER ID<input id="adminPlayerNumber" type="number" min="1" step="1" placeholder="100001"></label><button id="adminFindPlayer" class="join full">Find player & load full history</button><div class="admin-form-grid"><label class="field">BAN REASON (OPTIONAL)<input id="adminBanReason" maxlength="300" placeholder="Reason for moderation"></label><div class="field"><span>ACCOUNT MODERATION</span><button id="adminBanPlayer" class="outline danger-button full">Ban this Player ID</button><button id="adminUnbanPlayer" class="outline full">Unban this Player ID</button><label class="field">SELECT MATCH<select id="adminKickMatchId"><option value="">Choose a match</option>${tournaments.map(t=>`<option value="${esc(t.id)}">${esc(t.title)} · #${esc(t.id)}</option>`).join('')}</select></label><button id="adminKickFromMatch" class="outline danger-button full">Kick Player ID from selected match</button><button id="adminClearKick" class="outline full">Clear kick record (admin)</button></div></div><div id="adminPlayerDetails"></div><div class="admin-form-grid"><label class="field">BALANCE TYPE<select id="adminBalanceBucket"><option value="deposited">Entry-fee-only balance</option><option value="earned">Withdrawable match earnings</option></select></label><label class="field">AMOUNT (+ add / − deduct)<input id="adminBalanceAmount" type="number" step="0.01" placeholder="50 or -20"></label></div><label class="field">REASON / AUDIT NOTE<input id="adminBalanceNote" maxlength="300" placeholder="Correction reason"></label><button id="adminAdjustBalance" class="join full">Apply balance adjustment</button></div><p></p></div>
     <div class="admin-metrics"><div><small>TOURNAMENTS</small><b>${tournaments.length}</b></div><div><small>OPEN</small><b>${openCount}</b></div><div><small>REGISTRATIONS</small><b>${playerTotal}</b></div><div><small>CLOSED / FULL</small><b>${closedCount}</b></div></div>
-    <div class="admin-section" data-admin-page="payments"><div class="admin-section-title"><span>₹</span><div><h3>Payments & withdrawals</h3><p>Review full request details, verify UPI deposits, credit deposited coins, and mark manually sent withdrawals as paid.</p></div></div><button id="adminLoadPayments" class="join full">Open payment request queue</button><div id="adminPaymentRequests"></div></div><div class="admin-quick-grid admin-home-menu"><button class="admin-quick" data-admin-page-open="create"><span>＋</span><b>Create match</b><small>New tournament setup</small></button><button class="admin-quick" data-admin-page-open="manage"><span>⚙</span><b>Manage matches</b><small>Edit status and rewards</small></button><button class="admin-quick" data-admin-page-open="players"><span>♙</span><b>Search players</b><small>Player lookup & results</small></button><button class="admin-quick" data-admin-page-open="results"><span>🏆</span><b>Match rankings</b><small>Drag ranks, edit kills & prizes</small></button><button class="admin-quick" data-admin-page-open="payments"><span>₹</span><b>Payments</b><small>Deposits & withdrawals</small></button><button class="admin-quick" data-admin-page-open="room"><span>🎮</span><b>Room & lobby</b><small>Room ID and password</small></button><button class="admin-quick" data-admin-page-open="notifications"><span>✉</span><b>Announcements</b><small>Send or delete broadcasts</small></button><button class=\"admin-quick\" data-admin-page-open=\"social\"><span>↗</span><b>Social links</b><small>Edit profile links</small></button><button class="admin-quick" data-admin-page-open="updates"><span>⬆</span><b>App updates</b><small>Version & force update</small></button></div><div class="admin-page-back hidden" id="adminPageBack"><button class="outline" id="adminBackHome">← All admin options</button><span id="adminPageTitle">Admin section</span></div>    <div class="admin-section app-update-admin" data-admin-page="updates"><div class="admin-section-title"><span>⬆</span><div><h3>App version & forced updates</h3><p>Set latest/minimum versions, change the APK link, and force or unforce updates.</p></div></div><button type="button" id="loadAppUpdateConfig" class="outline full">Load current settings</button><div class="admin-form-grid"><label class="field">LATEST VERSION<input id="appLatestVersion" inputmode="decimal" placeholder="1.2.0"></label><label class="field">MINIMUM SUPPORTED VERSION<input id="appMinimumVersion" inputmode="decimal" placeholder="1.1.0"></label></div><label class="field">DIRECT HTTPS APK DOWNLOAD LINK<input id="appApkUrl" type="url" placeholder="https://your-host/BattleForge.apk"></label><label class="field">UPDATE MESSAGE<textarea id="appUpdateMessage" rows="2" maxlength="500" placeholder="Please install the latest BattleForge update to continue."></textarea></label><label class="checkbox-row"><input id="appForceUpdate" type="checkbox"> Force older app versions to update</label><button type="button" id="saveAppUpdateConfig" class="join full">Save app update settings</button><p id="appUpdateStatus" role="status" aria-live="polite" class="admin-helper">Changes will be confirmed here after saving.</p><p class="admin-helper">This build version: <b>${esc(APP_FALLBACK_VERSION)}</b>. Set LATEST VERSION to this value and MINIMUM SUPPORTED VERSION to the oldest allowed build. Test the direct APK link before forcing updates. Versions built before remote version-checking was added cannot be remotely blocked; those users must install a newer APK once manually.</p></div><div class="admin-legacy-quick hidden"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div></div>
+    <div class="admin-section" data-admin-page="payments"><div class="admin-section-title"><span>₹</span><div><h3>Payments & withdrawals</h3><p>Review full request details, verify UPI deposits, credit deposited coins, and mark manually sent withdrawals as paid.</p></div></div><button id="adminLoadPayments" class="join full">Open payment request queue</button><div id="adminPaymentRequests"></div></div><div class="admin-quick-grid admin-home-menu"><button class="admin-quick" data-admin-page-open="create"><span>＋</span><b>Create match</b><small>New tournament setup</small></button><button class="admin-quick" data-admin-page-open="manage"><span>⚙</span><b>Manage matches</b><small>Edit status and rewards</small></button><button class="admin-quick" data-admin-page-open="players"><span>♙</span><b>Search players</b><small>Player lookup & results</small></button><button class="admin-quick" data-admin-page-open="results"><span>🏆</span><b>Match rankings</b><small>Drag ranks, edit kills & prizes</small></button><button class="admin-quick" data-admin-page-open="payments"><span>₹</span><b>Payments</b><small>Deposits & withdrawals</small></button><button class="admin-quick" data-admin-page-open="room"><span>🎮</span><b>Room & lobby</b><small>Room ID and password</small></button><button class="admin-quick" data-admin-page-open="notifications"><span>✉</span><b>Announcements</b><small>Send or delete broadcasts</small></button><button class=\"admin-quick\" data-admin-page-open=\"social\"><span>↗</span><b>Social links</b><small>Edit profile links</small></button><button class="admin-quick" data-admin-page-open="updates"><span>⬆</span><b>App updates</b><small>Version & force update</small></button><button class="admin-quick" data-admin-page-open="controls"><span>⚠</span><b>Security & controls</b><small>Roles, emergency switches & audit</small></button></div><div class="admin-page-back hidden" id="adminPageBack"><button class="outline" id="adminBackHome">← All admin options</button><span id="adminPageTitle">Admin section</span></div>    <div class="admin-section" data-admin-page="controls"><div class="admin-section-title"><span>⚠</span><div><h3>Emergency controls</h3><p>Server-enforced switches. Changes are recorded in the admin audit log.</p></div></div><div id="adminControlStatus" class="admin-helper" aria-live="polite">Loading live platform controls…</div><label class="checkbox-row"><input type="checkbox" id="bfPauseRegistrations"> Pause all new tournament registrations</label><label class="checkbox-row"><input type="checkbox" id="bfPauseDeposits"> Disable new deposits</label><label class="checkbox-row"><input type="checkbox" id="bfPauseWithdrawals"> Pause new withdrawals</label><label class="checkbox-row"><input type="checkbox" id="bfMaintenanceMode"> Enable maintenance mode (owner only)</label><label class="field">EMERGENCY BANNER MESSAGE<input id="bfEmergencyMessage" maxlength="500" placeholder="Important BattleForge service announcement"></label><button id="bfSaveControls" class="join full">Save emergency controls</button><div class="admin-section-title"><div><h3>Disable a specific tournament</h3><p>Prevents new entries and excludes it from streak progress.</p></div></div><label class="field">TOURNAMENT<select id="bfDisableTournament"><option value="">Choose a tournament</option></select></label><label class="checkbox-row"><input type="checkbox" id="bfTournamentDisabled"> Disabled</label><button id="bfSaveTournamentDisabled" class="outline full">Save tournament status</button><div class="admin-section-title"><div><h3>Emergency announcement</h3><p>Send a push and in-app announcement using BattleForge notifications.</p></div></div><label class="field">TITLE<input id="bfEmergencyTitle" maxlength="80" placeholder="Important update"></label><label class="field">MESSAGE<textarea id="bfEmergencyAnnouncement" maxlength="1000" rows="3" placeholder="Write the emergency announcement"></textarea></label><button id="bfSendEmergencyAnnouncement" class="outline full">Send emergency announcement</button><div class="admin-section-title" id="bfRoleAdminHeading"><div><h3>Admin roles</h3><p>Assign one scoped role to a registered account. Only the owner can change roles.</p></div></div><div id="bfRoleAdminPanel"><label class="field">AUTH USER ID (UUID)<input id="bfRoleUserId" maxlength="36" placeholder="Paste the user's auth UUID"></label><label class="field">ROLE<select id="bfRoleName"><option value="finance">Finance</option><option value="tournament_manager">Tournament manager</option><option value="moderator">Moderator</option><option value="support_agent">Support agent</option><option value="analyst">Analyst (read-only)</option></select></label><button id="bfAssignRole" class="outline full">Assign / update role</button><div id="bfRoleList"></div></div><div class="admin-section-title"><div><h3>Admin audit & analytics</h3><p>Who changed what, and high-level platform counts.</p></div></div><button id="bfLoadAudit" class="outline full">Load audit log</button><button id="bfLoadAnalytics" class="outline full">Load analytics</button><div id="bfAuditList"></div><div id="bfAnalytics"></div></div><div class="admin-section app-update-admin" data-admin-page="updates"><div class="admin-section-title"><span>⬆</span><div><h3>App version & forced updates</h3><p>Set latest/minimum versions, change the APK link, and force or unforce updates.</p></div></div><button type="button" id="loadAppUpdateConfig" class="outline full">Load current settings</button><div class="admin-form-grid"><label class="field">LATEST VERSION<input id="appLatestVersion" inputmode="decimal" placeholder="1.2.0"></label><label class="field">MINIMUM SUPPORTED VERSION<input id="appMinimumVersion" inputmode="decimal" placeholder="1.1.0"></label></div><label class="field">DIRECT HTTPS APK DOWNLOAD LINK<input id="appApkUrl" type="url" placeholder="https://your-host/BattleForge.apk"></label><label class="field">UPDATE MESSAGE<textarea id="appUpdateMessage" rows="2" maxlength="500" placeholder="Please install the latest BattleForge update to continue."></textarea></label><label class="checkbox-row"><input id="appForceUpdate" type="checkbox"> Force older app versions to update</label><button type="button" id="saveAppUpdateConfig" class="join full">Save app update settings</button><p id="appUpdateStatus" role="status" aria-live="polite" class="admin-helper">Changes will be confirmed here after saving.</p><p class="admin-helper">This build version: <b>${esc(APP_FALLBACK_VERSION)}</b>. Set LATEST VERSION to this value and MINIMUM SUPPORTED VERSION to the oldest allowed build. Test the direct APK link before forcing updates. Versions built before remote version-checking was added cannot be remotely blocked; those users must install a newer APK once manually.</p></div><div class="admin-legacy-quick hidden"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div></div>
     <div class="admin-section" data-admin-page="notifications" id="adminBroadcastSection"><div class="admin-section-title"><span>✉</span><div><h3>Push notifications</h3><p>Send a phone notification and add it to the in-app notification feed.</p></div></div><label class="field">AUDIENCE<select id="adminBroadcastAudience"><option value="all">All users — announcement</option><option value="match">Players registered for a match</option></select></label><label class="field hidden" id="adminBroadcastMatchWrap">MATCH<select id="adminBroadcastTournament"><option value="">Choose a match</option></select></label><label class="field">NOTIFICATION TITLE<input id="adminBroadcastTitle" maxlength="80" placeholder="Tournament update"></label><label class="field">MESSAGE<textarea id="adminBroadcastMessage" maxlength="1000" rows="4" placeholder="Write your announcement…"></textarea></label><p class="admin-helper">Match alerts go only to registered players. Published room credentials are included in that match push notification. Never send private room details to all users.</p><button id="adminSendBroadcast" class="join full">Send notification</button><div id="adminBroadcastStatus" class="admin-helper" aria-live="polite"></div></div><div class="admin-section-title" data-admin-page="notifications"><div><h3>Manage sent notifications</h3><p>Remove an outdated announcement from every user’s feed.</p></div></div><button id="adminLoadBroadcasts" data-admin-page="notifications" class="outline full">Load sent notifications</button><div id="adminBroadcastList" data-admin-page="notifications"></div>
     <div id="adminCreateSection" data-admin-page="create" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
     <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
@@ -752,15 +867,17 @@ async function showAdmin() {
   $('#adminLoadResultsRoster')?.addEventListener('click', loadAdminEntries);
   $('#adminLoadEntries')?.addEventListener('click', () => openAdminPage('players'));
   $('#adminRoomTournament')?.addEventListener('change', loadAdminRoom);
-  const adminPages={home:null,create:'Create match',manage:'Manage matches',players:'Search players',results:'Match rankings',payments:'Payments & withdrawals',room:'Room & lobby',notifications:'Announcements',social:'Social links',updates:'App updates'};
-  const openAdminPage=(page)=>{document.querySelectorAll('[data-admin-page]').forEach(el=>el.classList.toggle('hidden',el.dataset.adminPage!==page));document.querySelectorAll('.admin-home-menu').forEach(el=>el.classList.toggle('hidden',page!=='home'));$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=adminPages[page]||'Admin section';};
-  document.querySelectorAll('[data-admin-page-open]').forEach(button=>button.addEventListener('click',()=>openAdminPage(button.dataset.adminPageOpen)));
+  const adminPages={home:null,create:'Create match',manage:'Manage matches',players:'Search players',results:'Match rankings',payments:'Payments & withdrawals',room:'Room & lobby',notifications:'Announcements',social:'Social links',updates:'App updates',controls:'Security & emergency controls'};
+  const pagePermission={create:'tournament_manage',manage:'tournament_manage',players:'player_lookup',results:'results_manage',payments:'payments',room:'room_manage',notifications:'announcements_manage',social:'owner',updates:'owner',controls:'admin_console'};
+  const openAdminPage=(page)=>{if(page!=='home'&&!adminIsOwner&&!adminPermissions.has(pagePermission[page])){toast('Your admin role cannot access this section.');return;}document.querySelectorAll('[data-admin-page]').forEach(el=>el.classList.toggle('hidden',el.dataset.adminPage!==page));document.querySelectorAll('.admin-home-menu').forEach(el=>el.classList.toggle('hidden',page!=='home'));$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=adminPages[page]||'Admin section';};
+  document.querySelectorAll('[data-admin-page-open]').forEach(button=>{const page=button.dataset.adminPageOpen;const permission=pagePermission[page];button.classList.toggle('hidden',!!permission&&!adminIsOwner&&!adminPermissions.has(permission));button.addEventListener('click',()=>openAdminPage(page));});
   $('#adminBackHome')?.addEventListener('click',()=>openAdminPage('home'));
   document.querySelectorAll('[data-admin-jump]').forEach(button=>button.addEventListener('click',()=>{const map={adminCreateSection:'create',adminManageSection:'manage',adminPlayersSection:'players'};openAdminPage(map[button.dataset.adminJump]||'home');document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'});}));
   const roomSelect = $('#adminRoomTournament');
   if (roomSelect) roomSelect.value = $('#adminTournament')?.value || roomSelect.value;
   openAdminPage('home');
-  await loadAdminRoom(); syncAdminSelectedSummary(); await loadAdminSchedule(); await loadAdminSocialLinks();
+  await loadAdminRoom(); syncAdminSelectedSummary(); await loadAdminSchedule(); if(adminIsOwner)await loadAdminSocialLinks();
+  await loadAdminControls();
 }
 
 async function loadAdminSocialLinks(){
@@ -952,8 +1069,8 @@ async function showTournamentDetails(t) {
       (roster?.length ? '<div class="roster"><div class="roster-chips">' + roster.map((p, i) => '<span class="player-chip"><i>' + (i + 1) + '</i>' + esc(p.in_game_name) + rankBadgeHtml(rosterRanks.get(String(p.player_number)) || 0) + ' · ID #' + esc(p.player_number) + '</span>').join('') + '</div></div>' : '<p class="match-rules-copy">No players have joined this match yet.</p>') + '</section>' +
       (has && room?.published ? '<div class="room-card"><small class="room-label">MATCH ROOM</small><div class="room-value">ID <b>' + esc(room.room_id || 'Not set') + '</b></div><div class="room-value">Password <b>' + esc(room.room_password || 'Not set') + '</b></div></div>' : '');
   }
-  const full = t.status === 'full' || count >= Number(t.max_players);
-  const canJoin = currentUser && !has && !full && t.status === 'open';
+  const full = t.status === 'full' || count >= Number(t.max_players) || t.is_cancelled === true;
+  const canJoin = currentUser && !has && !full && t.status === 'open' && !platformControls.registrations_paused && !platformControls.maintenance_mode;
   modal('<div class="detail-hero"><span class="tag">' + esc(mode) + ' ARENA</span><h2>' + esc(t.title) + '</h2><p>' + esc((t.status || 'open').toUpperCase()) + ' · Competitive Free Fire tournament</p></div>' +
     '<div class="detail-stats"><div><small>ENTRY FEE</small><b>' + entry + ' <i>COINS</i></b></div><div><small>PER KILL</small><b>' + perKill + ' <i>COINS</i></b></div><div><small>PRIZE POOL</small><b>' + prize + ' <i>COINS</i></b></div><div><small>PLAYERS</small><b>' + count + '/' + Number(t.max_players) + '</b></div></div>' +
     '<div class="detail-info"><div><span>🕒</span><section><small>START TIME</small><b>' + esc(starts) + '</b></section></div><div><span>🎮</span><section><small>GAME MODE</small><b>' + esc(mode) + '</b></section></div><div><span>👥</span><section><small>REGISTRATION</small><b>' + (has ? 'You are registered' : full ? 'Tournament full' : t.status === 'open' ? 'Open to join' : 'Registration closed') + '</b></section></div></div>' +
@@ -1188,6 +1305,34 @@ $('#modalContent').addEventListener('click', async event => {
   try { await navigator.clipboard.writeText(rules); toast('Match rules copied.'); }
   catch { const area=document.createElement('textarea'); area.value=rules; area.style.position='fixed'; area.style.opacity='0'; document.body.appendChild(area); area.select(); const ok=document.execCommand('copy'); area.remove(); toast(ok?'Match rules copied.':'Select and copy the rules manually.'); }
 });
+
+document.addEventListener('click',async event=>{
+ if(event.target.closest('#bfFaqOpen')){openFaqChat();return;}
+ if(event.target.closest('#bfSaveControls')){await saveAdminControls();return;}
+ if(event.target.closest('#bfSaveTournamentDisabled')){await saveTournamentDisabled();return;}
+ if(event.target.closest('#bfAssignRole')){await assignAdminRole();return;}
+ if(event.target.closest('[data-remove-admin-role]')){await removeAdminRole(event.target.closest('[data-remove-admin-role]').dataset.removeAdminRole);return;}
+ if(event.target.closest('#bfLoadAudit')){await loadAdminAudit();return;}
+ if(event.target.closest('#bfLoadAnalytics')){await loadAdminAnalytics();return;}
+ if(event.target.closest('#bfSendEmergencyAnnouncement')){
+  if(!adminIsOwner&&!adminPermissions.has('announcements_manage'))return toast('Announcement permission required.');
+  const title=$('#bfEmergencyTitle')?.value.trim(),message=$('#bfEmergencyAnnouncement')?.value.trim();
+  if(!title||!message)return toast('Enter an announcement title and message.');
+  const {error}=await supabase.rpc('admin_broadcast_notification',{p_title:title,p_message:message});
+  if(error)return toast('Announcement failed: '+error.message);
+  $('#bfEmergencyTitle').value='';$('#bfEmergencyAnnouncement').value='';toast('Emergency announcement sent.');
+ }
+});
+document.addEventListener('change',event=>{
+ if(event.target.id==='bfDisableTournament'){const id=Number(event.target.value);const t=(window.battleForgeAdminTournaments||[]).find(x=>Number(x.id)===id);if($('#bfTournamentDisabled'))$('#bfTournamentDisabled').checked=!!t?.is_cancelled;}
+});
+document.addEventListener('submit',event=>{
+ if(event.target.id==='bfFaqForm'){
+  event.preventDefault();const input=$('#bfFaqInput');const question=input?.value.trim();if(!question)return;
+  appendFaqMessage(question,'user');appendFaqMessage(battleForgeFaqAnswer(question),'bot');input.value='';input.focus();
+ }
+});
+
 supabase.auth.onAuthStateChange(() => { setTimeout(() => refreshData(), 0); });
 // Native WebViews can pause timers while backgrounded. Refresh an expiring session on resume
 // instead of forcing users to sign in again after leaving BattleForge idle.
