@@ -5,7 +5,7 @@
     <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d9f0ff"/><stop offset=".45" stop-color="#5b9fca"/><stop offset="1" stop-color="#1d405c"/></linearGradient>
     <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c3fff1"/><stop offset=".45" stop-color="#42b7a5"/><stop offset="1" stop-color="#145e61"/></linearGradient>
     <linearGradient id="platinum" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".42" stop-color="#b8d7e9"/><stop offset="1" stop-color="#4e819e"/></linearGradient>
-    <linearGradient id="legend" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f3ffff"/><stop offset=".28" stop-color="#70e7df"/><stop offset=".6" stop-color="#547caa"/><stop offset="1" stop-color="#17283e"/></linearGradient>
+    <linearGradient id="legendGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f3ffff"/><stop offset=".28" stop-color="#70e7df"/><stop offset=".6" stop-color="#547caa"/><stop offset="1" stop-color="#17283e"/></linearGradient>
   </defs>
   <symbol id="rookie" viewBox="0 0 64 64">
     <path d="M32 3 54 13 57 34 32 60 7 34 10 13Z" fill="#251b19" stroke="url(#bronze)" stroke-width="3"/>
@@ -39,9 +39,9 @@
     <path d="m32 26 3 5-3 9-3-9Z" fill="#e8fbff"/>
     <circle cx="18" cy="24" r="3" fill="#fff"/><circle cx="46" cy="24" r="3" fill="#fff"/><circle cx="32" cy="12" r="3" fill="#fff"/>
   </symbol>
-  <symbol id="legend" viewBox="0 0 64 64">
-    <path d="M4 25 18 8l14 10L46 8l14 17-8 25-20 12L12 50Z" fill="#0d1b2c" stroke="url(#legend)" stroke-width="2.8" stroke-linejoin="round"/>
-    <path d="m12 25 9-11 11 8 11-8 9 11-7 20-13 10-13-10Z" fill="url(#legend)" stroke="#d8fffc" stroke-width="1.5"/>
+  <symbol id="legendGradient" viewBox="0 0 64 64">
+    <path d="M4 25 18 8l14 10L46 8l14 17-8 25-20 12L12 50Z" fill="#0d1b2c" stroke="url(#legendGradient)" stroke-width="2.8" stroke-linejoin="round"/>
+    <path d="m12 25 9-11 11 8 11-8 9 11-7 20-13 10-13-10Z" fill="url(#legendGradient)" stroke="#d8fffc" stroke-width="1.5"/>
     <path d="m32 13 7 17-7 22-7-22Z" fill="#eaffff" opacity=".9"/>
     <path d="m10 27 12 4-7 12m39-16-12 4 7 12" fill="none" stroke="#b5fff4" stroke-width="2" stroke-linecap="round"/>
     <path d="m32 2 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z" fill="#fff" opacity=".95"/>
