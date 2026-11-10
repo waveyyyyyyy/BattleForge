@@ -19,7 +19,7 @@
 
 ## Legal and platform review
 
-The PROG Act 2025 defines online money games broadly and distinguishes e-sports; the 2026 Rules describe a determination/registration regime and grievance/safety obligations. BattleForge's paid-entry tournament with prize/coin rewards needs a product-specific written classification. Do not infer that the Free Fire skill component alone makes the current wallet/prize flow exempt.
+The PROG Act 2025 definition of e-sport is specific: an organised multiplayer competition as part of multi-sports events, duly recognised under the National Sports Governance Act, 2025 and registered with the Authority/agency; fees may be solely for entry or administrative costs and prizes may be performance-based, but bets/wagers/other stakes are excluded. The Act defines an online money game broadly by reference to fees/deposits/stakes and expected monetary enrichment, regardless of skill or chance, but excludes qualifying e-sports. Its definition of “other stakes” expressly includes purchased credits/coins. BattleForge's current community Free Fire tournament and deposited/earned coin wallet has not been shown to satisfy the statutory e-sport criteria. Obtain a written classification from qualified Indian counsel and, where appropriate, the Authority before accepting paid entries or facilitating payments.
 
 Official primary sources to review:
 - India Code — PROG Act 2025: https://www.indiacode.nic.in/bitstream/123456789/22148/1/a2025-32.pdf
