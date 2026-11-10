@@ -356,7 +356,6 @@ main.app-shell{max-width:760px;width:100%;padding:13px 13px 112px}
 #page-wallet .wallet-hero>p{margin:4px 0 9px!important;line-height:1.35!important}
 #page-wallet .wallet-hero>.wallet-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin:0!important;padding:0!important}
 #page-wallet .wallet-hero .wallet-action{min-height:54px!important;padding:8px 10px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:2px!important}
-.bf-avatar-picker-modal{--bf-avatar-sprite:var(--bf-avatar-sprite)!important}
 .bf-avatar-picker-modal .bf-avatar-grid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important}
 .bf-avatar-picker-modal .bf-avatar-choice{display:flex!important;visibility:visible!important;opacity:1!important;min-width:0!important;min-height:82px!important}
 .bf-avatar-picker-modal .bf-avatar-choice .bf-avatar-art{display:block!important;visibility:visible!important;opacity:1!important;width:52px!important;height:52px!important;background-image:var(--bf-avatar-sprite)!important;background-size:500% 200%!important;background-repeat:no-repeat!important}
