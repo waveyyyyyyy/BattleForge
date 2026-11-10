@@ -1402,9 +1402,10 @@ async function publishBulkResults(button) {
 
 function matchChatMessageHtml(row, username) {
   const own=String(row.user_id)===String(currentUser?.id);
-  const reactions=read('bf_chat_reactions_'+String(row.id),[]);
+  const saved=read('bf_chat_reactions_'+String(row.id),null);
+  const selected=Array.isArray(saved)?(saved[0]||''):String(saved||'');
   const emojis=['😂','😭','😘','👽','🥀','🤑','😡','☠️','🤕','😱','❤️','🎉','💔','💦'];
-  return '<article class="bf-match-chat-message '+(own?'is-own':'')+'" data-chat-message="'+esc(row.id)+'"><div class="bf-match-chat-meta"><b>'+esc(username)+(own?' · YOU':'')+'</b><time>'+esc(new Date(row.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</time></div><p>'+esc(row.message)+'</p><div class="bf-chat-reactions" aria-label="Message reactions">'+emojis.map(emoji=>'<button type="button" class="bf-chat-reaction '+(reactions.includes(emoji)?'active':'')+'" data-chat-reaction="'+emoji+'" data-message-id="'+esc(row.id)+'" aria-label="React '+emoji+'">'+emoji+'</button>').join('')+'</div>'+(isAdmin?'<button type="button" class="bf-chat-delete" data-chat-delete="'+esc(row.id)+'">Remove</button>':'')+'</article>';
+  return '<article class="bf-match-chat-message '+(own?'is-own':'')+'" data-chat-message="'+esc(row.id)+'"><div class="bf-match-chat-meta"><b>'+esc(username)+(own?' · YOU':'')+'</b><time>'+esc(new Date(row.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</time></div><p>'+esc(row.message)+'</p><div class="bf-chat-reaction-result" aria-label="Selected reaction">'+(selected?'<span class="bf-chat-reaction-selected">'+selected+'</span>':'')+'</div><div class="bf-chat-reactions" aria-label="Choose a reaction">'+emojis.map(emoji=>'<button type="button" class="bf-chat-reaction-option '+(selected===emoji?'active':'')+'" data-chat-reaction="'+emoji+'" data-message-id="'+esc(row.id)+'" aria-label="React '+emoji+'">'+emoji+'</button>').join('')+'</div>'+(isAdmin?'<button type="button" class="bf-chat-delete" data-chat-delete="'+esc(row.id)+'">Remove</button>':'')+'</article>';
 }
 async function loadMatchChat(tournamentId) {
   const target=$('#bfMatchChatMessages');if(!target)return;
@@ -1439,9 +1440,13 @@ document.addEventListener('click',async event=>{
   const reaction=event.target.closest('[data-chat-reaction]');
   if(reaction){
     const key='bf_chat_reactions_'+reaction.dataset.messageId,emoji=reaction.dataset.chatReaction;
-    const current=read(key,[]),next=current.includes(emoji)?current.filter(x=>x!==emoji):[...current,emoji];
-    localStorage.setItem(key,JSON.stringify(next));
-    reaction.closest('[data-chat-message]')?.querySelectorAll('[data-chat-reaction]').forEach(button=>button.classList.toggle('active',next.includes(button.dataset.chatReaction)));
+    localStorage.setItem(key,JSON.stringify([emoji]));
+    const message=reaction.closest('[data-chat-message]');
+    if(message){
+      const result=message.querySelector('.bf-chat-reaction-result');
+      if(result)result.innerHTML='<span class="bf-chat-reaction-selected">'+emoji+'</span>';
+      message.classList.remove('is-reaction-open');
+    }
     return;
   }
   if(event.target.closest('#bfChatEmojiToggle')){const picker=$('#bfChatEmojiPicker');if(picker)picker.hidden=!picker.hidden;return;}
