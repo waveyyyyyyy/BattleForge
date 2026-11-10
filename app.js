@@ -1353,12 +1353,10 @@ function matchChatMessageHtml(row, username) {
 }
 async function loadMatchChat(tournamentId) {
   const target=$('#bfMatchChatMessages');if(!target)return;
-  const {data:rows,error}=await supabase.from('tournament_chat_messages').select('id,user_id,message,created_at').eq('tournament_id',Number(tournamentId)).order('created_at',{ascending:true}).limit(100);
+  const {data:rows,error}=await supabase.rpc('get_tournament_chat_messages',{p_tournament_id:Number(tournamentId)});
   if(error){target.innerHTML='<p class="notice">Could not load match chat. Please try again.</p>';return;}
-  const ids=[...new Set((rows||[]).map(row=>row.user_id))];let names=new Map();
-  if(ids.length){const {data:players}=await supabase.from('player_accounts').select('user_id,username').in('user_id',ids);names=new Map((players||[]).map(player=>[String(player.user_id),player.username||'Player']));}
-  activeMatchChatNames=names;
-  target.innerHTML=(rows||[]).map(row=>matchChatMessageHtml(row,names.get(String(row.user_id))||'Player')).join('')||'<div class="bf-chat-empty"><b>No messages yet</b><p>Say hello and get your squad ready.</p></div>';
+  activeMatchChatNames=new Map((rows||[]).map(row=>[String(row.user_id),row.username||'Player']));
+  target.innerHTML=(rows||[]).map(row=>matchChatMessageHtml(row,row.username||'Player')).join('')||'<div class="bf-chat-empty"><b>No messages yet</b><p>Say hello and get your squad ready.</p></div>';
   target.scrollTop=target.scrollHeight;
 }
 async function openMatchChat(tournament) {
@@ -1372,7 +1370,7 @@ async function openMatchChat(tournament) {
   activeMatchChatChannel=supabase.channel('bf-match-chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'tournament_chat_messages',filter:'tournament_id=eq.'+id},async payload=>{
     const row=payload.new,target=$('#bfMatchChatMessages');if(!target)return;
     let senderName=activeMatchChatNames.get(String(row.user_id));
-    if(!senderName){const {data:player}=await supabase.from('player_accounts').select('username').eq('user_id',row.user_id).maybeSingle();senderName=player?.username||(String(row.user_id)===String(currentUser?.id)?'You':'Player');activeMatchChatNames.set(String(row.user_id),senderName);}
+    if(!senderName){await loadMatchChat(id);return;}
     target.querySelector('.bf-chat-empty')?.remove();
     if(!target.querySelector('[data-chat-message="'+CSS.escape(String(row.id))+'"]')){target.insertAdjacentHTML('beforeend',matchChatMessageHtml(row,senderName));target.scrollTop=target.scrollHeight;}
   }).subscribe();
