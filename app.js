@@ -603,6 +603,23 @@ async function setupBattleForgePush(requestPermission = false) {
   } finally { pushRegistrationInProgress = false; }
 }
 
+// Short-lived in-memory cache for read-only arena data. Mutations and wallet/payment
+// actions still refresh their own data; this only deduplicates repeated screen refreshes.
+const bfReadCache = new Map();
+async function bfCachedRead(key, ttlMs, loader) {
+  const now = Date.now();
+  const cached = bfReadCache.get(key);
+  if (cached && cached.expiresAt > now) return cached.promise;
+  const promise = Promise.resolve().then(loader);
+  bfReadCache.set(key, { expiresAt: now + ttlMs, promise });
+  try { return await promise; }
+  catch (error) { bfReadCache.delete(key); throw error; }
+}
+function bfLocalDayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
 let refreshDataInFlight = null;
 async function refreshData() {
   if (refreshDataInFlight) return refreshDataInFlight;
@@ -617,19 +634,29 @@ async function refreshDataInternal() {
   isAdmin = false; adminIsOwner = false; adminPermissions = new Set(); dailyStreakStatus = null;
   if (currentUser) setupBattleForgePush().catch(error => console.warn('Push setup skipped:', error));
   if (currentUser) {
-    const { data: access, error: adminError } = await supabase.rpc('get_my_admin_access');
+    const { data: access, error: adminError } = await bfCachedRead('admin-access:'+currentUser.id, 30000, () => supabase.rpc('get_my_admin_access'));
     if (!adminError && access) { isAdmin = access.is_admin === true; adminIsOwner = access.is_owner === true; adminPermissions = new Set(Array.isArray(access.permissions) ? access.permissions : []); }
   }
-  const { data: controls, error: controlsError } = await supabase.from('platform_controls').select('registrations_paused,deposits_paused,withdrawals_paused,maintenance_mode,emergency_message').eq('id',1).maybeSingle();
+  const { data: controls, error: controlsError } = await bfCachedRead('platform-controls', 15000, () => supabase.from('platform_controls').select('registrations_paused,deposits_paused,withdrawals_paused,maintenance_mode,emergency_message').eq('id',1).maybeSingle());
   if (!controlsError && controls) platformControls = controls;
-  if (currentUser) { const { data: streak, error: streakError } = await supabase.rpc('claim_daily_streak_reward'); if (!streakError && streak) { dailyStreakStatus = streak; if (Number(streak.rewards_credited_now||0)>0) toast('Daily streak completed! 20 coins added.'); } }
+  if (currentUser) {
+    const streakKey = 'bf-streak-checked:'+currentUser.id+':'+bfLocalDayKey();
+    if (localStorage.getItem(streakKey) !== '1') {
+      const { data: streak, error: streakError } = await supabase.rpc('claim_daily_streak_reward');
+      if (!streakError && streak) {
+        dailyStreakStatus = streak;
+        localStorage.setItem(streakKey, '1');
+        if (Number(streak.rewards_credited_now||0)>0) toast('Daily streak completed! 20 coins added.');
+      }
+    }
+  }
   applyPlatformGates();
   $('#adminBtn')?.classList.toggle('hidden', !isAdmin);
   if(currentUser){ await requireUsernameSetup(); if(usernameSetupOpen) return; }
-  const { data, error } = await supabase.from('tournaments')
+  const { data, error } = await bfCachedRead('arena-tournaments', 12000, () => supabase.from('tournaments')
     .select('id,title,description,game_mode,entry_points,per_kill_points,prize_pool_points,max_players,status,starts_at,is_past_match,is_cancelled')
     .eq('is_past_match', false)
-    .order('starts_at', { ascending: true, nullsFirst: false }).order('id');
+    .order('starts_at', { ascending: true, nullsFirst: false }).order('id'));
   if (error) {
     toast('Could not load online tournaments. Check Supabase setup.');
     console.error(error);
@@ -638,7 +665,7 @@ async function refreshDataInternal() {
 
   if (currentUser) {
     try {
-      const { data: notices, error: noticeError } = await supabase.from('notification_broadcasts').select('id,title,message,created_at').order('created_at', { ascending: false });
+      const { data: notices, error: noticeError } = await bfCachedRead('broadcasts:'+currentUser.id, 20000, () => supabase.from('notification_broadcasts').select('id,title,message,created_at').order('created_at', { ascending: false }));
       if (!noticeError && Array.isArray(notices)) {
         const prior = window.battleForgeBroadcasts || [];
         const priorIds = new Set(prior.map(n=>String(n.id)));
@@ -655,11 +682,11 @@ async function refreshDataInternal() {
   joined = [];
   counts = {};
   if (currentUser) {
-    const { data: entries, error: entriesError } = await supabase.from('tournament_entries')
-      .select('id,tournament_id,in_game_name,created_at').eq('user_id', currentUser.id);
+    const { data: entries, error: entriesError } = await bfCachedRead('entries:'+currentUser.id, 8000, () => supabase.from('tournament_entries')
+      .select('id,tournament_id,in_game_name,created_at').eq('user_id', currentUser.id));
     if (!entriesError) joined = entries ?? [];
   }
-  const { data: countRows, error: countError } = await supabase.rpc('get_tournament_counts');
+  const { data: countRows, error: countError } = await bfCachedRead('tournament-counts', 10000, () => supabase.rpc('get_tournament_counts'));
   if (!countError && Array.isArray(countRows)) {
     for (const row of countRows) counts[String(row.tournament_id)] = Number(row.player_count);
   }
