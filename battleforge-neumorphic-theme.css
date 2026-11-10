@@ -493,3 +493,127 @@ body :is(.join,.admin-button,.wallet-action,.outline,.text-button,.support-cta,
 @media(min-width:760px){
  #tournaments{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
+
+
+/* 2026-11-10 visual refinement: remove residual green surfaces, refine hero stats, archive posters */
+:root{
+ --lime:#315cf4!important;--orange:#315cf4!important;
+ --bf-lime:#315cf4!important;--accent:#315cf4!important;
+}
+body :is(.bf-support-hub-icon,.bf-support-hub,.bf-analytics-card,
+.bf-analytics-panel,.bf-analytics-metric,.bf-admin-role-row,
+.bf-admin-audit-row,.bf-admin-player-card,.bf-admin-player-copy,
+.bf-admin-player-details,.bf-admin-quick,.bf-admin-stat,
+.bf-ticket-card,.bf-ticket-message,.bf-ticket-meta,.bf-faq-intro,
+.bf-chat-header,.bf-chat-disclaimer,.bf-streak-card,.bf-streak-reward,
+.bf-streak-day,.bf-referral-card,.referral-card,.referral-stat,
+.settings-group,.settings-card,.social-settings-section,.admin-section,
+.admin-quick,.admin-metrics>div,.admin-dashboard-head,.support-card,
+.support-panel,.support-hub-card,.profile-rules,.profile-history,
+.profile-accordion,.profile-metrics>div,.profile-block,
+.wallet-notice,.wallet-action,.activity-row,.activity-item,
+.history-item,.history-row,.history-detail,.match-detail-sheet,
+.notification-sheet,.notification-card,.leader-row,.leaderboard-row,
+.rule-card,.room-card,.room-value,.result-banner,.status-chip,
+.detail-panel,.detail-stats>div,.payment-request-card,.request-card,
+.deposit-card,.withdraw-card,.form-card,.info-card,.notice-card,
+.stat-card,.metric-card,.summary-card,.empty-state,.table-wrap){
+ background:#ffffff!important;background-image:none!important;
+ color:#24364b!important;border-color:#dce4ec!important;
+ box-shadow:0 3px 12px rgba(30,55,80,.05)!important;
+}
+body :is(.bf-support-hub-icon,.bf-ticket-status,.bf-analytics-card small,
+.bf-admin-role-badge,.bf-admin-player-badge,.status-chip,.wallet-icon,
+.notice-icon,.history-symbol,.result-banner small,.result-banner b){
+ background:#edf2ff!important;color:#315cf4!important;
+ border-color:#d7e3ff!important;
+}
+body :is(.bf-analytics-card strong,.bf-analytics-card span,
+.bf-admin-player-card *, .bf-support-hub *, .bf-ticket-card *,
+.bf-streak-card *, .bf-referral-card *, .settings-card *,
+.settings-group *, .admin-section *, .admin-quick *,
+.admin-metrics>div *, .support-card *, .support-panel *,
+.payment-request-card *, .request-card *){
+ color:#24364b!important;opacity:1!important;text-shadow:none!important;
+}
+body :is(.bf-analytics-card small,.bf-analytics-card span,
+.bf-admin-player-meta,.bf-ticket-meta,.bf-streak-card small,
+.bf-referral-card small,.settings-group small,.admin-helper,
+.support-card small,.payment-request-card small){
+ color:#596b7d!important;opacity:1!important;
+}
+body :is(.bf-support-hub-icon,.bf-faq-launch,.bf-faq-bubble.bot,
+.bf-faq-bubble.user,.bf-copy-room,.bf-streak-progress span,
+.bf-analytics-track i,.bf-ticket-status,.bf-ticket-status.is-resolved){
+ background-color:#e8efff!important;color:#315cf4!important;
+ border-color:#cbd9ff!important;box-shadow:none!important;
+}
+.hero-premium .hero-stats{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:0!important;margin:22px 0 0!important;padding:15px 0 4px!important;
+ background:transparent!important;border:0!important;
+ border-top:1px solid #e3e9ef!important;border-radius:0!important;
+ box-shadow:none!important;
+}
+.hero-premium .hero-stats>div{
+ min-width:0!important;padding:0 10px!important;margin:0!important;
+ background:transparent!important;border:0!important;
+ border-right:1px solid #e3e9ef!important;box-shadow:none!important;
+}
+.hero-premium .hero-stats>div:last-child{border-right:0!important}
+.hero-premium .hero-stats b{color:#24364b!important}
+.hero-premium .hero-stats small{color:#596b7d!important;letter-spacing:.7px!important}
+.hero-premium .hero-stats:before,.hero-premium .hero-stats:after{
+ display:none!important;content:none!important;
+}
+/* Past matches use a clean light card with Free Fire artwork as a proper top poster. */
+.history-card.past-match-card{
+ position:relative!important;isolation:isolate!important;overflow:hidden!important;
+ padding:142px 16px 16px!important;min-height:0!important;
+ background:#ffffff!important;background-image:none!important;
+ border:1px solid #dce4ec!important;border-radius:18px!important;
+ box-shadow:0 4px 15px rgba(30,55,80,.06)!important;
+}
+.history-card.past-match-card:before{
+ content:""!important;display:block!important;position:absolute!important;
+ z-index:0!important;top:0!important;left:0!important;right:0!important;
+ height:128px!important;opacity:1!important;
+ background-color:#e8efff!important;
+ background-image:linear-gradient(0deg,rgba(16,32,52,.12),rgba(16,32,52,0) 62%),
+ url("https://staticg.sportskeeda.com/editor/2022/08/ba9e5-16613961046041-1920.jpg")!important;
+ background-position:center 32%!important;background-size:cover!important;
+ background-repeat:no-repeat!important;border:0!important;
+}
+.history-card.past-match-card:nth-child(3n+2):before{
+ background-image:linear-gradient(0deg,rgba(16,32,52,.12),rgba(16,32,52,0) 62%),
+ url("https://i.cdn.newsbytesapp.com/images/l320220822093338.png")!important;
+ background-position:center 28%!important;
+}
+.history-card.past-match-card:nth-child(3n):before{
+ background-image:linear-gradient(0deg,rgba(16,32,52,.12),rgba(16,32,52,0) 62%),
+ url("https://images.moneycontrol.com/static-mcnews/2024/09/20240909013009_garena4.jpeg?height=900&impolicy=website&width=1600")!important;
+ background-position:center 30%!important;
+}
+.history-card.past-match-card .history-card-top,
+.history-card.past-match-card h3,
+.history-card.past-match-card p,
+.history-card.past-match-card .result-banner{
+ position:relative!important;z-index:1!important;
+ color:#24364b!important;background:transparent!important;
+}
+.history-card.past-match-card .result-banner{
+ margin-top:12px!important;padding:12px!important;
+ background:#f7f9fc!important;border:1px solid #e3e9ef!important;
+ border-radius:12px!important;
+}
+.history-card.past-match-card .status-chip{
+ background:#edf2ff!important;color:#315cf4!important;
+ border:1px solid #d7e3ff!important;
+}
+@media(max-width:520px){
+ .hero-premium .hero-stats{margin-top:18px!important;padding-top:13px!important}
+ .hero-premium .hero-stats>div{padding:0 6px!important}
+ .hero-premium .hero-stats small{font-size:8px!important}
+ .history-card.past-match-card{padding:132px 14px 14px!important}
+ .history-card.past-match-card:before{height:118px!important}
+}
