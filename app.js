@@ -47,14 +47,6 @@ async function copyBattleForgeText(value, successLabel='Copied') {
     toast(successLabel);
   } catch { toast('Could not copy. Please select and copy it manually.'); }
 }
-function playerAvatarHtml(avatarValue, size='md') {
-  const catalog=window.BF_PROFILE_AVATARS||{items:[],sprite:''};
-  const id=String(avatarValue||'').startsWith('preset:')?String(avatarValue).slice(7):'none';
-  const index=catalog.items.findIndex(item=>item[0]===id);
-  if(index<0)return '<span class="bf-player-avatar bf-player-avatar-'+size+' is-default" role="img" aria-label="Default player picture"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="22" r="12"/><path d="M10 56c1-13 10-20 22-20s21 7 22 20"/></svg></span>';
-  const x=index%5,y=Math.floor(index/5);
-  return '<span class="bf-player-avatar bf-player-avatar-'+size+'" role="img" aria-label="BattleForge profile picture"><span class="bf-avatar-art" style="background-image:url(\''+catalog.sprite+'\');background-size:500% 200%;background-repeat:no-repeat;background-position:'+((x/4)*100)+'% '+(y*100)+'%"></span></span>';
-}
 const KILL_RANKS = [
   { key: 'rookie', label: 'Rookie', minimum: 10 },
   { key: 'contender', label: 'Contender', minimum: 50 },
@@ -469,7 +461,6 @@ async function render() {
     const globallyPaused = platformControls.registrations_paused || platformControls.maintenance_mode;
     return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="tour-entry-strip"><span class="entry-label">ENTRY FEE</span><strong>◈ ' + entry + ' <small>COINS</small></strong><span class="entry-action">' + (has ? 'YOU’RE IN ✓' : full ? 'MATCH FULL' : 'TAP TO VIEW ↗') + '</span></div><div class="match-time"><span class="match-time-icon">◷</span><span><small>MATCH STARTS</small><b>' + (t.starts_at ? esc(new Date(t.starts_at).toLocaleString(undefined,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})) : 'Time to be announced') + '</b></span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>✦ ' + Math.max(0, Number(t.max_players) - count) + ' SPOTS LEFT</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' COINS</b><small>DISPLAYED PRIZE POOL</small></div><div class="prize"><b>' + perKill + ' COINS</b><small>PER KILL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open' || globallyPaused) ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : t.is_cancelled ? 'DISABLED' : globallyPaused ? 'REGISTRATIONS PAUSED' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' COINS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
   }).join('') : '<p class="notice">No tournaments are published yet.</p>';
-  const profileBtn=$('#profileBtn'); if(profileBtn){ const {data:profileText}=currentUser?await supabase.from('player_accounts').select('username,avatar_url').eq('user_id',currentUser.id).maybeSingle():{data:null}; profileBtn.innerHTML=currentUser?playerAvatarHtml(profileText?.avatar_url,'header'):'Sign in'; profileBtn.setAttribute('aria-label',currentUser?'Player profile: '+(profileText?.username||'Player'):'Sign in'); }
 }
 
 let usernameSetupOpen = false;
@@ -493,7 +484,6 @@ async function saveRequiredUsername() {
   button.disabled=true; if(status)status.textContent='Checking availability…';
   try {
     if(!await usernameIsAvailable(username)){if(status)status.textContent='Username not available. Please choose another.';toast('Username not available.');return;}
-    const {error}=await supabase.rpc('update_player_profile',{p_username:username,p_avatar_url:null});
     if(error){const msg=String(error.message||'');if(/duplicate|unique|username.*taken|already exists/i.test(msg)){if(status)status.textContent='Username not available. Please choose another.';toast('Username not available.');return;}throw error;}
     usernameSetupOpen=false;close();await refreshData();toast('Username saved. Welcome to BattleForge!');
   } catch(error){if(status)status.textContent=error?.message||'Could not save username.';toast(error?.message||'Could not save username.');}
@@ -812,7 +802,6 @@ async function showProfile() {
   if (!currentUser) { showAuth(); return; }
   const {data:socialData}=await supabase.rpc('get_battleforge_social_links'); const social=Array.isArray(socialData)?(socialData[0]||{}):(socialData||{});
   const [{ data: account, error: accountError }, { data: wallet, error: walletError }, { data: ledger }, { data: paidWithdrawals }, { data: depositHistory }, { data: referralStatsResult }, { data: myResults }, { data: myWarnings }, { data: myDisputes }] = await Promise.all([
-    supabase.from('player_accounts').select('player_number,username,username_change_count,avatar_url,created_at,referred_by_player_number').eq('user_id', currentUser.id).maybeSingle(),
     supabase.from('wallet_accounts').select('deposited_balance,earned_balance').eq('user_id', currentUser.id).maybeSingle(),
     supabase.from('wallet_ledger').select('entry_type,amount,note,created_at').eq('user_id', currentUser.id).order('created_at', {ascending:false}),
     supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at').eq('user_id', currentUser.id).order('created_at',{ascending:false}),
@@ -833,21 +822,9 @@ async function showProfile() {
   const warningHistoryHtml=(myWarnings||[]).map(w=>'<div class="profile-history-row"><div><b>Account warning</b><small>'+esc(new Date(w.created_at).toLocaleString())+' · '+esc(w.reason)+'</small></div></div>').join('')||'<p class="profile-help">No account warnings.</p>';
   const disputeHistoryHtml=(myDisputes||[]).map(d=>'<div class="profile-history-row"><div><b>Match #'+esc(d.tournament_id)+' · '+esc(d.status)+'</b><small>'+esc(new Date(d.created_at).toLocaleString())+' · '+esc(d.reason)+'</small>'+(d.admin_note?'<small>Moderator: '+esc(d.admin_note)+'</small>':'')+'</div></div>').join('')||'<p class="profile-help">No match disputes submitted.</p>';
   const led=ledger||[], withdrawals=paidWithdrawals||[];
-  const avatarCatalog=window.BF_PROFILE_AVATARS||{items:[],sprite:''};
-  const savedAvatar=String(a.avatar_url||'').startsWith('preset:')?String(a.avatar_url).slice(7):'none';
-  const validAvatar=avatarCatalog.items.some(item=>item[0]===savedAvatar)?savedAvatar:'none';
-  const avatarMarkup=(id)=>{
-    const n=avatarCatalog.items.findIndex(item=>item[0]===id);
-    if(n<0)return '<span class="bf-avatar-none" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="32" cy="22" r="12"/><path d="M10 56c1-13 10-20 22-20s21 7 22 20"/></svg></span>';
-    const x=n%5,y=Math.floor(n/5);
-    return '<span class="bf-avatar-art" style="background-position:'+((x/4)*100)+'% '+(y*100)+'%" aria-hidden="true"></span>';
-  };
-  const avatarChoices=avatarCatalog.items.map(([id,label])=>'<button type="button" class="bf-avatar-choice '+(validAvatar===id?'selected':'')+'" data-avatar-preset="'+id+'" aria-label="Choose '+label+'" aria-pressed="'+(validAvatar===id)+'">'+avatarMarkup(id)+'<small>'+label+'</small></button>').join('');
-
-  modal(`<div class="profile-sheet"><div class="profile-top bf-profile-top"><div class="bf-profile-identity"><div class="bf-profile-avatar" data-avatar-preset="${validAvatar}" style="--bf-avatar-sprite:url('${avatarCatalog.sprite}')">${avatarMarkup(validAvatar)}</div><div class="bf-profile-identity-copy"><div class="eyebrow">PLAYER PROFILE</div><h2 class="bf-profile-player-name">${esc(a.username||currentUser.user_metadata?.full_name||'Player')}${rankBadgeHtml(lifetimeKills,'lg')}</h2><p>Player ID <b>${esc(a.player_number||'Loading')}</b>${currentRank?' · '+esc(currentRank.label):' · Unranked'}</p></div></div></div>
   <div class="profile-metrics"><div><small>TOTAL BALANCE</small><b>₹${(Number(w.deposited_balance||0)+Number(w.earned_balance||0)).toFixed(2)}</b></div><div><small>ENTRY-FEE CREDITS</small><b>₹${Number(w.deposited_balance||0).toFixed(2)}</b></div><div><small>MATCH EARNINGS</small><b>₹${Number(w.earned_balance||0).toFixed(2)}</b></div><div><small>MATCH RESULTS</small><b>${resultRows.length}</b></div><div><small>WINS / KILLS</small><b>${wins} / ${kills}</b></div><div><small>LIFETIME KILLS</small><b>${lifetimeKills.toLocaleString('en-IN')}</b></div><div><small>WITHDRAWALS</small><b>${withdrawals.length}</b></div></div>
   <section class="profile-block bf-streak-card"><div class="eyebrow">DAILY ARENA STREAK</div><h3>${streakDays} day streak</h3><p>Join at least 3 different matches each day. Complete 7 consecutive days to earn 20 coins.</p><div class="bf-streak-progress"><span style="width:${streakCycleDay/7*100}%"></span></div><small>REWARD CYCLE: ${streakCycleDay} / 7 days · TODAY: ${Number(dailyStreakStatus?.today_matches||0)} / 3 matches · ${Math.max(0,3-Number(dailyStreakStatus?.today_matches||0))} more to qualify</small><small>Cancelled tournaments do not count.</small></section>
-  <section class="profile-block bf-profile-picture-section"><button type="button" id="openProfilePicPicker" class="bf-profile-pic-row"><span class="bf-profile-pic-row-preview" style="--bf-avatar-sprite:url('${avatarCatalog.sprite}')">${avatarMarkup(validAvatar)}</span><span><b>Profile Pic</b><small>Tap to choose one of 10 pictures or None</small></span><strong>CHANGE ↗</strong></button></section><details class="profile-block profile-accordion" open><summary>Edit profile</summary><label class="field">USERNAME (LETTERS, NUMBERS, UNDERSCORES)<input id="profileUsername" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]{3,24}" value="${esc(a.username||'')}" placeholder="ChooseUniqueName" autocomplete="nickname"></label><p class="profile-help">${Number(a.username_change_count||0)===0?'Your first username change is free.':'Each additional username change costs ₹5 from entry-fee-only credits.'} Only letters, numbers, and underscores; no spaces or other special characters.</p><button id="savePlayerProfile" class="join full">Save profile</button><p id="profileSaveStatus" class="profile-help"></p>
+<details class="profile-block profile-accordion" open><summary>Edit profile</summary><label class="field">USERNAME (LETTERS, NUMBERS, UNDERSCORES)<input id="profileUsername" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]{3,24}" value="${esc(a.username||'')}" placeholder="ChooseUniqueName" autocomplete="nickname"></label><p class="profile-help">${Number(a.username_change_count||0)===0?'Your first username change is free.':'Each additional username change costs ₹5 from entry-fee-only credits.'} Only letters, numbers, and underscores; no spaces or other special characters.</p><button id="savePlayerProfile" class="join full">Save profile</button><p id="profileSaveStatus" class="profile-help"></p>
   </details><details class="profile-block profile-accordion"><summary>Referral centre</summary><p>Your referral code: <b>${esc(a.player_number||'—')}</b></p>${a.referred_by_player_number?`<p class="notice">You were referred by Player ID <b>${esc(a.referred_by_player_number)}</b>. Referral code already used; it can never be changed.</p>`:`<label class="field">REFER CODE<input id="applyReferralCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="20" placeholder="Enter someone else's Player ID"></label><button id="applyReferralCodeBtn" class="join full">Apply refer code</button><p class="profile-help">You can apply only one referral code for your lifetime. Once applied, it cannot be changed.</p>`}<p><a class="support-cta" href="${esc(referralDownloadUrl)}" target="_blank" rel="noopener noreferrer"><b>Download BattleForge APK</b><span>↗</span></a></p><p class="profile-help">Share this APK link with friends so they can install BattleForge and use your referral code.</p><div class="profile-metrics"><div><small>INVITED PLAYERS</small><b>${totalReferrals}</b></div><div><small>REWARDS EARNED</small><b>${rewarded} · ₹${(rewarded*5).toFixed(2)}</b></div><div><small>WAITING FOR FIRST WITHDRAWAL</small><b>${Math.max(0,totalReferrals-rewarded)}</b></div></div><p class="profile-help">Earn 5 coins when a referred player completes their first withdrawal.</p></details><details class="profile-block profile-accordion"><summary>Full activity history</summary><div class="profile-history">${led.length?led.map(x=>`<div class="profile-history-row"><div><b>${esc(x.entry_type||'Wallet activity')}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.note?' · '+esc(x.note):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No wallet activity recorded yet.</p>'}</div></section>
   </details><details class="profile-block profile-accordion"><summary>Deposit history</summary><div class="profile-history">${(depositHistory||[]).length?(depositHistory||[]).map(x=>`<div class="profile-history-row"><div><b>${esc(String(x.status||'pending').toUpperCase())}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.payment_reference?' · Ref '+esc(x.payment_reference):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No deposit requests yet.</p>'}</div></section>
   </details><details class="profile-block profile-accordion"><summary>Withdrawal history</summary><div class="profile-history">${withdrawals.length?withdrawals.map(x=>`<div class="profile-history-row"><div><b>${esc(String(x.status||'pending').toUpperCase())}</b><small>${esc(new Date(x.created_at).toLocaleString())} · Fee ₹${Number(x.fee_amount||0).toFixed(2)}</small></div><b>₹${Number(x.net_amount??x.amount??0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No withdrawal requests yet.</p>'}</div></section>
@@ -855,15 +832,6 @@ async function showProfile() {
   <button id="signOutBtn" class="outline full">Log out</button><button id="switchAccountBtn" class="outline full">Switch account</button></div>`);
   $('#applyReferralCodeBtn')?.addEventListener('click',applyReferralCode);
   $('#savePlayerProfile')?.addEventListener('click',savePlayerProfile);
-  $('#openProfilePicPicker')?.addEventListener('click',openProfilePicPicker);
-  document.querySelectorAll('[data-avatar-preset]').forEach(button=>button.addEventListener('click',()=>{
-    const id=button.dataset.avatarPreset||'none';
-    const hidden=$('#profileAvatarChoice');if(hidden)hidden.value=id;
-    document.querySelectorAll('[data-avatar-preset]').forEach(option=>{const selected=option.dataset.avatarPreset===id;option.classList.toggle('selected',selected);option.setAttribute('aria-pressed',String(selected));});
-    const preview=$('.bf-profile-avatar');if(preview)preview.innerHTML=avatarMarkup(id);
-  }));
-}
-async function applyReferralCode() {
   const input=$('#applyReferralCode'), button=$('#applyReferralCodeBtn');
   const code=String(input?.value||'').trim();
   if(!/^\d{1,20}$/.test(code)){toast('Enter a valid numeric referral code.');return;}
@@ -874,63 +842,13 @@ async function applyReferralCode() {
   toast('Referral code applied permanently!'); await showProfile();
 }
 
-function openProfilePicPicker(){
-  if(!currentUser)return showAuth();
-  const catalog=window.BF_PROFILE_AVATARS||{items:[]};
-  const saved=String(document.querySelector('.bf-profile-avatar')?.dataset.avatarPreset||'none');
-  const {items=[]}=catalog;
-  const avatarMarkup=(id)=>{
-    const n=items.findIndex(item=>item[0]===id);
-    if(n<0)return '<span class="bf-avatar-none" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="32" cy="22" r="12"/><path d="M10 56c1-13 10-20 22-20s21 7 22 20"/></svg></span>';
-    return '<span class="bf-avatar-art" style="background-image:url(&quot;'+catalog.sprite+'&quot;);background-size:500% 200%;background-repeat:no-repeat;background-position:'+(((n%5)/4)*100)+'% '+(Math.floor(n/5)*100)+'%" aria-hidden="true"></span>';
-  };
-  const selected=document.querySelector('.bf-profile-avatar')?.dataset.avatarPreset||'none';
-  const choices=items.map(([id,label])=>'<button type="button" class="bf-avatar-choice '+(selected===id?'selected':'')+'" data-avatar-preset="'+id+'" aria-pressed="'+(selected===id)+'">'+avatarMarkup(id)+'<small>'+label+'</small></button>').join('');
-  modal('<div class="bf-avatar-picker bf-avatar-picker-modal" style="--bf-avatar-sprite:url(\''+catalog.sprite+'\')"><div class="bf-avatar-picker-head"><div><b>Choose your profile picture</b><small>Only these 10 BattleForge presets are available.</small></div><span class="bf-avatar-count">10 PRESETS</span></div><input type="hidden" id="profileAvatarChoice" value="'+selected+'"><div class="bf-avatar-grid">'+choices+'</div><button type="button" class="bf-avatar-none-choice '+(selected==='none'?'selected':'')+'" data-avatar-preset="none" aria-pressed="'+(selected==='none')+'">'+avatarMarkup('none')+'<span><b>None</b><small>Use the default silhouette</small></span></button><button type="button" id="savePlayerAvatar" class="join full">Save profile picture</button><p id="avatarSaveStatus" class="profile-help">Your selection will be saved to your account.</p></div>');
-  document.querySelectorAll('[data-avatar-preset]').forEach(button=>button.addEventListener('click',()=>{
-    const id=button.dataset.avatarPreset||'none',hidden=$('#profileAvatarChoice');
-    if(hidden)hidden.value=id;
-    document.querySelectorAll('[data-avatar-preset]').forEach(option=>{const active=option.dataset.avatarPreset===id;option.classList.toggle('selected',active);option.setAttribute('aria-pressed',String(active));});
-  }));
-  $('#savePlayerAvatar')?.addEventListener('click',savePlayerAvatar);
-}
-
-async function savePlayerAvatar() {
-  const button=$('#savePlayerAvatar'),status=$('#avatarSaveStatus');
-  const choice=$('#profileAvatarChoice')?.value||'none';
-  const catalog=window.BF_PROFILE_AVATARS||{items:[]};
-  if(choice!=='none'&&!catalog.items.some(item=>item[0]===choice)){toast('Choose one of the approved BattleForge pictures.');return;}
-  const account=await supabase.from('player_accounts').select('username').eq('user_id',currentUser.id).maybeSingle();
-  if(account.error||!account.data?.username){toast('Could not load your username. Please try again.');return;}
-  const value=choice==='none'?null:'preset:'+choice;
-  if(button){button.disabled=true;button.textContent='Saving…';}
-  if(status)status.textContent='Saving your profile picture…';
-  try{
-    const {error}=await supabase.rpc('update_player_profile',{p_username:account.data.username,p_avatar_url:value});
-    if(error)throw error;
-    toast('Profile picture updated!');
-    if(status)status.textContent='Saved successfully.';
-    await refreshData();await showProfile();
-  }catch(error){
-    console.error('Profile picture update failed',error);
-    const message=error?.message||'Could not save your profile picture.';
-    if(status)status.textContent=message;
-    toast(message);
-  }finally{
-    if(button){button.disabled=false;button.textContent='Save profile picture';}
-  }
-}
-
 async function savePlayerProfile() {
   const button=$('#savePlayerProfile'), status=$('#profileSaveStatus');
   const username=($('#profileUsername')?.value||'').trim();
-  const avatarChoice=$('#profileAvatarChoice')?.value||'none';
-  const avatarValue=avatarChoice==='none'?null:'preset:'+avatarChoice;
   if(!/^[A-Za-z0-9_]{3,24}$/.test(username)){toast('Username must be 3–24 letters, numbers, or underscores only.');return;}
   button.disabled=true; button.textContent='Saving…';
   try {
     if(!await usernameIsAvailable(username)){const msg='Username not available. Please choose another.';if(status)status.textContent=msg;toast(msg);return;}
-    const {error}=await supabase.rpc('update_player_profile',{p_username:username,p_avatar_url:avatarValue});
     if(error){if(/duplicate|unique|username.*taken|already exists/i.test(String(error.message||'')))throw new Error('Username not available. Please choose another.');throw error;}
     if(status) status.textContent='Profile saved.'; toast('Profile updated!'); await refreshData(); await showProfile();
   } catch(error){console.error('Profile update failed',error);toast(error?.message||'Could not save profile.');if(status)status.textContent=error?.message||'Could not save profile.';}
@@ -977,9 +895,6 @@ async function loadLeaderboard(period = leaderboardPeriod) {
   }
   const rows = Array.isArray(data) ? data : [];
   const userIds=rows.map(r=>r.user_id).filter(Boolean);
-  const {data:avatarRows}=userIds.length?await supabase.from('player_accounts').select('user_id,avatar_url').in('user_id',userIds):{data:[]};
-  const avatarByUser=new Map((avatarRows||[]).map(a=>[String(a.user_id),a.avatar_url]));
-  target.innerHTML = rows.length ? rows.map((r,i) => { const stats=lifetimeKillRanks.get(String(r.user_id)); const kills=Number(stats?.lifetime_kills||0); const name=String(r.username||stats?.username||'').trim()||('Player '+(r.player_number||'')); return `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player">${playerAvatarHtml(avatarByUser.get(String(r.user_id)),'list')}<div class="leader-player-copy"><b>${esc(name)}${rankBadgeHtml(kills)}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}${kills?' · '+kills.toLocaleString('en-IN')+' LIFETIME KILLS':''}</small></div></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`; }).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
 }
 
 async function showHistory() {
@@ -1005,10 +920,7 @@ async function openPastMatchDetails(id) {
   const results=Array.isArray(rows)?rows:[];
   await loadLifetimeKillRanks(true);
   const resultUserIds=results.map(r=>r.user_id).filter(Boolean);
-  const {data:avatarRows}=resultUserIds.length?await supabase.from('player_accounts').select('user_id,avatar_url').in('user_id',resultUserIds):{data:[]};
-  const avatarByUser=new Map((avatarRows||[]).map(a=>[String(a.user_id),a.avatar_url]));
   const mine=results.find(r=>r.user_id===currentUser.id);
-  const rankingHtml=results.map(r=>{const stats=lifetimeKillRanks.get(String(r.user_id));const name=String(r.username||stats?.username||'Player').trim();const playerNo=r.player_number??stats?.player_number;const totalKills=Number(stats?.lifetime_kills||0);return '<div class="profile-history-row bf-past-rank-row">'+playerAvatarHtml(avatarByUser.get(String(r.user_id)),'list')+'<div class="bf-past-rank-copy"><b>#'+esc(r.placement||'—')+' · '+esc(name)+rankBadgeHtml(totalKills)+'</b><small>'+(playerNo?'PLAYER ID #'+esc(playerNo)+' · ':'')+Number(r.kills||0)+' kills this match · '+totalKills.toLocaleString('en-IN')+' lifetime kills · '+Number(r.earned_points||0)+' coins earned'+(r.note?' · '+esc(r.note):'')+'</small></div>'+(r.user_id===currentUser.id?'<b>YOU</b>':'')+'</div>';}).join('');
   const performance=mine?'<div class="result-banner"><small>YOUR PERFORMANCE</small><b>'+(mine.placement?'Rank #'+Number(mine.placement)+' · ':'')+Number(mine.kills||0)+' kills</b>'+(mine.note?'<p>'+esc(mine.note)+'</p>':'')+'</div><button class="outline full" id="bfOpenDisputeForm" data-tournament-id="'+esc(id)+'">Dispute this result</button>':'<div class="result-banner"><small>YOUR PERFORMANCE</small><b>No published result for your account</b></div>';
   const rankings=results.length?performance+'<h3>Final rankings</h3><div class="past-results-table">'+rankingHtml+'</div>':'<div class="result-banner"><small>RESULT STATUS</small><b>Pending Results</b><p>The admin has not published the final rankings yet. Check back later.</p></div>';
   modal('<div class="match-detail-sheet"><div class="eyebrow">PAST MATCH DETAILS</div><h2>'+esc(t.title)+'</h2><p>'+esc(t.game_mode||'MATCH')+' · '+esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Date not set')+'</p>'+rankings+'<button class="outline full" id="pastMatchClose">Close</button></div>');
@@ -1127,7 +1039,6 @@ async function loadAdminPlayerDirectory(offset=0){
  const {data,error}=await supabase.rpc('admin_list_all_players',{p_search:search,p_limit:100,p_offset:Math.max(0,offset)});
  if(error){target.innerHTML='<p class="notice">Could not load players: '+esc(error.message)+'</p>';return;}
  window.battleForgeAdminDirectoryOffset=Math.max(0,offset);const rows=data||[];
- target.innerHTML=rows.length?rows.map(p=>'<button type="button" class="bf-admin-player-card" data-open-admin-player="'+esc(p.player_number)+'">'+playerAvatarHtml(p.avatar_url,'list')+'<span class="bf-admin-player-copy"><b>'+esc(p.username||('Player #'+p.player_number))+'</b><small>PLAYER ID #'+esc(p.player_number)+' · '+Number(p.entries_count||0)+' matches · '+Number(p.wins_count||0)+' wins</small></span><span class="bf-admin-player-arrow">›</span></button>').join(''):'<p class="admin-helper">No registered players found.</p>';
  $('#bfAdminPlayersPrev').disabled=offset<=0;$('#bfAdminPlayersNext').disabled=rows.length<100;$('#bfAdminPlayerPageInfo').textContent=rows.length?'Showing '+(offset+1)+'–'+(offset+rows.length)+' · Search: '+(search||'All players'):'No results';
 }
 async function loadAdminSocialLinks(){
@@ -1318,7 +1229,6 @@ async function showTournamentDetails(t) {
     if (currentUser) await loadLifetimeKillRanks();
     const rosterRanks = new Map([...lifetimeKillRanks.values()].map(stats => [String(stats.player_number), Number(stats.lifetime_kills || 0)]));
     roomHtml = '<section class="match-rules"><div class="rules-heading"><div><small>REGISTERED PLAYERS</small><h3>Match roster · ' + (roster?.length || 0) + '</h3></div></div>' +
-      (roster?.length ? '<div class="roster"><div class="roster-chips">' + roster.map((p, i) => '<span class="player-chip bf-roster-player"><i>' + (i + 1) + '</i>' + playerAvatarHtml(p.avatar_url,'roster') + '<span class="bf-roster-player-copy">' + esc(p.in_game_name) + rankBadgeHtml(rosterRanks.get(String(p.player_number)) || 0) + '<small>ID #' + esc(p.player_number) + '</small></span></span>').join('') + '</div></div>' : '<p class="match-rules-copy">No players have joined this match yet.</p>') + '</section>' +
       (has && room?.published ? '<div class="room-card"><small class="room-label">MATCH ROOM</small><div class="room-value"><span>ID <b>' + esc(room.room_id || 'Not set') + '</b></span><button type="button" id="detailsCopyRoomId" class="outline bf-copy-room">Copy ID</button></div><div class="room-value"><span>Password <b>' + esc(room.room_password || 'Not set') + '</b></span><button type="button" id="detailsCopyRoomPassword" class="outline bf-copy-room">Copy password</button></div></div>' : '');
   }
   const full = t.status === 'full' || count >= Number(t.max_players) || t.is_cancelled === true;
@@ -1425,7 +1335,6 @@ $('#modalContent').addEventListener('click', async e => {
   if (button.dataset.openAdminPlayer) { const n=Number(button.dataset.openAdminPlayer); const field=$('#adminPlayerNumber'); if(field)field.value=String(n); document.querySelector('[data-admin-page-open="players"]')?.click(); $('#adminFindPlayer')?.click(); return; }
   if (button.id === 'adminLoadPayments') { await loadAdminPaymentRequests(); return; }
   if (button.dataset.paymentAction) { await handleAdminPaymentAction(button); return; }
-  if (button.id === 'adminFindPlayer') { if(!isAdmin)return toast('Admin access required.'); const n=Number($('#adminPlayerNumber')?.value); if(!Number.isSafeInteger(n)||n<1)return toast('Enter a valid numeric Player ID.'); button.disabled=true; const box=$('#adminPlayerDetails'); box.textContent='Loading player history…'; const {data,error}=await supabase.rpc('admin_get_player_details',{p_player_number:n}); button.disabled=false; if(error){box.textContent=error.message;return;} window.battleForgeAdminPlayer=data; const financeVisible=!!data.wallet; const hist=financeVisible?(data.wallet_history||[]).map(x=>`<div class="activity-row"><div><b>${esc(x.entry_type)} · ${esc(x.bucket)}</b><small>${esc(x.created_at)} · ${esc(x.note||'')}</small></div><strong>${Number(x.amount||0)>0?'+':''}${Number(x.amount||0).toFixed(2)}</strong></div>`).join(''):'<p>Financial details restricted by your admin role.</p>'; const deps=financeVisible?(data.deposits||[]).map(x=>`<div class="activity-row"><div><b>Deposit ₹${Number(x.amount).toFixed(2)}</b><small>${esc(x.status)} · ${esc(x.created_at)} · ${esc(x.id)}</small></div></div>`).join(''):'<p>Financial details restricted by your admin role.</p>'; const wds=financeVisible?(data.withdrawals||[]).map(x=>`<div class="activity-row"><div><b>Withdrawal ₹${Number(x.amount).toFixed(2)}</b><small>${esc(x.status)} · ${esc(x.created_at)} · ${esc(x.id)}</small></div><strong>Net ₹${Number(x.net_amount||0).toFixed(2)}</strong></div>`).join(''):'<p>Financial details restricted by your admin role.</p>'; box.innerHTML=`<div class=\"room-card\">${playerAvatarHtml(data.avatar_url,'list')}<h3>${esc(data.username||'Player')} · #${esc(data.player_number)}</h3><p>${esc(data.email||'No email')} · Joined ${esc(data.created_at)}</p><p>Auth UID: ${esc(data.user_id)}</p><p>Referrer Player ID: ${esc(data.referred_by_player_number||'None')}</p><p>Entries: ${Number(data.stats?.entries||0)}${data.stats?.deposits!==undefined?' · Deposits: '+Number(data.stats.deposits||0)+' · Withdrawals: '+Number(data.stats.withdrawals||0)+' · Paid withdrawals: '+Number(data.stats.paid_withdrawals||0):''}</p><p>${data.wallet?'Entry-only balance: ₹'+Number(data.wallet.deposited_balance||0).toFixed(2)+' · Earned balance: ₹'+Number(data.wallet.earned_balance||0).toFixed(2)+' · Total: ₹'+Number(data.wallet.total_balance||0).toFixed(2):'Wallet details restricted by your admin role.'}</p></div><h3>Wallet ledger</h3>${hist||'<p>No ledger entries.</p>'}<h3>Deposit history</h3>${deps||'<p>No deposits.</p>'}<h3>Withdrawal history</h3>${wds||'<p>No withdrawals.</p>'}`; const {data:warnings}=await supabase.rpc('admin_list_player_warnings',{p_player_number:n}); box.insertAdjacentHTML('beforeend','<h3>Account warnings</h3>'+((warnings||[]).map(w=>'<div class="profile-history-row"><b>'+esc(w.reason)+'</b><small>'+esc(new Date(w.created_at).toLocaleString())+'</small></div>').join('')||'<p>No warnings.</p>')); const {data:matchHistory,error:matchHistoryError}=await supabase.rpc('admin_get_player_match_history',{p_player_number:n}); box.insertAdjacentHTML('beforeend','<h3>Match history</h3>'+(matchHistoryError?'<p class="notice">'+esc(matchHistoryError.message)+'</p>':(matchHistory||[]).map(m=>'<div class="activity-row"><div><b>'+esc(m.tournament_title)+' · '+esc(m.game_mode||'Match')+'</b><small>'+esc(m.in_game_name)+' · '+(m.result_published?'Rank #'+esc(m.placement??'—')+' · '+Number(m.kills||0)+' kills · '+Number(m.earned_points||0)+' coins':'Pending results')+' · '+esc(new Date(m.starts_at||m.joined_at).toLocaleString())+'</small></div></div>').join('')||'<p>No match history.</p>')); return; }
   if (button.id === 'adminWarnPlayer') { if(!isAdmin)return toast('Moderator permission required.'); const n=Number($('#adminPlayerNumber')?.value),reason=$('#adminWarningReason')?.value.trim(); if(!Number.isSafeInteger(n)||n<1||!reason||reason.length<3)return toast('Enter a Player ID and warning reason.'); const {error}=await supabase.rpc('admin_warn_player',{p_player_number:n,p_reason:reason}); if(error)return toast(error.message); toast('Player warning issued.'); $('#adminWarningReason').value=''; const find=$('#adminFindPlayer'); if(find)find.click(); return; }
   if (button.id === 'adminBanPlayer' || button.id === 'adminUnbanPlayer') { if(!isAdmin)return toast('Admin access required.'); const n=Number($('#adminPlayerNumber')?.value); if(!Number.isSafeInteger(n)||n<1)return toast('Enter a valid numeric Player ID.'); const banning=button.id==='adminBanPlayer'; const reason=$('#adminBanReason')?.value.trim()||''; if(banning&&!window.confirm(`Ban Player #${n}? They will be blocked from joining tournaments.`))return; if(!banning&&!window.confirm(`Unban Player #${n}?`))return; button.disabled=true; const {data,error}=await supabase.rpc(banning?'admin_ban_player':'admin_unban_player',banning?{p_player_number:n,p_reason:reason||'Admin moderation'}:{p_player_number:n}); button.disabled=false; if(error)return toast(error.message); toast(banning?'Player banned.':'Player unbanned.'); const find=$('#adminFindPlayer'); if(find) find.click(); return; }
   if (button.dataset.kickEntry) { if(!isAdmin)return toast('Admin access required.'); const entryId=button.dataset.kickEntry; const matchId=Number(button.dataset.kickMatch); if(!window.confirm('Kick this player from the match? Their wallet history will remain unchanged. They can rejoin only by paying the entry fee again.'))return; button.disabled=true; const {error}=await supabase.rpc('admin_kick_tournament_player',{p_tournament_id:matchId,p_entry_id:entryId,p_reason:'Removed by admin'}); button.disabled=false; if(error)return toast(error.message); toast('Player removed from match.'); await loadAdminEntries(); await refreshData(); return; }
@@ -1566,7 +1475,6 @@ $('#modalContent').addEventListener('click', async event => {
 document.addEventListener('click',async event=>{
  if(event.target.closest('#bfFaqOpen')){openFaqChat();return;}
  if(event.target.closest('#bfStartFaqChat')){startFaqChat();return;}
- if(event.target.closest('#openProfilePicPicker')){openProfilePicPicker();return;}
 if(event.target.closest('#bfCreateSupportTicket')){openSupportTicketForm();return;}
  if(event.target.closest('#bfLoadSupportTickets')){await loadSupportTickets();return;}
  if(event.target.closest('#bfLoadDisputes')){await loadAdminDisputes();return;}
