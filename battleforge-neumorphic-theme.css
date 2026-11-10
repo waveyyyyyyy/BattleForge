@@ -127,3 +127,84 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
  text-shadow:none!important;filter:none!important
 }
 .bf-faq-launch,.support-cta,.join,.admin-button{filter:none!important}
+
+
+/* 2026-11-10: final white + blue consistency and readable contrast.
+   Higher-specificity overrides neutralize older gold/green tournament rules. */
+#tournaments .tour,
+#tournaments .tour:hover,
+#tournaments .tour:focus-visible{
+  background:#ffffff!important;
+  background-image:none!important;
+  border:1px solid #d7e2f0!important;
+  box-shadow:0 4px 16px rgba(31,65,110,.07)!important;
+  color:#24364b!important;
+}
+#tournaments .tour:before,
+#tournaments .tour:after{display:none!important;content:none!important}
+#tournaments .tour .tour-banner,
+#tournaments .tour .tour-banner:before,
+#tournaments .tour .tour-banner:after{
+  background:#edf3ff!important;background-image:none!important;
+  border:0!important;box-shadow:none!important;color:#315cf4!important;
+  text-shadow:none!important;filter:none!important;
+}
+#tournaments .tour .tour-body,
+#tournaments .tour .tour-top,
+#tournaments .tour .prize-row{background:#fff!important;color:#24364b!important}
+#tournaments .tour h1,
+#tournaments .tour h2,
+#tournaments .tour h3,
+#tournaments .tour h4,
+#tournaments .tour p,
+#tournaments .tour span,
+#tournaments .tour strong,
+#tournaments .tour b,
+#tournaments .tour small,
+#tournaments .tour .meta,
+#tournaments .tour .prize,
+#tournaments .tour .prize b,
+#tournaments .tour .tour-top *,
+#tournaments .tour .prize-row *{
+  color:#24364b!important;text-shadow:none!important;opacity:1!important;
+}
+#tournaments .tour .tag,
+#tournaments .tour .pill,
+#tournaments .tour .status,
+#tournaments .tour [class*="status"],
+#tournaments .tour [class*="badge"]{
+  color:#315cf4!important;background:#edf3ff!important;
+  border:1px solid #d7e4ff!important;box-shadow:none!important;
+}
+#tournaments .tour .prize{
+  background:#f5f8ff!important;border:1px solid #e0e9f8!important;
+}
+#tournaments .tour .prize b,
+#tournaments .tour .result-reward{color:#315cf4!important}
+#tournaments .tour .join{
+  color:#fff!important;background:#315cf4!important;
+  border:1px solid #315cf4!important;box-shadow:none!important;
+}
+#tournaments .tour .join:disabled{
+  color:#718096!important;background:#e8edf3!important;border-color:#e8edf3!important;
+}
+#tournaments .tour hr,
+#tournaments .tour .prize-row{border-color:#e1e8f0!important}
+#tournaments .tour *{text-shadow:none!important}
+:root{--text:#24364b!important;--muted:#5e6f82!important;--lime:#315cf4!important;--accent:#315cf4!important}
+body,body *{text-shadow:none!important}
+body p,body small,body label,body .meta,body .muted,body .notice,
+body .history-meta,body .admin-helper,body .section-sub,
+body .page-heading p,body .hero-sub,body .trust-note{
+  color:#5e6f82!important;opacity:1!important;
+}
+body h1,body h2,body h3,body h4,body b,body strong,
+body .wallet-total,body .room-value,body .leader-row>strong{
+  color:#24364b!important;opacity:1!important;
+}
+body .accent,body .eyebrow,body .section-eyebrow,
+body .page-heading .accent,body .hero-premium .accent{
+  color:#315cf4!important;
+}
+body button:not(.join):not(.admin-button):not(.bf-faq-launch),
+body a:not(.support-floating):not(.bf-faq-launch){text-shadow:none!important}
