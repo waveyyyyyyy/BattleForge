@@ -48,3 +48,10 @@ exception when unique_violation then
 end;
 $function$;
 grant execute on function public.update_player_profile(text,text) to authenticated;
+
+
+-- Enforce case-insensitive uniqueness even when two users attempt the same
+-- username at the same time; the profile RPC maps conflicts to a clear message.
+create unique index if not exists player_accounts_username_ci_uidx
+on public.player_accounts (lower(btrim(username)))
+where username is not null and btrim(username) <> '';
