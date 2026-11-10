@@ -277,7 +277,7 @@ function modal(html) {
     card.style.alignSelf = 'flex-start';
   }
 }
-function close() { $('#modal').classList.add('hidden'); $('#modal').classList.remove('profile-modal'); }
+function close() { const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-fullscreen-chat'); }
 function setPage(tab) {
   const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules','leaderboard'].includes(tab) ? tab : 'arena');
   document.querySelectorAll('.page-view').forEach(page => page.classList.toggle('active', page.dataset.page === target));
@@ -813,7 +813,7 @@ function openProfilePicPicker(){
   const avatarMarkup=(id)=>{
     const n=items.findIndex(item=>item[0]===id);
     if(n<0)return '<span class="bf-avatar-none" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="32" cy="22" r="12"/><path d="M10 56c1-13 10-20 22-20s21 7 22 20"/></svg></span>';
-    return '<span class="bf-avatar-art" style="background-position:'+(((n%5)/4)*100)+'% '+(Math.floor(n/5)*100)+'%" aria-hidden="true"></span>';
+    return '<span class="bf-avatar-art" style="background-image:url(&quot;'+catalog.sprite+'&quot;);background-size:500% 200%;background-repeat:no-repeat;background-position:'+(((n%5)/4)*100)+'% '+(Math.floor(n/5)*100)+'%" aria-hidden="true"></span>';
   };
   const selected=document.querySelector('.bf-profile-avatar')?.dataset.avatarPreset||'none';
   const choices=items.map(([id,label])=>'<button type="button" class="bf-avatar-choice '+(selected===id?'selected':'')+'" data-avatar-preset="'+id+'" aria-pressed="'+(selected===id)+'">'+avatarMarkup(id)+'<small>'+label+'</small></button>').join('');
