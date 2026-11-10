@@ -208,3 +208,54 @@ body .page-heading .accent,body .hero-premium .accent{
 }
 body button:not(.join):not(.admin-button):not(.bf-faq-launch),
 body a:not(.support-floating):not(.bf-faq-launch){text-shadow:none!important}
+
+
+/* User-requested finishing pass: dark typography everywhere, with real
+   Free Fire artwork in tournament-card poster headers. */
+body,body *{
+  color:#24364b!important;
+  text-shadow:none!important;
+}
+body .accent,body .eyebrow,body .section-eyebrow,
+body .navitem.active,body .wallet-action b,body .wallet-action span,
+body .room-label,body .roster>strong,body .joined-label{
+  color:#315cf4!important;
+}
+body .join,body .admin-button,body .hero-actions .join,
+body .bf-faq-launch,body .bf-faq-bubble.user{
+  background:#e8efff!important;
+  color:#24364b!important;
+  border-color:#cbd9ff!important;
+  box-shadow:none!important;
+}
+body .toast{background:#e8efff!important;color:#24364b!important;border-color:#cbd9ff!important}
+body .bf-faq-bubble.user{color:#24364b!important}
+body input::placeholder,body textarea::placeholder{color:#687887!important;opacity:1!important}
+#tournaments .tour .tour-banner,
+#tournaments .tour:nth-child(3n+1) .tour-banner{
+  display:block!important;min-height:154px!important;height:154px!important;
+  background-color:#edf3ff!important;
+  background-image:linear-gradient(0deg,rgba(15,31,52,.20),rgba(15,31,52,.02)),
+    url("https://staticg.sportskeeda.com/editor/2022/08/ba9e5-16613961046041-1920.jpg")!important;
+  background-position:center 30%!important;background-size:cover!important;
+  background-repeat:no-repeat!important;border:0!important;
+}
+#tournaments .tour:nth-child(3n+2) .tour-banner{
+  background-image:linear-gradient(0deg,rgba(15,31,52,.20),rgba(15,31,52,.02)),
+    url("https://i.cdn.newsbytesapp.com/images/l320220822093338.png")!important;
+  background-position:center 32%!important;
+}
+#tournaments .tour:nth-child(3n) .tour-banner{
+  background-image:linear-gradient(0deg,rgba(15,31,52,.20),rgba(15,31,52,.02)),
+    url("https://images.moneycontrol.com/static-mcnews/2024/09/20240909013009_garena4.jpeg?height=900&impolicy=website&width=1600")!important;
+  background-position:center 28%!important;
+}
+#tournaments .tour .tour-banner:before,
+#tournaments .tour .tour-banner:after{display:none!important;content:none!important}
+#tournaments .tour .tour-body,
+#tournaments .tour .tour-top,
+#tournaments .tour .prize-row{background:#fff!important}
+#tournaments .tour .join{background:#e8efff!important;color:#24364b!important;border-color:#cbd9ff!important}
+@media(max-width:520px){
+ #tournaments .tour .tour-banner{height:142px!important;min-height:142px!important}
+}
