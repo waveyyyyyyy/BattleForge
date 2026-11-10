@@ -366,3 +366,43 @@ main.app-shell{max-width:760px;width:100%;padding:13px 13px 112px}
   .bf-avatar-picker-modal .bf-avatar-choice{min-height:76px!important}
   .bf-avatar-picker-modal .bf-avatar-choice .bf-avatar-art{width:44px!important;height:44px!important}
 }
+
+
+/* 2026-11-10: harden BLAZE full-screen dialog and Android close control */
+#modal.bf-fullscreen-chat{
+  display:flex!important;align-items:stretch!important;justify-content:stretch!important;
+  position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;
+  max-height:100dvh!important;padding:0!important;margin:0!important;overflow:hidden!important;
+  z-index:2147483000!important;box-sizing:border-box!important;
+}
+#modal.bf-fullscreen-chat>.modal-card{
+  position:relative!important;display:flex!important;flex:1 1 100%!important;flex-direction:column!important;
+  align-self:stretch!important;width:100vw!important;max-width:none!important;min-width:0!important;
+  height:100vh!important;height:100dvh!important;max-height:100dvh!important;min-height:100dvh!important;
+  margin:0!important;padding:calc(66px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom))!important;
+  overflow:hidden!important;border:0!important;border-radius:0!important;box-sizing:border-box!important;
+  transform:none!important;animation:none!important;
+}
+#modal.bf-fullscreen-chat>.modal-card>#closeModal{
+  position:absolute!important;display:grid!important;place-items:center!important;
+  top:calc(12px + env(safe-area-inset-top))!important;right:14px!important;left:auto!important;
+  z-index:2147483001!important;width:42px!important;height:42px!important;min-width:42px!important;
+  margin:0!important;float:none!important;transform:none!important;pointer-events:auto!important;
+}
+#modal.bf-fullscreen-chat #modalContent{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;min-height:0!important;width:100%!important;overflow:hidden!important}
+#modal.bf-fullscreen-chat .bf-faq-chat{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;width:100%!important;height:100%!important;min-height:0!important;overflow:hidden!important;gap:10px!important;padding:0!important}
+#modal.bf-fullscreen-chat .bf-faq-intro{flex:0 0 auto!important}
+#modal.bf-fullscreen-chat .bf-faq-messages{flex:1 1 0!important;min-height:0!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important}
+#modal.bf-fullscreen-chat .bf-faq-form{flex:0 0 auto!important;display:flex!important;width:100%!important;padding-bottom:env(safe-area-inset-bottom)!important}
+#modal.bf-fullscreen-chat .bf-faq-form input{flex:1 1 auto!important;min-width:0!important}
+.bf-avatar-picker-modal .bf-avatar-grid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important}
+.bf-avatar-picker-modal .bf-avatar-choice{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;visibility:visible!important;opacity:1!important;min-width:0!important;min-height:84px!important;overflow:visible!important}
+.bf-avatar-picker-modal .bf-avatar-choice .bf-avatar-art{display:block!important;visibility:visible!important;opacity:1!important;width:48px!important;height:48px!important;flex:0 0 48px!important;border-radius:50%!important}
+.bf-avatar-picker-modal .bf-avatar-choice small{display:block!important;visibility:visible!important;opacity:1!important;min-height:18px!important}
+.bf-avatar-picker-modal .bf-avatar-none-choice{display:flex!important;visibility:visible!important;opacity:1!important}
+@media(max-width:420px){
+ #modal.bf-fullscreen-chat>.modal-card{padding-left:12px!important;padding-right:12px!important}
+ #modal.bf-fullscreen-chat>.modal-card>#closeModal{top:calc(10px + env(safe-area-inset-top))!important;right:12px!important}
+ .bf-avatar-picker-modal .bf-avatar-choice{min-height:78px!important}
+ .bf-avatar-picker-modal .bf-avatar-choice .bf-avatar-art{width:42px!important;height:42px!important;flex-basis:42px!important}
+}
