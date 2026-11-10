@@ -406,3 +406,7 @@ main.app-shell{max-width:760px;width:100%;padding:13px 13px 112px}
  .bf-avatar-picker-modal .bf-avatar-choice{min-height:78px!important}
  .bf-avatar-picker-modal .bf-avatar-choice .bf-avatar-art{width:42px!important;height:42px!important;flex-basis:42px!important}
 }
+
+/* Keep the preset counter clear of the modal close control on narrow Android screens. */
+.bf-avatar-picker-head{padding-right:54px;box-sizing:border-box}
+.bf-avatar-count{flex:0 0 auto}
