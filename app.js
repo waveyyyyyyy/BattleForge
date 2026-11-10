@@ -1348,7 +1348,7 @@ async function publishBulkResults(button) {
 
 function matchChatMessageHtml(row, username) {
   const own=String(row.user_id)===String(currentUser?.id);
-  return '<article class="bf-match-chat-message '+(own?'is-own':'')+'" data-chat-message="'+esc(row.id)+'"><div class="bf-match-chat-meta"><b>'+esc(username)+(own?' · YOU':'')+'</b><time>'+esc(new Date(row.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</time></div><p>'+esc(row.message)+'</p></article>';
+  return '<article class="bf-match-chat-message '+(own?'is-own':'')+'" data-chat-message="'+esc(row.id)+'"><div class="bf-match-chat-meta"><b>'+esc(username)+(own?' · YOU':'')+'</b><time>'+esc(new Date(row.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</time></div><p>'+esc(row.message)+'</p>'+(isAdmin?'<button type="button" class="bf-chat-delete" data-chat-delete="'+esc(row.id)+'">Remove</button>':'')+'</article>';
 }
 async function loadMatchChat(tournamentId) {
   const target=$('#bfMatchChatMessages');if(!target)return;
@@ -1374,6 +1374,14 @@ async function openMatchChat(tournament) {
     if(!target.querySelector('[data-chat-message="'+CSS.escape(String(row.id))+'"]')){target.insertAdjacentHTML('beforeend',matchChatMessageHtml(row,player?.username||(String(row.user_id)===String(currentUser?.id)?'You':'Player')));target.scrollTop=target.scrollHeight;}
   }).subscribe();
 }
+document.addEventListener('click',async event=>{
+  const button=event.target.closest('[data-chat-delete]');if(!button)return;
+  if(!isAdmin)return toast('Admin access required.');
+  button.disabled=true;
+  const {error}=await supabase.from('tournament_chat_messages').delete().eq('id',button.dataset.chatDelete);
+  if(error){button.disabled=false;toast('Could not remove message: '+error.message);return;}
+  button.closest('[data-chat-message]')?.remove();toast('Chat message removed.');
+});
 async function sendMatchChatMessage(form) {
   const input=$('#bfMatchChatInput'),message=String(input?.value||'').trim(),id=Number(form.dataset.tournamentId);
   if(!message||!id)return;
