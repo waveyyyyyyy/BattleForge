@@ -1014,3 +1014,39 @@ body{background-image:none!important}
 #modal.bf-fullscreen-chat #bfMatchChatClose{flex:0 0 auto!important}
 .bf-roster-locked{padding:12px 14px;border:1px solid #dce4ec;border-radius:12px;background:#f7f9fc;color:#596b7d!important;font-size:13px}
 @media(prefers-reduced-motion:reduce){#modal.bf-fullscreen-chat *{scroll-behavior:auto!important}}
+
+
+/* Deposit paid-confirmation: keep the checkbox and its copy in one readable row. */
+#modal-card #depositRequestForm .admin-check,
+.modal-card #depositRequestForm .admin-check{
+ display:flex!important;flex-direction:row!important;align-items:center!important;
+ justify-content:flex-start!important;gap:12px!important;
+ width:100%!important;min-width:0!important;box-sizing:border-box!important;
+ margin:10px 0 12px!important;padding:12px 14px!important;
+}
+#modal-card #depositRequestForm .admin-check>input,
+.modal-card #depositRequestForm .admin-check>input{
+ display:block!important;flex:0 0 18px!important;
+ width:18px!important;height:18px!important;min-width:18px!important;
+ margin:0!important;
+}
+#modal-card #depositRequestForm .admin-check>span,
+.modal-card #depositRequestForm .admin-check>span{
+ display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+ align-items:flex-start!important;justify-content:center!important;
+ width:auto!important;min-width:0!important;max-width:100%!important;
+ white-space:normal!important;overflow-wrap:break-word!important;word-break:normal!important;
+}
+#modal-card #depositRequestForm .admin-check b,
+#modal-card #depositRequestForm .admin-check small,
+.modal-card #depositRequestForm .admin-check b,
+.modal-card #depositRequestForm .admin-check small{
+ display:block!important;width:100%!important;max-width:100%!important;
+ white-space:normal!important;word-break:normal!important;overflow-wrap:break-word!important;
+}
+#modal-card #depositRequestForm .admin-check b,
+.modal-card #depositRequestForm .admin-check b{font-size:12px!important;line-height:1.35!important}
+#modal-card #depositRequestForm .admin-check small,
+.modal-card #depositRequestForm .admin-check small{font-size:10px!important;line-height:1.5!important}
+#modal-card #depositRequestForm .join.full,
+.modal-card #depositRequestForm .join.full{margin-top:4px!important}
