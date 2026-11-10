@@ -363,6 +363,7 @@ function modal(html) {
   }
 }
 let activeMatchChatChannel = null;
+let activeMatchChatNames = new Map();
 function close() { if(activeMatchChatChannel){supabase.removeChannel(activeMatchChatChannel).catch(()=>{});activeMatchChatChannel=null;} const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-fullscreen-chat'); }
 function setPage(tab) {
   const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules','leaderboard'].includes(tab) ? tab : 'arena');
@@ -1356,6 +1357,7 @@ async function loadMatchChat(tournamentId) {
   if(error){target.innerHTML='<p class="notice">Could not load match chat. Please try again.</p>';return;}
   const ids=[...new Set((rows||[]).map(row=>row.user_id))];let names=new Map();
   if(ids.length){const {data:players}=await supabase.from('player_accounts').select('user_id,username').in('user_id',ids);names=new Map((players||[]).map(player=>[String(player.user_id),player.username||'Player']));}
+  activeMatchChatNames=names;
   target.innerHTML=(rows||[]).map(row=>matchChatMessageHtml(row,names.get(String(row.user_id))||'Player')).join('')||'<div class="bf-chat-empty"><b>No messages yet</b><p>Say hello and get your squad ready.</p></div>';
   target.scrollTop=target.scrollHeight;
 }
@@ -1369,9 +1371,10 @@ async function openMatchChat(tournament) {
   if(activeMatchChatChannel){await supabase.removeChannel(activeMatchChatChannel);activeMatchChatChannel=null;}
   activeMatchChatChannel=supabase.channel('bf-match-chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'tournament_chat_messages',filter:'tournament_id=eq.'+id},async payload=>{
     const row=payload.new,target=$('#bfMatchChatMessages');if(!target)return;
-    const {data:player}=await supabase.from('player_accounts').select('username').eq('user_id',row.user_id).maybeSingle();
+    let senderName=activeMatchChatNames.get(String(row.user_id));
+    if(!senderName){const {data:player}=await supabase.from('player_accounts').select('username').eq('user_id',row.user_id).maybeSingle();senderName=player?.username||(String(row.user_id)===String(currentUser?.id)?'You':'Player');activeMatchChatNames.set(String(row.user_id),senderName);}
     target.querySelector('.bf-chat-empty')?.remove();
-    if(!target.querySelector('[data-chat-message="'+CSS.escape(String(row.id))+'"]')){target.insertAdjacentHTML('beforeend',matchChatMessageHtml(row,player?.username||(String(row.user_id)===String(currentUser?.id)?'You':'Player')));target.scrollTop=target.scrollHeight;}
+    if(!target.querySelector('[data-chat-message="'+CSS.escape(String(row.id))+'"]')){target.insertAdjacentHTML('beforeend',matchChatMessageHtml(row,senderName));target.scrollTop=target.scrollHeight;}
   }).subscribe();
 }
 document.addEventListener('click',async event=>{
@@ -1390,6 +1393,7 @@ async function sendMatchChatMessage(form) {
   if(button)button.disabled=false;
   if(error){toast(error.message||'Could not send message.');return;}
   if(input)input.value='';
+  await loadMatchChat(id);
 }
 async function showTournamentDetails(t) {
   if (!t) return;
