@@ -61,6 +61,7 @@ let leaderboardPeriod = 'all';
 let lifetimeKillRanks = new Map();
 let lifetimeKillRanksUserId = null;
 let audioContext = null;
+const CHAT_SOUND_MASTER_GAIN = 0.72; // Shared volume for BLAZE and match chat.
 function playUiSound(kind = 'tap') { if (read('bf_sound_enabled', false) !== true) return; try { const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return; audioContext ||= new Ctx(); const osc = audioContext.createOscillator(); const gain = audioContext.createGain(); osc.type = 'sine'; osc.frequency.value = kind === 'success' ? 660 : 420; gain.gain.setValueAtTime(0.025, audioContext.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09); osc.connect(gain); gain.connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + 0.1); } catch {} }
 
 function read(k, fallback) {
