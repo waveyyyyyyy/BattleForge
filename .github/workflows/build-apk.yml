@@ -22,6 +22,14 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: npm install
+      - name: Copy app styles into Vite public assets
+        run: |
+          mkdir -p public
+          cp styles.css public/styles.css
+          cp arena-redesign.css public/arena-redesign.css
+          cp interaction-performance.css public/interaction-performance.css
+          cp battleforge-ux-polish.css public/battleforge-ux-polish.css
+          cp battleforge-premium-theme.css public/battleforge-premium-theme.css
       - name: Assign a unique version to every APK build
         env:
           BUILD_NUMBER: ${{ github.run_number }}
