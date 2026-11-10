@@ -868,7 +868,11 @@ async function showProfile() {
   if (!currentUser) { showAuth(); return; }
   // Open the profile surface immediately; hydrate its data while the player sees the loading state.
   modal('<div class="bf-profile-loading"><div class="eyebrow">PLAYER PROFILE</div><h2>Loading your profile…</h2><div class="bf-profile-loading-bar"></div><p>Fetching your stats and wallet securely.</p></div>');
-  const {data:socialData}=await supabase.rpc('get_battleforge_social_links'); const social=Array.isArray(socialData)?(socialData[0]||{}):(socialData||{});
+  // Start independent profile reads together so the sheet hydrates with fewer network round trips.
+  const socialPromise=supabase.rpc('get_battleforge_social_links');
+  const referralUrlPromise=supabase.rpc('get_battleforge_referral_download_url');
+  const rankStatsPromise=loadLifetimeKillRanks(true);
+  const streakPromise=loadDailyStreakStatus().catch(streakError=>{console.warn('Daily streak status unavailable:',streakError);return dailyStreakStatus;});
   const [{ data: account, error: accountError }, { data: wallet, error: walletError }, { data: ledger }, { data: paidWithdrawals }, { data: depositHistory }, { data: referralStatsResult }, { data: myResults }, { data: myWarnings }, { data: myDisputes }] = await Promise.all([
     supabase.from('player_accounts').select('player_number,username,username_change_count,created_at,referred_by_player_number').eq('user_id', currentUser.id).maybeSingle(),
     supabase.from('wallet_accounts').select('deposited_balance,earned_balance').eq('user_id', currentUser.id).maybeSingle(),
@@ -883,10 +887,12 @@ async function showProfile() {
   if (accountError || walletError) console.warn('Profile load issue',accountError||walletError);
   const a=account||{}, w=wallet||{}, notices=window.battleForgeBroadcasts||[];
   const referralStats=referralStatsResult||{}; const totalReferrals=Number(referralStats.invited_count||0), rewarded=Number(referralStats.rewarded_count||0);
-  const {data:referralDownloadSetting}=await supabase.rpc('get_battleforge_referral_download_url'); const referralDownloadUrl=(Array.isArray(referralDownloadSetting)?referralDownloadSetting[0]?.download_url:referralDownloadSetting?.download_url)||'https://www.dropbox.com/scl/fi/rdkpfx9lggtvavhzntc6k/BattleForge.apk?rlkey=klsepxvg2ejzjh70tcugy3bmn&st=528fxegd&dl=0';
+  const [{data:socialData},{data:referralDownloadSetting},rankStats]=await Promise.all([socialPromise,referralUrlPromise,rankStatsPromise]);
+  const social=Array.isArray(socialData)?(socialData[0]||{}):(socialData||{});
+  const referralDownloadUrl=(Array.isArray(referralDownloadSetting)?referralDownloadSetting[0]?.download_url:referralDownloadSetting?.download_url)||'https://www.dropbox.com/scl/fi/rdkpfx9lggtvavhzntc6k/BattleForge.apk?rlkey=klsepxvg2ejzjh70tcugy3bmn&st=528fxegd&dl=0';
   const resultRows=myResults||[], wins=resultRows.filter(x=>Number(x.placement)===1).length, kills=resultRows.reduce((n,x)=>n+Number(x.kills||0),0);
-  const rankStats=await loadLifetimeKillRanks(true), lifetimeKills=Number(rankStats.get(currentUser.id)?.lifetime_kills ?? kills), currentRank=killRankFor(lifetimeKills);
-  try { await loadDailyStreakStatus(); } catch(streakError) { console.warn('Daily streak status unavailable:',streakError); }
+  const lifetimeKills=Number(rankStats.get(currentUser.id)?.lifetime_kills ?? kills), currentRank=killRankFor(lifetimeKills);
+  await streakPromise;
   const streakDays=Number(dailyStreakStatus?.current_streak||0),streakCycleDay=streakDays?((streakDays-1)%7)+1:0;
   const warningHistoryHtml=(myWarnings||[]).map(w=>'<div class="profile-history-row"><div><b>Account warning</b><small>'+esc(new Date(w.created_at).toLocaleString())+' · '+esc(w.reason)+'</small></div></div>').join('')||'<p class="profile-help">No account warnings.</p>';
   const disputeHistoryHtml=(myDisputes||[]).map(d=>'<div class="profile-history-row"><div><b>Match #'+esc(d.tournament_id)+' · '+esc(d.status)+'</b><small>'+esc(new Date(d.created_at).toLocaleString())+' · '+esc(d.reason)+'</small>'+(d.admin_note?'<small>Moderator: '+esc(d.admin_note)+'</small>':'')+'</div></div>').join('')||'<p class="profile-help">No match disputes submitted.</p>';
