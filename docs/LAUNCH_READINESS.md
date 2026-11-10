@@ -27,6 +27,15 @@ Official primary sources to review:
 - PIB — PROG Rules 2026 announcement: https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=2254606&lang=2&reg=48
 - Google Play policy context: https://blog.google/intl/en-in/products/platforms/understanding-our-play-gambling/
 
+## Android distribution policy
+
+Google Play's current India requirements prohibit distributing apps classified as online money games under the PROG Act. Its Real-Money Gambling, Games and Contests policy also says other real-money games, contests and tournament apps that do not qualify for the narrow listed gambling categories/pilots cannot facilitate real-money participation for real-world-value prizes. A Free Fire tournament app with paid entries and prize payouts is not among the named eligible gambling categories. Do not submit the current paid-entry version to Google Play expecting approval; obtain a written policy assessment and redesign or remove real-money functionality if needed. Direct APK distribution does not remove obligations under Indian law.
+
+Official references:
+- Google Play India gaming requirements: https://support.google.com/googleplay/android-developer/answer/6223646?hl=en-en
+- Google Play Real-Money Gambling, Games and Contests policy: https://support.google.com/googleplay/android-developer/answer/18265346
+- Google Play current pilot status: https://support.google.com/googleplay/android-developer/answer/12918670?hl=en
+
 ## Supabase backup and recovery
 
 The connected project currently reports `ACTIVE_HEALTHY`, Postgres 17.11, region `ap-northeast-2`. Project plan and backup entitlement were not exposed in the project metadata inspected here.
