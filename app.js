@@ -38,6 +38,14 @@ function getSeenNotificationIds() { const value = read(notificationSeenKey(), []
 function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+function playerAvatarHtml(avatarValue, size='md') {
+  const catalog=window.BF_PROFILE_AVATARS||{items:[],sprite:''};
+  const id=String(avatarValue||'').startsWith('preset:')?String(avatarValue).slice(7):'none';
+  const index=catalog.items.findIndex(item=>item[0]===id);
+  if(index<0)return '<span class="bf-player-avatar bf-player-avatar-'+size+' is-default" role="img" aria-label="Default player picture"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="22" r="12"/><path d="M10 56c1-13 10-20 22-20s21 7 22 20"/></svg></span>';
+  const x=index%5,y=Math.floor(index/5);
+  return '<span class="bf-player-avatar bf-player-avatar-'+size+'" role="img" aria-label="BattleForge profile picture"><span class="bf-avatar-art" style="background-image:url(\''+catalog.sprite+'\');background-size:500% 200%;background-repeat:no-repeat;background-position:'+((x/4)*100)+'% '+(y*100)+'%"></span></span>';
+}
 const KILL_RANKS = [
   { key: 'rookie', label: 'Rookie', minimum: 10 },
   { key: 'contender', label: 'Contender', minimum: 50 },
@@ -436,7 +444,7 @@ async function render() {
     const globallyPaused = platformControls.registrations_paused || platformControls.maintenance_mode;
     return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="tour-entry-strip"><span class="entry-label">ENTRY FEE</span><strong>◈ ' + entry + ' <small>COINS</small></strong><span class="entry-action">' + (has ? 'YOU’RE IN ✓' : full ? 'MATCH FULL' : 'TAP TO VIEW ↗') + '</span></div><div class="match-time"><span class="match-time-icon">◷</span><span><small>MATCH STARTS</small><b>' + (t.starts_at ? esc(new Date(t.starts_at).toLocaleString(undefined,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})) : 'Time to be announced') + '</b></span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>✦ ' + Math.max(0, Number(t.max_players) - count) + ' SPOTS LEFT</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' COINS</b><small>DISPLAYED PRIZE POOL</small></div><div class="prize"><b>' + perKill + ' COINS</b><small>PER KILL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open' || globallyPaused) ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : t.is_cancelled ? 'DISABLED' : globallyPaused ? 'REGISTRATIONS PAUSED' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' COINS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
   }).join('') : '<p class="notice">No tournaments are published yet.</p>';
-  const profileBtn=$('#profileBtn'); if(profileBtn){ const {data:profileText}=currentUser?await supabase.from('player_accounts').select('username').eq('user_id',currentUser.id).maybeSingle():{data:null}; profileBtn.textContent=currentUser?(profileText?.username||'Profile'):'Sign in'; profileBtn.setAttribute('aria-label',currentUser?'Player profile':'Sign in'); }
+  const profileBtn=$('#profileBtn'); if(profileBtn){ const {data:profileText}=currentUser?await supabase.from('player_accounts').select('username,avatar_url').eq('user_id',currentUser.id).maybeSingle():{data:null}; profileBtn.innerHTML=currentUser?playerAvatarHtml(profileText?.avatar_url,'header'):'Sign in'; profileBtn.setAttribute('aria-label',currentUser?'Player profile: '+(profileText?.username||'Player'):'Sign in'); }
 }
 
 let usernameSetupOpen = false;
@@ -907,7 +915,10 @@ async function loadLeaderboard(period = leaderboardPeriod) {
     return;
   }
   const rows = Array.isArray(data) ? data : [];
-  target.innerHTML = rows.length ? rows.map((r,i) => { const stats=lifetimeKillRanks.get(String(r.user_id)); const kills=Number(stats?.lifetime_kills||0); const name=String(r.username||stats?.username||'').trim()||('Player '+(r.player_number||'')); return `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player"><b>${esc(name)}${rankBadgeHtml(kills)}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}${kills?' · '+kills.toLocaleString('en-IN')+' LIFETIME KILLS':''}</small></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`; }).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
+  const userIds=rows.map(r=>r.user_id).filter(Boolean);
+  const {data:avatarRows}=userIds.length?await supabase.from('player_accounts').select('user_id,avatar_url').in('user_id',userIds):{data:[]};
+  const avatarByUser=new Map((avatarRows||[]).map(a=>[String(a.user_id),a.avatar_url]));
+  target.innerHTML = rows.length ? rows.map((r,i) => { const stats=lifetimeKillRanks.get(String(r.user_id)); const kills=Number(stats?.lifetime_kills||0); const name=String(r.username||stats?.username||'').trim()||('Player '+(r.player_number||'')); return `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player">${playerAvatarHtml(avatarByUser.get(String(r.user_id)),'list')}<div class="leader-player-copy"><b>${esc(name)}${rankBadgeHtml(kills)}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}${kills?' · '+kills.toLocaleString('en-IN')+' LIFETIME KILLS':''}</small></div></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`; }).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
 }
 
 async function showHistory() {
@@ -932,8 +943,11 @@ async function openPastMatchDetails(id) {
   if(resultsError){console.warn('Past match results could not be loaded:',resultsError);toast('Could not load published rankings.');return;}
   const results=Array.isArray(rows)?rows:[];
   await loadLifetimeKillRanks(true);
+  const resultUserIds=results.map(r=>r.user_id).filter(Boolean);
+  const {data:avatarRows}=resultUserIds.length?await supabase.from('player_accounts').select('user_id,avatar_url').in('user_id',resultUserIds):{data:[]};
+  const avatarByUser=new Map((avatarRows||[]).map(a=>[String(a.user_id),a.avatar_url]));
   const mine=results.find(r=>r.user_id===currentUser.id);
-  const rankingHtml=results.map(r=>{const stats=lifetimeKillRanks.get(String(r.user_id));const name=String(r.username||stats?.username||'Player').trim();const playerNo=r.player_number??stats?.player_number;const totalKills=Number(stats?.lifetime_kills||0);return '<div class="profile-history-row"><div><b>#'+esc(r.placement||'—')+' · '+esc(name)+rankBadgeHtml(totalKills)+'</b><small>'+(playerNo?'PLAYER ID #'+esc(playerNo)+' · ':'')+Number(r.kills||0)+' kills this match · '+totalKills.toLocaleString('en-IN')+' lifetime kills · '+Number(r.earned_points||0)+' coins earned'+(r.note?' · '+esc(r.note):'')+'</small></div>'+(r.user_id===currentUser.id?'<b>YOU</b>':'')+'</div>';}).join('');
+  const rankingHtml=results.map(r=>{const stats=lifetimeKillRanks.get(String(r.user_id));const name=String(r.username||stats?.username||'Player').trim();const playerNo=r.player_number??stats?.player_number;const totalKills=Number(stats?.lifetime_kills||0);return '<div class="profile-history-row bf-past-rank-row">'+playerAvatarHtml(avatarByUser.get(String(r.user_id)),'list')+'<div class="bf-past-rank-copy"><b>#'+esc(r.placement||'—')+' · '+esc(name)+rankBadgeHtml(totalKills)+'</b><small>'+(playerNo?'PLAYER ID #'+esc(playerNo)+' · ':'')+Number(r.kills||0)+' kills this match · '+totalKills.toLocaleString('en-IN')+' lifetime kills · '+Number(r.earned_points||0)+' coins earned'+(r.note?' · '+esc(r.note):'')+'</small></div>'+(r.user_id===currentUser.id?'<b>YOU</b>':'')+'</div>';}).join('');
   const performance=mine?'<div class="result-banner"><small>YOUR PERFORMANCE</small><b>'+(mine.placement?'Rank #'+Number(mine.placement)+' · ':'')+Number(mine.kills||0)+' kills</b>'+(mine.note?'<p>'+esc(mine.note)+'</p>':'')+'</div><button class="outline full" id="bfOpenDisputeForm" data-tournament-id="'+esc(id)+'">Dispute this result</button>':'<div class="result-banner"><small>YOUR PERFORMANCE</small><b>No published result for your account</b></div>';
   const rankings=results.length?performance+'<h3>Final rankings</h3><div class="past-results-table">'+rankingHtml+'</div>':'<div class="result-banner"><small>RESULT STATUS</small><b>Pending Results</b><p>The admin has not published the final rankings yet. Check back later.</p></div>';
   modal('<div class="match-detail-sheet"><div class="eyebrow">PAST MATCH DETAILS</div><h2>'+esc(t.title)+'</h2><p>'+esc(t.game_mode||'MATCH')+' · '+esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Date not set')+'</p>'+rankings+'<button class="outline full" id="pastMatchClose">Close</button></div>');
