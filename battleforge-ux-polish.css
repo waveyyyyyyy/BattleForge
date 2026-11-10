@@ -438,3 +438,83 @@ main,.app-shell,#app,.page-view{touch-action:pan-y!important;overscroll-behavior
 }
 #modal.bf-fullscreen-chat .bf-match-chat-message{cursor:pointer}
 #modal.bf-fullscreen-chat .bf-chat-reaction{cursor:pointer}
+
+
+/* BattleForge esports chat palette — intentionally not WhatsApp green. */
+#modal.bf-fullscreen-chat,
+#modal.bf-fullscreen-chat>.modal-card,
+#modal.bf-fullscreen-chat #modalContent,
+#modal.bf-fullscreen-chat .bf-match-chat,
+#modal.bf-fullscreen-chat .bf-faq-chat{
+  background:#0b1220!important;color:#e8efff!important
+}
+#modal.bf-fullscreen-chat .bf-match-chat-header,
+#modal.bf-fullscreen-chat .bf-chat-header{
+  background:linear-gradient(110deg,#111d35 0%,#17294a 58%,#20234a 100%)!important;
+  border-bottom:1px solid #2b3c5d!important;color:#f4f7ff!important
+}
+#modal.bf-fullscreen-chat .bf-match-chat-heading h2,
+#modal.bf-fullscreen-chat .bf-chat-identity h2{color:#f5f7ff!important}
+#modal.bf-fullscreen-chat .bf-match-chat-heading p,
+#modal.bf-fullscreen-chat .bf-chat-online,
+#modal.bf-fullscreen-chat .bf-chat-intro,
+#modal.bf-fullscreen-chat .bf-chat-disclaimer{color:#9eafcc!important}
+#modal.bf-fullscreen-chat .bf-match-chat-messages,
+#modal.bf-fullscreen-chat .bf-faq-messages{
+  background:radial-gradient(ellipse at 50% 0%,#182747 0%,#0b1220 68%)!important
+}
+#modal.bf-fullscreen-chat .bf-match-chat-message,
+#modal.bf-fullscreen-chat .bf-faq-bubble{
+  background:#17243a!important;border:1px solid #30435f!important;
+  color:#e7efff!important;box-shadow:0 5px 18px #02081766!important;
+  border-radius:15px 15px 15px 5px!important
+}
+#modal.bf-fullscreen-chat .bf-match-chat-message.is-own,
+#modal.bf-fullscreen-chat .bf-faq-bubble.user{
+  background:linear-gradient(135deg,#354b9a 0%,#5140a2 100%)!important;
+  border:1px solid #7166d6!important;color:#fff!important;
+  border-radius:15px 15px 5px 15px!important
+}
+#modal.bf-fullscreen-chat .bf-faq-bubble.bot{
+  background:linear-gradient(135deg,#123b4a 0%,#17334b 100%)!important;
+  border-color:#286477!important;color:#e4fbff!important
+}
+#modal.bf-fullscreen-chat .bf-match-chat-meta,
+#modal.bf-fullscreen-chat .bf-match-chat-meta b,
+#modal.bf-fullscreen-chat .bf-match-chat-meta time,
+#modal.bf-fullscreen-chat .bf-match-chat-message p{color:#c3d1e8!important}
+#modal.bf-fullscreen-chat .bf-match-chat-message.is-own .bf-match-chat-meta,
+#modal.bf-fullscreen-chat .bf-match-chat-message.is-own .bf-match-chat-meta b,
+#modal.bf-fullscreen-chat .bf-match-chat-message.is-own .bf-match-chat-meta time,
+#modal.bf-fullscreen-chat .bf-match-chat-message.is-own p,
+#modal.bf-fullscreen-chat .bf-faq-bubble.user{color:#fff!important}
+#modal.bf-fullscreen-chat .bf-match-chat-form,
+#modal.bf-fullscreen-chat .bf-faq-form{
+  background:#111c30!important;border-top:1px solid #2b3c5d!important
+}
+#modal.bf-fullscreen-chat .bf-match-chat-form input,
+#modal.bf-fullscreen-chat .bf-faq-form input{
+  background:#1a2941!important;border:1px solid #354968!important;
+  color:#f4f7ff!important;border-radius:13px!important
+}
+#modal.bf-fullscreen-chat .bf-match-chat-form input::placeholder,
+#modal.bf-fullscreen-chat .bf-faq-form input::placeholder{color:#8ea1bf!important}
+#modal.bf-fullscreen-chat .bf-chat-send{
+  background:linear-gradient(135deg,#4268ed,#7754d9)!important;
+  border:1px solid #8291ff!important;color:#fff!important;border-radius:13px!important
+}
+#modal.bf-fullscreen-chat .bf-chat-emoji-toggle{
+  background:#1a2941!important;border:1px solid #40547a!important;color:#b8c5ff!important
+}
+#modal.bf-fullscreen-chat .bf-chat-emoji-picker{
+  background:#182640!important;border:1px solid #3b5073!important;box-shadow:0 12px 30px #0009!important
+}
+#modal.bf-fullscreen-chat .bf-chat-reaction{
+  background:#1b2a43!important;border-color:#405574!important;color:#f4f7ff!important
+}
+#modal.bf-fullscreen-chat .bf-chat-reaction.active{
+  background:#3a3478!important;border-color:#9386ff!important
+}
+#modal.bf-fullscreen-chat>#closeModal{
+  background:#1a2941!important;border-color:#405574!important;color:#f4f7ff!important
+}
