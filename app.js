@@ -1402,7 +1402,7 @@ function matchChatMessageHtml(row, username) {
   const own=String(row.user_id)===String(currentUser?.id);
   const reactions=read('bf_chat_reactions_'+String(row.id),[]);
   const emojis=['👍','❤️','😂','🔥','😮','👏'];
-  return '<article class="bf-match-chat-message '+(own?'is-own':'')+'" data-chat-message="'+esc(row.id)+'"><div class="bf-match-chat-meta"><b>'+esc(username)+(own?' · YOU':'')+'</b><time>'+esc(new Date(row.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</time></div><p>'+esc(row.message)+'</p><div class="bf-chat-reactions">'+emojis.map(emoji=>'<button type="button" class="bf-chat-reaction '+(reactions.includes(emoji)?'active':'')+'" data-chat-reaction="'+emoji+'" data-message-id="'+esc(row.id)+'" aria-label="React '+emoji+'">'+emoji+'</button>').join('')+'</div>'+(isAdmin?'<button type="button" class="bf-chat-delete" data-chat-delete="'+esc(row.id)+'">Remove</button>':'')+'</article>';
+  return '<article class="bf-match-chat-message '+(own?'is-own':'')+'" data-chat-message="'+esc(row.id)+'"><div class="bf-match-chat-meta"><b>'+esc(username)+(own?' · YOU':'')+'</b><time>'+esc(new Date(row.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</time></div><p>'+esc(row.message)+'</p><div class="bf-chat-reactions" aria-label="Message reactions">'+emojis.map(emoji=>'<button type="button" class="bf-chat-reaction '+(reactions.includes(emoji)?'active':'')+'" data-chat-reaction="'+emoji+'" data-message-id="'+esc(row.id)+'" aria-label="React '+emoji+'">'+emoji+'</button>').join('')+'</div>'+(isAdmin?'<button type="button" class="bf-chat-delete" data-chat-delete="'+esc(row.id)+'">Remove</button>':'')+'</article>';
 }
 async function loadMatchChat(tournamentId) {
   const target=$('#bfMatchChatMessages');if(!target)return;
@@ -1427,6 +1427,12 @@ async function openMatchChat(tournament) {
     if(!target.querySelector('[data-chat-message="'+CSS.escape(String(row.id))+'"]')){target.insertAdjacentHTML('beforeend',matchChatMessageHtml(row,senderName));target.scrollTop=target.scrollHeight;if(String(row.user_id)!==String(currentUser?.id))playChatSound('receive');}
   }).subscribe();
 }
+document.addEventListener('click',event=>{
+ const message=event.target.closest?.('.bf-match-chat-message');
+ if(!message||event.target.closest?.('[data-chat-reaction],[data-chat-delete]'))return;
+ document.querySelectorAll('.bf-match-chat-message.is-reaction-open').forEach(item=>{if(item!==message)item.classList.remove('is-reaction-open');});
+ message.classList.toggle('is-reaction-open');
+});
 document.addEventListener('click',async event=>{
   const reaction=event.target.closest('[data-chat-reaction]');
   if(reaction){
