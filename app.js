@@ -749,8 +749,12 @@ async function refreshDataInternal() {
   if ($('#paymentRequests')) await loadPaymentRequests();
   if (currentUser) await loadWalletSummary();
 }
-function showAuth() {
-  modal('<h2>Welcome to BattleForge</h2><p>Create your account with a unique username. During registration, enter your friend’s referral code if you have one; it is optional.</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div><label class="field">USERNAME (REQUIRED)<input id="signupUsername" type="text" minlength="3" maxlength="24" pattern="[A-Za-z0-9_ ]{3,24}" autocomplete="nickname" placeholder="e.g. Wave Player_7"></label><p class="profile-help">3–24 characters. Use letters, numbers, spaces, and underscores only. Must be unique.</p><label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></label><button id="signInBtn" class="join full">Log in with email</button><button id="signUpBtn" class="outline full">Create account with email</button><p class="notice">Email confirmation may be required. Never share your password or OTP.</p>');
+function showAuth(mode = 'signin') {
+  const isSignup = mode === 'signup';
+  const fields = isSignup
+    ? '<label class="field">USERNAME (REQUIRED)<input id="signupUsername" type="text" minlength="3" maxlength="24" pattern="[A-Za-z0-9_ ]{3,24}" autocomplete="nickname" placeholder="player855"></label><p class="profile-help">3–24 characters. Letters, numbers, spaces, and underscores only. Must be unique.</p>'
+    : '';
+  modal('<div class="bf-auth-sheet"><div class="eyebrow">BATTLEFORGE ACCOUNT</div><h2>'+(isSignup?'Create your account':'Welcome back')+'</h2><p>'+(isSignup?'Choose your player username, then register with Google or email.':'Sign in using either Google or your email and password.')+'</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div>'+fields+'<label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="Email address"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="'+(isSignup?'new-password':'current-password')+'" minlength="8" placeholder="Password (8+ characters)"></label><button id="'+(isSignup?'signUpBtn':'signInBtn')+'" class="join full">'+(isSignup?'Create account':'Sign in with email')+'</button><button id="'+(isSignup?'backToSignIn':'goToSignUp')+'" class="outline full">'+(isSignup?'Back to sign in':'New to BattleForge? Create account')+'</button><p class="notice">Never share your password or OTP.'+(isSignup?' Email confirmation may be required.':'')+'</p></div>');
 }
 
 // Google OAuth uses Supabase's authorization-code (PKCE) flow. The web callback
@@ -862,6 +866,8 @@ async function authAction(kind) {
 }
 async function showProfile() {
   if (!currentUser) { showAuth(); return; }
+  // Open the profile surface immediately; hydrate its data while the player sees the loading state.
+  modal('<div class="bf-profile-loading"><div class="eyebrow">PLAYER PROFILE</div><h2>Loading your profile…</h2><div class="bf-profile-loading-bar"></div><p>Fetching your stats and wallet securely.</p></div>');
   const {data:socialData}=await supabase.rpc('get_battleforge_social_links'); const social=Array.isArray(socialData)?(socialData[0]||{}):(socialData||{});
   const [{ data: account, error: accountError }, { data: wallet, error: walletError }, { data: ledger }, { data: paidWithdrawals }, { data: depositHistory }, { data: referralStatsResult }, { data: myResults }, { data: myWarnings }, { data: myDisputes }] = await Promise.all([
     supabase.from('player_accounts').select('player_number,username,username_change_count,created_at,referred_by_player_number').eq('user_id', currentUser.id).maybeSingle(),
@@ -1429,7 +1435,8 @@ $('#modalContent').addEventListener('click', async e => {
   if (e.target.id === 'requiredUsernameLogout') { usernameSetupOpen=false; await supabase.auth.signOut(); close(); await refreshData(); showAuth(); }
   if (e.target.id === 'signInBtn') await authAction('signin');
   if (e.target.id === 'signUpBtn') await authAction('signup');
-  if (e.target.id === 'backToSignIn') showAuth();
+  if (e.target.id === 'backToSignIn') showAuth('signin');
+  if (e.target.id === 'goToSignUp') showAuth('signup');
   if (e.target.id === 'signOutBtn') {
     const { error } = await supabase.auth.signOut();
     if (error) { toast(error.message); return; }
