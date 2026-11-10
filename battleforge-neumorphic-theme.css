@@ -1231,3 +1231,16 @@ body{background-image:none!important}
  #bfIntroScreen{transition:opacity .2s ease}
  .bf-intro-orb,.bf-intro-loader i{animation:none!important}
 }
+
+
+/* Keep match-chat message typography identical and readable in both directions. */
+#modal.bf-fullscreen-chat .bf-match-chat-message p,
+#modal.bf-fullscreen-chat .bf-match-chat-message.is-own p{
+ color:#263442!important;font-size:14px!important;font-weight:500!important;line-height:1.5!important;
+ opacity:1!important;text-shadow:none!important;-webkit-text-fill-color:#263442!important;
+}
+#modal.bf-fullscreen-chat .bf-match-chat-message.is-own .bf-match-chat-meta,
+#modal.bf-fullscreen-chat .bf-match-chat-message.is-own .bf-match-chat-meta b,
+#modal.bf-fullscreen-chat .bf-match-chat-message.is-own .bf-match-chat-meta time{
+ color:#687887!important;-webkit-text-fill-color:currentColor!important;
+}
