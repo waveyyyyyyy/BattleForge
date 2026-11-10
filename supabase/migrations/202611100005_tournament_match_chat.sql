@@ -8,6 +8,8 @@ create table if not exists public.tournament_chat_messages (
 );
 create index if not exists tournament_chat_messages_match_created_idx
   on public.tournament_chat_messages (tournament_id, created_at desc);
+create index if not exists tournament_chat_messages_user_id_idx
+  on public.tournament_chat_messages (user_id);
 create index if not exists tournament_entries_match_user_idx
   on public.tournament_entries (tournament_id, user_id);
 alter table public.tournament_chat_messages enable row level security;
