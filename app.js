@@ -3,11 +3,39 @@ import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { Preferences } from '@capacitor/preferences';
 
 const SUPABASE_URL = 'https://izyttrbspxrcacwuhwer.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_79ln_ouADVGWi6H5ZTc6Qg_c3ifNfQ7';
 const IS_NATIVE_APP = Capacitor.isNativePlatform();
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true, autoRefreshToken: !IS_NATIVE_APP, storage: window.localStorage, storageKey: 'sb-izyttrbspxrcacwuhwer-auth-token' } });
+const AUTH_STORAGE_KEY = 'sb-izyttrbspxrcacwuhwer-auth-token';
+// Android WebView localStorage may be cleared or unavailable across process death.
+// Persist Supabase's session in native Preferences (app-private durable storage).
+const authStorage = IS_NATIVE_APP ? {
+  async getItem(key) {
+    try {
+      const { value } = await Preferences.get({ key: 'bf_auth_' + key });
+      if (value !== null && value !== undefined) return value;
+    } catch (error) { console.warn('Native auth storage read failed:', error); }
+    // One-time migration from the previous WebView localStorage session.
+    try {
+      const legacy = window.localStorage.getItem(key);
+      if (legacy) {
+        await Preferences.set({ key: 'bf_auth_' + key, value: legacy });
+        return legacy;
+      }
+    } catch (error) { console.warn('Legacy auth migration failed:', error); }
+    return null;
+  },
+  async setItem(key, value) {
+    await Preferences.set({ key: 'bf_auth_' + key, value });
+  },
+  async removeItem(key) {
+    await Preferences.remove({ key: 'bf_auth_' + key });
+    try { window.localStorage.removeItem(key); } catch {}
+  }
+} : window.localStorage;
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true, autoRefreshToken: !IS_NATIVE_APP, storage: authStorage, storageKey: AUTH_STORAGE_KEY } });
 
 const $ = (s) => document.querySelector(s);
 let balance = 0;
