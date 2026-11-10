@@ -388,3 +388,31 @@ img,video,canvas{max-width:100%;height:auto}
  .bf-chat-settings-button{width:34px!important;height:34px!important;min-width:34px!important}
  .bf-chat-settings-panel{right:-3px!important}
 }
+
+
+/* 2026-11-11: restore natural vertical touch scrolling and harden full-screen chat controls. */
+html,body{min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;touch-action:pan-y!important}
+body{overscroll-behavior-y:auto!important}
+main,.app-shell,#app,.page-view{touch-action:pan-y!important;overscroll-behavior-y:contain}
+.page-view.active{overflow-y:visible!important;min-height:0}
+#modal.bf-fullscreen-chat>.modal-card{position:relative!important}
+#modal.bf-fullscreen-chat>.modal-card>.bf-chat-settings-wrap{
+  position:absolute!important;top:calc(8px + env(safe-area-inset-top))!important;right:60px!important;
+  z-index:100000!important;display:block!important;overflow:visible!important
+}
+#modal.bf-fullscreen-chat .bf-chat-settings-button{width:40px!important;height:40px!important;min-width:40px!important}
+#modal.bf-fullscreen-chat .bf-chat-settings-panel{
+  position:absolute!important;top:48px!important;right:0!important;z-index:100001!important;
+  max-height:calc(100dvh - 110px)!important;overflow-y:auto!important
+}
+#modal.bf-fullscreen-chat .bf-match-chat-header,#modal.bf-fullscreen-chat .bf-chat-header{padding-right:112px!important}
+#modal.bf-fullscreen-chat .bf-match-chat-messages{flex:1 1 0!important;min-height:0!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important}
+.bf-match-chat-message .bf-chat-reactions{display:flex!important;flex-wrap:wrap!important;gap:4px!important;margin-top:7px!important}
+.bf-chat-reaction{display:inline-grid!important;place-items:center!important;min-width:27px!important;height:27px!important;padding:2px 6px!important;border:1px solid #e2e8ed!important;border-radius:99px!important;background:#f8fafb!important;color:#405364!important;font-size:14px!important;line-height:1!important;box-shadow:none!important}
+.bf-chat-reaction.active{border-color:#b8caff!important;background:#edf2ff!important}
+#modal.bf-fullscreen-chat .bf-match-chat-form{position:relative!important;overflow:visible!important}
+.bf-chat-emoji-toggle{flex:0 0 38px!important;width:38px!important;height:40px!important;border:1px solid #dfe6ec!important;border-radius:12px!important;background:#fff!important;color:#315cf4!important;font-size:23px!important}
+.bf-chat-emoji-picker{position:absolute!important;left:10px!important;bottom:calc(100% + 8px)!important;z-index:100002!important;display:grid!important;grid-template-columns:repeat(8,minmax(30px,1fr))!important;gap:4px!important;width:min(320px,calc(100vw - 24px))!important;padding:10px!important;border:1px solid #dfe6ec!important;border-radius:14px!important;background:#fff!important;box-shadow:0 12px 32px rgba(20,40,60,.2)!important}
+.bf-chat-emoji-picker[hidden]{display:none!important}
+.bf-chat-emoji-picker button{min-width:30px!important;height:34px!important;padding:2px!important;border:0!important;border-radius:8px!important;background:#f5f7fa!important;font-size:19px!important;box-shadow:none!important}
+@media(max-width:380px){.bf-chat-emoji-picker{grid-template-columns:repeat(6,minmax(30px,1fr))!important}}
