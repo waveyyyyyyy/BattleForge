@@ -501,9 +501,9 @@ async function loadWalletSummary() {
 }
 
 function formatMatchCountdown(startsAt) { const target=startsAt?new Date(startsAt).getTime():NaN; if(!Number.isFinite(target))return '—'; const seconds=Math.max(0,Math.floor((target-Date.now())/1000)); const hours=Math.floor(seconds/3600),minutes=Math.floor((seconds%3600)/60),secs=seconds%60; return String(hours).padStart(2,'0')+':'+String(minutes).padStart(2,'0')+':'+String(secs).padStart(2,'0'); }
-function updateMatchCountdowns(){document.querySelectorAll('[data-match-countdown]').forEach(node=>{node.textContent=formatMatchCountdown(node.dataset.startsAt);});}
 let matchCountdownTicker=null;
-function startMatchCountdownTicker(){updateMatchCountdowns();if(matchCountdownTicker===null)matchCountdownTicker=window.setInterval(updateMatchCountdowns,1000);}
+function updateMatchCountdowns(){let active=false;document.querySelectorAll('[data-match-countdown]').forEach(node=>{const target=node.dataset.startsAt?new Date(node.dataset.startsAt).getTime():NaN;node.textContent=formatMatchCountdown(node.dataset.startsAt);if(Number.isFinite(target)&&target>Date.now())active=true;});if(!active&&matchCountdownTicker!==null){window.clearInterval(matchCountdownTicker);matchCountdownTicker=null;}return active;}
+function startMatchCountdownTicker(){if(updateMatchCountdowns()&&matchCountdownTicker===null)matchCountdownTicker=window.setInterval(updateMatchCountdowns,1000);}
 function renderWallet() {
   const headerCoins = $('#headerCoinBalance'); if (headerCoins) headerCoins.textContent = currentUser ? Number(balance).toLocaleString('en-IN',{maximumFractionDigits:2}) : '—';
   const total = $('#walletBalance'); if (total) total.textContent = currentUser ? String(balance) : '—';
