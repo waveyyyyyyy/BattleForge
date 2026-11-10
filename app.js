@@ -6,7 +6,8 @@ import { PushNotifications } from '@capacitor/push-notifications';
 
 const SUPABASE_URL = 'https://izyttrbspxrcacwuhwer.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_79ln_ouADVGWi6H5ZTc6Qg_c3ifNfQ7';
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true, autoRefreshToken: true, storage: window.localStorage, storageKey: 'sb-izyttrbspxrcacwuhwer-auth-token' } });
+const IS_NATIVE_APP = Capacitor.isNativePlatform();
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true, autoRefreshToken: !IS_NATIVE_APP, storage: window.localStorage, storageKey: 'sb-izyttrbspxrcacwuhwer-auth-token' } });
 
 const $ = (s) => document.querySelector(s);
 let balance = 0;
@@ -1548,35 +1549,48 @@ supabase.auth.onAuthStateChange((event) => {
     setTimeout(() => refreshData(), 0);
   }
 });
-// Keep Supabase token refresh aligned with the Android app lifecycle. Avoid manually
-// refreshing a rotating refresh token while the SDK may already be refreshing it.
-if (Capacitor.isNativePlatform()) {
-  // Supabase owns refresh-token rotation. Keep only one lifecycle refresh in
-  // flight so rapid resume/auth events cannot race one another.
+// Keep exactly one Supabase refresh loop on Android.
+// The SDK manages refresh automatically on web. Native apps must start it only
+// while foregrounded and stop it while backgrounded to avoid refresh races.
+if (IS_NATIVE_APP) {
+  let authRefreshRunning = false;
   let appResumeInFlight = null;
-  App.addListener('appStateChange', ({ isActive }) => {
-    if (!isActive) return;
-    if (appResumeInFlight) return;
-    appResumeInFlight = (async () => {
-      try {
-        await supabase.auth.startAutoRefresh();
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) console.warn('Could not restore saved session on resume:', error);
-        if (session?.user) {
-          await refreshData();
-          await checkRequiredAppUpdate();
-        } else {
-          console.info('No active BattleForge session found on app resume.');
+
+  const setNativeAuthRefreshState = async (isActive) => {
+    if (isActive) {
+      if (!authRefreshRunning) {
+        authRefreshRunning = true;
+        try { await supabase.auth.startAutoRefresh(); }
+        catch (error) {
+          authRefreshRunning = false;
+          console.warn('Could not start native auth refresh:', error);
         }
-      } catch (error) { console.warn('Session resume handling failed:', error); }
-      finally { appResumeInFlight = null; }
-    })();
-  });
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      supabase.auth.startAutoRefresh().catch(error => console.warn('Could not restart auth refresh:', error));
+      }
+      if (appResumeInFlight) return;
+      appResumeInFlight = (async () => {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          if (error) console.warn('Could not restore saved session on resume:', error);
+          if (session?.user) {
+            await refreshData();
+            await checkRequiredAppUpdate();
+          }
+        } catch (error) { console.warn('Session resume handling failed:', error); }
+        finally { appResumeInFlight = null; }
+      })();
+    } else if (authRefreshRunning) {
+      authRefreshRunning = false;
+      try { await supabase.auth.stopAutoRefresh(); }
+      catch (error) { console.warn('Could not stop native auth refresh:', error); }
     }
+  };
+
+  App.addListener('appStateChange', ({ isActive }) => {
+    setNativeAuthRefreshState(isActive);
   });
+  // App starts in the foreground. Start one refresh loop; appStateChange
+  // pauses/resumes that same loop rather than adding visibility listeners.
+  setNativeAuthRefreshState(true);
 }
 window.addEventListener('online', () => { checkRequiredAppUpdate(); });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
