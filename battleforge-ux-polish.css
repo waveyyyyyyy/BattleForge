@@ -416,3 +416,25 @@ main,.app-shell,#app,.page-view{touch-action:pan-y!important;overscroll-behavior
 .bf-chat-emoji-picker[hidden]{display:none!important}
 .bf-chat-emoji-picker button{min-width:30px!important;height:34px!important;padding:2px!important;border:0!important;border-radius:8px!important;background:#f5f7fa!important;font-size:19px!important;box-shadow:none!important}
 @media(max-width:380px){.bf-chat-emoji-picker{grid-template-columns:repeat(6,minmax(30px,1fr))!important}}
+
+
+/* 2026-11-11: reactions are contextual; header controls share the close button's exact centerline. */
+#modal.bf-fullscreen-chat>.modal-card>.bf-chat-settings-wrap{
+  top:calc(8px + env(safe-area-inset-top))!important;
+  right:60px!important;
+  width:40px!important;height:40px!important;margin:0!important;padding:0!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  transform:none!important;box-sizing:border-box!important
+}
+#modal.bf-fullscreen-chat .bf-chat-settings-button{
+  position:static!important;display:grid!important;place-items:center!important;
+  width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;
+  margin:0!important;padding:0!important;box-sizing:border-box!important;
+  line-height:1!important;transform:none!important;vertical-align:top!important
+}
+#modal.bf-fullscreen-chat .bf-chat-reactions{display:none!important}
+#modal.bf-fullscreen-chat .bf-match-chat-message.is-reaction-open .bf-chat-reactions{
+  display:flex!important;flex-wrap:wrap!important;gap:5px!important;margin-top:8px!important
+}
+#modal.bf-fullscreen-chat .bf-match-chat-message{cursor:pointer}
+#modal.bf-fullscreen-chat .bf-chat-reaction{cursor:pointer}
