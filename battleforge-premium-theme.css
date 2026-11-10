@@ -447,3 +447,64 @@ main.app-shell{max-width:760px;width:100%;padding:13px 13px 112px}
 .bf-copy-room{white-space:nowrap;min-height:36px;padding:8px 11px;font-size:11px;flex-shrink:0}.room-card .room-value{display:flex;align-items:center;justify-content:space-between;gap:12px}.room-card .room-value>span{min-width:0;overflow-wrap:anywhere}.bf-room-admin-field{display:flex;align-items:end;gap:8px}.bf-room-admin-field .field{flex:1;min-width:0}.bf-room-admin-field .bf-copy-room{margin-bottom:10px}
 /* Admin analytics dashboard */
 .bf-analytics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.bf-analytics-card{min-width:0;padding:14px;border:1px solid var(--line);border-radius:13px;background:linear-gradient(145deg,#192332,#111923)}.bf-analytics-card small{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase}.bf-analytics-card strong{display:block;margin:9px 0 5px;font-size:clamp(20px,5vw,27px);font-weight:900;overflow-wrap:anywhere}.bf-analytics-card span{display:block;color:var(--muted);font-size:10px;line-height:1.4}.bf-analytics-panel{margin:18px 0;padding:15px;border:1px solid var(--line);border-radius:14px;background:#121923}.bf-analytics-day{display:grid;grid-template-columns:52px minmax(0,1fr) 28px;align-items:center;gap:9px;margin:11px 0;font-size:10px}.bf-analytics-day>span{color:var(--muted)}.bf-analytics-day>b{text-align:right}.bf-analytics-track{height:8px;border-radius:20px;background:#293342;overflow:hidden}.bf-analytics-track i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#42b7a5,#83d5c6);min-width:2px}.bf-analytics-match{display:grid;grid-template-columns:minmax(0,1fr) 62px 72px;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:11px}.bf-analytics-match:last-child{border-bottom:0}.bf-analytics-match>div:first-child{min-width:0}.bf-analytics-match b,.bf-analytics-match small{display:block;overflow-wrap:anywhere}.bf-analytics-match small{margin-top:4px;color:var(--muted);font-size:9px}.bf-analytics-updated{text-align:right;color:var(--muted);font-size:10px}@media(max-width:380px){.bf-analytics-grid{grid-template-columns:1fr}.bf-room-admin-field{gap:5px}.bf-copy-room{padding:7px 8px}}
+
+
+/* BattleForge cross-device responsive hardening — keep every screen inside its viewport. */
+html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+body{min-height:100vh;min-height:100dvh}
+.top,main,.app-shell,.page-view,.page-heading,.section-head,.panel,.tour,.history-card,.rule-card,.wallet-hero,.activity-list,.leaderboard-list,.admin-section,.admin-dashboard,.modal-card,#modalContent{min-width:0;max-width:100%}
+main,.app-shell{width:100%;margin-left:auto;margin-right:auto}
+img,svg,video,canvas{max-width:100%}
+button,input,select,textarea{max-width:100%;font:inherit}
+button{touch-action:manipulation}
+p,h1,h2,h3,h4,small,b,strong,span,a,label{overflow-wrap:anywhere}
+.tour,.panel,.history-card,.rule-card,.profile-block,.admin-section,.notification-card{min-width:0}
+.tour-top,.tour-body,.prize-row,.wallet-actions,.section-head,.page-heading,.admin-section-title,.admin-form-grid,.admin-quick-grid{min-width:0;max-width:100%}
+.tour-top>*,.prize-row>*,.wallet-actions>*,.admin-form-grid>*,.admin-quick-grid>*{min-width:0}
+.field,.field input,.field textarea,.field select,.modal-card input,.modal-card textarea,.modal-card select{width:100%;min-width:0;max-width:100%}
+.modal{padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:calc(10px + env(safe-area-inset-bottom));padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+.modal-card{width:min(100%,570px);max-height:calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-x:hidden;overscroll-behavior:contain}
+.bottom{left:env(safe-area-inset-left);right:env(safe-area-inset-right);width:auto;max-width:min(100%,520px);padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right));padding-bottom:calc(9px + env(safe-area-inset-bottom))}
+.navitem{flex:1 1 0;min-width:0}
+.support-floating,.bf-faq-launch{max-width:calc(100vw - 24px);right:max(12px,env(safe-area-inset-right))}
+@media(max-width:520px){
+  .top{width:100%;max-width:100%;padding-left:clamp(8px,3vw,14px)!important;padding-right:clamp(8px,3vw,14px)!important;gap:8px}
+  .brand{min-width:0;flex:1 1 auto;gap:7px;letter-spacing:.2px}
+  .brand>span:last-child{min-width:0;white-space:nowrap}
+  .top-actions{min-width:0;flex:0 1 auto;gap:clamp(4px,1.5vw,7px)!important}
+  .top-actions>*{flex-shrink:0}
+  .top-actions .header-coin-balance{min-width:0;padding-left:7px;padding-right:7px;font-size:11px}
+  .app-shell,main{padding-left:clamp(10px,3.5vw,16px)!important;padding-right:clamp(10px,3.5vw,16px)!important}
+  .section-head{gap:10px;align-items:center}
+  .section-head>div{min-width:0}
+  .section-head h2{overflow-wrap:anywhere}
+  .wallet-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero-actions{flex-wrap:wrap;gap:10px}
+  .leaderboard-tabs{flex-wrap:wrap}
+  .leaderboard-tabs>*{flex:1 1 0;min-width:0}
+}
+@media(max-width:380px){
+  .top{height:auto;min-height:60px;padding-top:8px!important;padding-bottom:8px!important}
+  .brand{font-size:10px;gap:6px}
+  .brand small{font-size:7px;letter-spacing:.7px}
+  .mark{width:32px!important;height:32px!important;flex:0 0 32px}
+  .header-coin-label{display:none!important}
+  .top-actions .header-coin-balance{gap:4px;padding:0 5px;font-size:10px}
+  .top-actions .notification-bell{width:32px!important;min-width:32px!important;height:32px!important;flex-basis:32px!important}
+  .top-actions .avatar{width:32px!important;min-width:32px!important;height:32px!important}
+  .admin-button{padding:8px 6px!important;font-size:8px!important}
+  .hero-stats{gap:5px}
+  .hero-stats>div{min-width:0;flex:1;padding-right:5px!important;margin-right:5px!important}
+  .hero-stats small{font-size:7px!important;letter-spacing:0!important}
+  .admin-metrics,.bf-analytics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:340px){
+  .brand>span:last-child{font-size:9px}
+  .top-actions{gap:3px!important}
+  .top-actions .header-coin-balance{font-size:9px}
+  .hero-premium{padding-left:13px!important;padding-right:13px!important}
+  .section-head .pill{font-size:8px;padding:5px 6px}
+  .navitem small{font-size:8px}
+}
+@supports not (height:100dvh){.modal-card{max-height:calc(100vh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}}
