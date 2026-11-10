@@ -1048,7 +1048,7 @@ async function loadAdminPlayerDirectory(offset=0){
  const {data,error}=await supabase.rpc('admin_list_all_players',{p_search:search,p_limit:100,p_offset:Math.max(0,offset)});
  if(error){target.innerHTML='<p class="notice">Could not load players: '+esc(error.message)+'</p>';return;}
  window.battleForgeAdminDirectoryOffset=Math.max(0,offset);const rows=data||[];
- target.innerHTML=rows.length?rows.map(p=>'<button type="button" class="bf-admin-player-card" data-open-admin-player="'+esc(p.player_number)+'">'++'<span class="bf-admin-player-copy"><b>'+esc(p.username||('Player #'+p.player_number))+'</b><small>PLAYER ID #'+esc(p.player_number)+' · '+Number(p.entries_count||0)+' matches · '+Number(p.wins_count||0)+' wins</small></span><span class="bf-admin-player-arrow">›</span></button>').join(''):'<p class="admin-helper">No registered players found.</p>';
+ target.innerHTML=rows.length?rows.map(p=>'<button type="button" class="bf-admin-player-card" data-open-admin-player="'+esc(p.player_number)+'">'+'<span class="bf-admin-player-copy"><b>'+esc(p.username||('Player #'+p.player_number))+'</b><small>PLAYER ID #'+esc(p.player_number)+' · '+Number(p.entries_count||0)+' matches · '+Number(p.wins_count||0)+' wins</small></span><span class="bf-admin-player-arrow">›</span></button>').join(''):'<p class="admin-helper">No registered players found.</p>';
  $('#bfAdminPlayersPrev').disabled=offset<=0;$('#bfAdminPlayersNext').disabled=rows.length<100;$('#bfAdminPlayerPageInfo').textContent=rows.length?'Showing '+(offset+1)+'–'+(offset+rows.length)+' · Search: '+(search||'All players'):'No results';
 }
 async function loadAdminSocialLinks(){
