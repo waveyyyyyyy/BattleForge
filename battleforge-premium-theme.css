@@ -431,3 +431,13 @@ main.app-shell{max-width:760px;width:100%;padding:13px 13px 112px}
 .bf-roster-player{display:inline-flex!important;align-items:center;gap:8px;white-space:normal!important;max-width:100%}
 .bf-roster-player-copy{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;min-width:0}
 .bf-roster-player-copy small{display:block;flex-basis:100%;font-size:10px;opacity:.72}
+
+/* Admin player directory and full profile */
+.bf-admin-player-card{display:flex!important;align-items:center;gap:12px;width:100%;padding:12px;margin:8px 0;text-align:left;background:rgba(255,255,255,.035);border:1px solid rgba(132,147,163,.22);border-radius:14px;color:inherit}
+.bf-admin-player-card .bf-admin-player-copy{display:flex;flex:1;flex-direction:column;min-width:0}
+.bf-admin-player-card .bf-admin-player-copy b{overflow-wrap:anywhere}
+.bf-admin-player-card .bf-admin-player-copy small{opacity:.72}
+.bf-admin-player-arrow{font-size:24px;opacity:.7}
+.bf-admin-profile-head{display:flex;align-items:center;gap:12px}
+.bf-admin-profile-head h3{margin:0}
+.bf-admin-profile-head p{margin:5px 0 0}
