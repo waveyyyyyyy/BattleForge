@@ -259,3 +259,237 @@ body input::placeholder,body textarea::placeholder{color:#687887!important;opaci
 @media(max-width:520px){
  #tournaments .tour .tour-banner{height:142px!important;min-height:142px!important}
 }
+
+
+/* 2026-11-10 global readability + minimal light surfaces pass */
+:root{
+ color-scheme:light!important;
+ --bg:#edf1f5!important;--panel:#ffffff!important;--line:#dce4ec!important;
+ --text:#24364b!important;--muted:#596b7d!important;
+ --lime:#315cf4!important;--orange:#315cf4!important;--accent:#315cf4!important;
+ --bf-bg:#edf1f5!important;--bf-panel:#ffffff!important;--bf-line:#dce4ec!important;
+ --bf-text:#24364b!important;--bf-muted:#596b7d!important;--bf-lime:#315cf4!important;
+}
+html,body{
+ background:#edf1f5!important;color:#24364b!important;
+}
+body{
+ background:#edf1f5!important;color:#24364b!important;
+}
+body *{
+ color:#24364b!important;
+ text-shadow:none!important;
+}
+body :is(p,small,label,.muted,.meta,.notice,.section-sub,.page-heading p,
+.hero-sub,.trust-note,.admin-helper,.history-meta,.wallet-label,.wallet-total small){
+ color:#596b7d!important;opacity:1!important;
+}
+body :is(h1,h2,h3,h4,b,strong,.wallet-total,.room-value){
+ color:#24364b!important;opacity:1!important;
+}
+body :is(.accent,.eyebrow,.section-eyebrow,.navitem.active,.room-label,
+.roster>strong,.joined-label,.wallet-action b,.wallet-action span){
+ color:#315cf4!important;opacity:1!important;
+}
+.top,.bottom{
+ background:#f7f9fc!important;border-color:#dce4ec!important;
+ box-shadow:0 2px 10px rgba(30,55,80,.06)!important;
+ backdrop-filter:none!important;
+}
+.mark,.avatar,.notification-bell,.header-coin-balance{
+ background:#ffffff!important;color:#24364b!important;
+ border:1px solid #dce4ec!important;box-shadow:none!important;
+}
+.app-shell,main,[id^="page-"]{
+ background:transparent!important;color:#24364b!important;
+}
+.hero-premium{
+ background:#ffffff!important;border:1px solid #dce4ec!important;
+ box-shadow:0 5px 18px rgba(30,55,80,.06)!important;
+}
+.hero-premium:before,.hero-premium:after{
+ display:none!important;opacity:0!important;content:none!important;
+}
+.hero-premium .hero-emblem{opacity:.07!important}
+.hero-premium .hero-stats{
+ background:#f7f9fc!important;border-color:#e3e9ef!important;
+}
+.hero-premium .hero-stats>div{border-color:#e3e9ef!important}
+.hero-premium .live-dot{background:#315cf4!important;box-shadow:none!important}
+.section-head{gap:14px!important}
+.section-head h2,.page-heading h1,.detail-hero h2{color:#24364b!important}
+.section-head .pill,.pill,.tag{
+ background:#edf2ff!important;border:1px solid #d7e3ff!important;
+ color:#315cf4!important;box-shadow:none!important;
+}
+#tournaments{
+ gap:20px!important;align-items:stretch!important;
+}
+#tournaments .tour{
+ background:#ffffff!important;background-image:none!important;
+ border:1px solid #dce4ec!important;border-radius:18px!important;
+ box-shadow:0 4px 15px rgba(30,55,80,.06)!important;
+}
+#tournaments .tour:before,#tournaments .tour:after{
+ display:none!important;content:none!important;
+}
+#tournaments .tour .tour-body,
+#tournaments .tour .tour-top,
+#tournaments .tour .prize-row{background:#ffffff!important}
+#tournaments .tour .tour-body{padding:17px!important;gap:14px!important}
+#tournaments .tour .tour-banner{
+ border:0!important;box-shadow:none!important;
+}
+#tournaments .tour .tour-banner:before,
+#tournaments .tour .tour-banner:after{display:none!important;content:none!important}
+#tournaments .tour .tag,#tournaments .tour .pill,
+#tournaments .tour .status,#tournaments .tour [class*="status"],
+#tournaments .tour [class*="badge"]{
+ background:#edf2ff!important;border:1px solid #d7e3ff!important;
+ color:#315cf4!important;box-shadow:none!important;
+}
+#tournaments .tour .prize{
+ background:#f7f9fc!important;border:1px solid #e3e9ef!important;
+}
+#tournaments .tour .prize-row{border-color:#e3e9ef!important}
+#tournaments .tour .join,.join,.admin-button,.hero-actions .join,
+.bf-faq-launch,.bf-faq-bubble.user{
+ background:#e8efff!important;color:#24364b!important;
+ border:1px solid #cbd9ff!important;box-shadow:none!important;
+}
+#tournaments .tour .join:disabled,.join:disabled{
+ background:#e9edf2!important;color:#667789!important;border-color:#e1e6ec!important;
+}
+.panel,.tour,.wallet-hero,.wallet-notice,.rule-card,.history-card,.history-item,
+.leader-row,.leaderboard-row,.activity-row,.activity-item,.room-card,.profile-block,
+.profile-metrics>div,.detail-stats>div,.bf-ticket-card,.bf-analytics-card,
+.bf-analytics-panel,.bf-admin-player-card,.profile-sheet,.match-detail-sheet,
+.notification-sheet,.notification-card,.detail-panel,.profile-history-row,
+.admin-section,.admin-quick,.admin-metrics>div,.bf-support-hub,
+.bf-admin-role-row,.bf-admin-audit-row,.bf-admin-player-copy{
+ background:#ffffff!important;background-image:none!important;
+ color:#24364b!important;border:1px solid #dce4ec!important;
+ box-shadow:0 3px 12px rgba(30,55,80,.05)!important;
+}
+.wallet-hero{
+ border-radius:20px!important;padding:19px!important;
+ background:#ffffff!important;min-height:0!important;
+}
+.wallet-glow{display:none!important;opacity:0!important}
+.wallet-art{opacity:.12!important}
+.wallet-label,.wallet-total,.wallet-hero>p{max-width:100%!important}
+.wallet-actions{gap:10px!important;margin-top:12px!important}
+.wallet-action{
+ background:#f7f9fc!important;border:1px solid #dce4ec!important;
+ color:#24364b!important;box-shadow:none!important;
+}
+.wallet-action b,.wallet-action span{color:#315cf4!important}
+.wallet-notice{background:#ffffff!important}
+.profile-block,.profile-metrics>div,.profile-rules,.profile-history,
+.profile-accordion,.bf-admin-player-card{
+ background:#ffffff!important;background-image:none!important;
+ border-color:#dce4ec!important;color:#24364b!important;
+}
+.profile-block summary,.profile-block[open] summary{
+ color:#24364b!important;
+}
+.history-card.past-match-card{
+ padding-top:16px!important;background:#ffffff!important;
+ background-image:none!important;border:1px solid #dce4ec!important;
+ box-shadow:0 3px 12px rgba(30,55,80,.05)!important;
+}
+.history-card.past-match-card:before{
+ display:none!important;content:none!important;background-image:none!important;
+}
+.history-card.past-match-card .history-card-top,
+.history-card.past-match-card h3,
+.history-card.past-match-card p,
+.history-card.past-match-card .result-banner{
+ color:#24364b!important;background:#ffffff!important;
+}
+.history-card .result-banner,.history-card .history-symbol{
+ background:#edf2ff!important;border:1px solid #d7e3ff!important;
+ color:#315cf4!important;box-shadow:none!important;filter:none!important;
+}
+.leader-row,.leaderboard-row,.activity-row,.activity-item,.room-card{
+ background:#ffffff!important;
+}
+.leaderboard-tabs{
+ background:#f7f9fc!important;border:1px solid #dce4ec!important;
+}
+.leaderboard-tabs button,.outline,.text-button,.support-cta{
+ background:#ffffff!important;color:#315cf4!important;
+ border:1px solid #dce4ec!important;box-shadow:none!important;
+}
+.navitem{color:#596b7d!important}
+.navitem.active{background:#e8efff!important;color:#315cf4!important}
+.modal{
+ background:rgba(28,45,65,.22)!important;backdrop-filter:blur(3px)!important;
+}
+.modal-card,#modal:not(.hidden)>.modal-card,#modal .modal-card,
+#modal.profile-modal .modal-card,.bf-fullscreen-chat .modal-card{
+ background:#ffffff!important;background-image:none!important;
+ color:#24364b!important;border:1px solid #dce4ec!important;
+ box-shadow:0 8px 28px rgba(30,55,80,.14)!important;
+}
+.modal-card :is(h1,h2,h3,h4,b,strong,label),
+#modal .modal-card :is(h1,h2,h3,h4,b,strong,label){
+ color:#24364b!important;
+}
+.modal-card :is(p,small,.muted),#modal .modal-card :is(p,small,.muted){
+ color:#596b7d!important;opacity:1!important;
+}
+.field,.field label{color:#596b7d!important}
+input,select,textarea,.field input,.field select,.field textarea,
+.bf-faq-form input{
+ background:#ffffff!important;color:#24364b!important;
+ border:1px solid #cfd9e3!important;box-shadow:none!important;
+}
+input::placeholder,textarea::placeholder{color:#738395!important;opacity:1!important}
+.toast{background:#e8efff!important;color:#24364b!important;border:1px solid #cbd9ff!important}
+.room-card,.room-value,.player-chip{
+ background:#f7f9fc!important;color:#24364b!important;border-color:#dce4ec!important;
+}
+.bf-streak-card,.bf-faq-bubble.bot,.bf-faq-bubble.user,
+.bf-copy-room,.bf-support-hub-icon{
+ background:#edf2ff!important;color:#24364b!important;
+ border:1px solid #d7e3ff!important;box-shadow:none!important;
+}
+.bf-streak-card :is(h3,p,small),.bf-chat-header,.bf-chat-intro,
+.bf-chat-disclaimer,.bf-ticket-card *,.bf-analytics-card *,
+.bf-admin-player-card *{color:#24364b!important;opacity:1!important}
+.bf-streak-progress{background:#e1e7ee!important}
+.bf-streak-progress span,.bf-analytics-track i{background:#315cf4!important}
+.bf-analytics-track{background:#e1e7ee!important}
+.bf-ticket-status,.bf-ticket-status.is-resolved{
+ background:#edf2ff!important;color:#315cf4!important;border-color:#d7e3ff!important;
+}
+.bf-fullscreen-chat,.bf-fullscreen-chat .modal-card,
+#modal.bf-fullscreen-chat>.modal-card{
+ background:#ffffff!important;background-image:none!important;color:#24364b!important;
+}
+.bf-faq-messages,.bf-faq-chat{background:#ffffff!important;color:#24364b!important}
+.bf-faq-bubble.user,.bf-faq-bubble.bot{background:#edf2ff!important;color:#24364b!important}
+.bf-faq-launch{color:#24364b!important}
+.bf-faq-launch .bf-launcher-spark{color:#315cf4!important}
+.bf-legal-footer,.bf-legal-footer a{color:#596b7d!important}
+body :is(.bf-ticket-status,.bf-analytics-updated,.bf-admin-player-arrow){color:#596b7d!important}
+body :is(.join,.admin-button,.wallet-action,.outline,.text-button,.support-cta,
+.navitem,.notification-bell,.avatar,button,a){text-shadow:none!important}
+@media(max-width:650px){
+ .app-shell,main{padding-left:16px!important;padding-right:16px!important}
+ .hero-premium{margin:12px 0 22px!important;padding:22px 17px 18px!important;min-height:0!important}
+ .hero-premium h1{font-size:clamp(40px,11vw,56px)!important;line-height:.98!important}
+ .hero-stats{margin-top:20px!important;padding:12px 0!important}
+ .section-head{margin-top:26px!important;margin-bottom:14px!important;align-items:flex-end!important}
+ #tournaments{grid-template-columns:1fr!important;gap:16px!important}
+ #tournaments .tour .tour-banner{height:142px!important;min-height:142px!important}
+ #tournaments .tour .tour-body{padding:15px!important;gap:12px!important}
+ #page-wallet .wallet-hero{padding:15px!important}
+ .wallet-actions{gap:8px!important}
+ .wallet-action{padding:10px!important;min-height:54px!important}
+ .history-card.past-match-card{padding-top:14px!important}
+}
+@media(min-width:760px){
+ #tournaments{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
