@@ -871,7 +871,7 @@ async function showProfile() {
   // Start independent profile reads together so the sheet hydrates with fewer network round trips.
   const socialPromise=supabase.rpc('get_battleforge_social_links');
   const referralUrlPromise=supabase.rpc('get_battleforge_referral_download_url');
-  const rankStatsPromise=loadLifetimeKillRanks(true);
+  const rankStatsPromise=loadLifetimeKillRanks(false);
   const streakPromise=loadDailyStreakStatus().catch(streakError=>{console.warn('Daily streak status unavailable:',streakError);return dailyStreakStatus;});
   const [{ data: account, error: accountError }, { data: wallet, error: walletError }, { data: ledger }, { data: paidWithdrawals }, { data: depositHistory }, { data: referralStatsResult }, { data: myResults }, { data: myWarnings }, { data: myDisputes }] = await Promise.all([
     supabase.from('player_accounts').select('player_number,username,username_change_count,created_at,referred_by_player_number').eq('user_id', currentUser.id).maybeSingle(),
