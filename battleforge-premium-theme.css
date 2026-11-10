@@ -410,3 +410,18 @@ main.app-shell{max-width:760px;width:100%;padding:13px 13px 112px}
 /* Keep the preset counter clear of the modal close control on narrow Android screens. */
 .bf-avatar-picker-head{padding-right:54px;box-sizing:border-box}
 .bf-avatar-count{flex:0 0 auto}
+
+/* Shared player identity: approved preset avatar or the default silhouette everywhere. */
+.bf-player-avatar{display:inline-grid;place-items:center;flex:0 0 auto;overflow:hidden;border-radius:50%;background:#26343b;border:1.5px solid #78918e;box-shadow:0 0 0 2px #42b7a51a}
+.bf-player-avatar .bf-avatar-art{display:block;width:100%;height:100%;border-radius:50%}
+.bf-player-avatar.is-default{background:linear-gradient(145deg,#66747b,#34424b);color:#e8eff0}
+.bf-player-avatar.is-default svg{width:72%;height:72%;fill:#d5dddf;stroke:#d5dddf;stroke-width:2.5;stroke-linecap:round}
+.bf-player-avatar-header{width:38px;height:38px}
+.bf-player-avatar-list{width:42px;height:42px}
+.leader-player{display:flex!important;align-items:center;gap:10px;min-width:0}
+.leader-player-copy{display:flex;flex-direction:column;min-width:0}
+.bf-past-rank-row{display:flex;align-items:center;gap:11px}
+.bf-past-rank-copy{display:flex;flex:1;flex-direction:column;min-width:0}
+.bf-past-rank-copy b{display:block}
+.bf-past-rank-copy small{display:block}
+#profileBtn{display:grid;place-items:center;overflow:hidden}
