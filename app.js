@@ -63,7 +63,34 @@ function read(k, fallback) {
   try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; }
 }
 function notificationSeenKey() { return 'bf_notifications_seen_ids_' + (currentUser?.id || 'guest'); }
-function getSeenNotificationIds() { const value = read(notificationSeenKey(), []); return Array.isArray(value) ? value.map(String) : []; }
+const notificationSeenCache = new Map();
+async function getSeenNotificationIds() {
+  const key = notificationSeenKey();
+  if (notificationSeenCache.has(key)) return notificationSeenCache.get(key);
+  let value = null;
+  if (IS_NATIVE_APP) {
+    try { const stored = await Preferences.get({ key }); if (stored.value) value = JSON.parse(stored.value); }
+    catch (error) { console.warn('Could not read native notification read-state:', error); }
+  }
+  if (!Array.isArray(value)) {
+    value = read(key, []);
+    if (IS_NATIVE_APP && Array.isArray(value) && value.length) {
+      try { await Preferences.set({ key, value: JSON.stringify(value) }); }
+      catch (error) { console.warn('Could not migrate notification read-state:', error); }
+    }
+  }
+  const ids = Array.isArray(value) ? value.map(String) : [];
+  notificationSeenCache.set(key, ids);
+  return ids;
+}
+async function saveSeenNotificationIds(ids) {
+  const key = notificationSeenKey();
+  const normalized = [...new Set((Array.isArray(ids) ? ids : []).map(String))];
+  notificationSeenCache.set(key, normalized);
+  const serialized = JSON.stringify(normalized);
+  if (IS_NATIVE_APP) await Preferences.set({ key, value: serialized });
+  else localStorage.setItem(key, serialized);
+}
 function esc(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -694,11 +721,11 @@ async function refreshDataInternal() {
         const prior = window.battleForgeBroadcasts || [];
         const priorIds = new Set(prior.map(n=>String(n.id)));
         window.battleForgeBroadcasts = notices;
-        const seen = getSeenNotificationIds();
+        const seen = await getSeenNotificationIds();
         const newest = notices.find(n=>!priorIds.has(String(n.id)) && !seen.includes(String(n.id)));
         // Seen IDs are persisted locally, so read announcements never retrigger the alert on refresh.
         if (newest && prior.length) toast('📣 ' + newest.title);
-        updateNotificationBadge();
+        await updateNotificationBadge();
       }
     } catch (noticeError) { console.warn('Could not load announcements', noticeError); }
   }
@@ -891,26 +918,33 @@ async function savePlayerProfile() {
   finally{if(button){button.disabled=false;button.textContent='Save profile';}}
 }
 
-function showNotifications() {
+async function showNotifications() {
   const items = window.battleForgeBroadcasts || [];
-  const ids = getSeenNotificationIds();
+  const ids = await getSeenNotificationIds();
   const pushAction = Capacitor.isNativePlatform()
     ? '<button id="enablePhoneNotifications" class="outline full">Enable phone notifications</button>'
     : '';
   modal(`<div class="notification-sheet"><div class="eyebrow">BATTLEFORGE UPDATES</div><h2>Notifications</h2><p class="profile-help">Announcements from the BattleForge admins.</p>${items.length ? items.map(n => `<article class="notification-card ${ids.includes(String(n.id)) ? '' : 'unread'}"><div class="notification-card-top"><b>${esc(n.title)}</b><small>${esc(new Date(n.created_at).toLocaleString())}</small></div><p>${esc(n.message)}</p></article>`).join('') : '<div class="empty-state"><span>♢</span><h3>You’re all caught up</h3><p>Admin announcements will appear here.</p></div>'}${pushAction}<button id="markNotificationsRead" class="join full">Mark all as read</button></div>`);
-  $('#markNotificationsRead')?.addEventListener('click', () => {
-    const allSeen = [...new Set([...getSeenNotificationIds(), ...items.map(n => String(n.id))])];
-    try { localStorage.setItem(notificationSeenKey(), JSON.stringify(allSeen)); }
-    catch (error) { console.warn('Could not persist read notification IDs', error); }
-    updateNotificationBadge();
-    close();
-    toast('Notifications marked as read.');
+  $('#markNotificationsRead')?.addEventListener('click', async () => {
+    const button = $('#markNotificationsRead');
+    if (button) { button.disabled = true; button.textContent = 'Saving…'; }
+    try {
+      const allSeen = [...new Set([...(await getSeenNotificationIds()), ...items.map(n => String(n.id))])];
+      await saveSeenNotificationIds(allSeen);
+      await updateNotificationBadge();
+      close();
+      toast('Notifications marked as read.');
+    } catch (error) {
+      console.error('Could not persist read notification IDs:', error);
+      if (button) { button.disabled = false; button.textContent = 'Mark all as read'; }
+      toast('Could not save read status. Please try again.');
+    }
   });
 }
 
-function updateNotificationBadge() {
+async function updateNotificationBadge() {
   const items = window.battleForgeBroadcasts || [];
-  const seen = getSeenNotificationIds();
+  const seen = await getSeenNotificationIds();
   const unread = items.filter(n => !seen.includes(String(n.id))).length;
   const badge = $('#notificationBadge');
   if (badge) {
@@ -992,6 +1026,33 @@ async function loadAdminRoom() {
   published.checked = data?.published ?? false;
 }
 
+async function submitAdminTournament(button) {
+  if (!isAdmin) return toast('Admin access required.');
+  const title = ($('#adminTitle')?.value || '').trim(), mode = $('#adminMode')?.value;
+  const entry = Number($('#adminEntry')?.value), perKill = Number($('#adminPerKill')?.value);
+  const prize = Number($('#adminPrize')?.value), max = Number($('#adminMax')?.value);
+  const startsRaw = $('#adminStarts')?.value || '', description = ($('#adminDescription')?.value || '').trim();
+  if (title.length < 3 || !['SOLO','DUO','SQUAD'].includes(mode) || !Number.isInteger(entry) || entry < 0 || !Number.isInteger(perKill) || perKill < 0 || !Number.isInteger(prize) || prize < 0 || !Number.isInteger(max) || max < 1 || max > 500) return toast('Check tournament fields.');
+  if (button) { button.disabled = true; button.textContent = 'Creating tournament…'; }
+  try {
+    const { data, error } = await supabase.rpc('admin_create_tournament_with_rewards', {
+      p_title:title, p_game_mode:mode, p_entry_points:entry, p_per_kill_points:perKill,
+      p_prize_pool_points:prize, p_max_players:max,
+      p_starts_at:startsRaw ? new Date(startsRaw).toISOString() : null, p_description:description
+    });
+    if (error) throw error;
+    if (data === null || data === undefined) throw new Error('The server did not confirm tournament creation.');
+    await refreshData();
+    await showAdmin();
+    toast('Tournament created successfully · Match #' + data);
+  } catch (error) {
+    console.error('Tournament creation failed:', error);
+    toast('Could not create tournament: ' + (error?.message || 'Please try again.'));
+  } finally {
+    if (button?.isConnected) { button.disabled = false; button.textContent = '＋ Create tournament'; }
+  }
+}
+
 async function showAdmin() {
   if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
   const { data: adminTournamentRows, error: adminTournamentError } = await supabase.from('tournaments').select('id,title,description,game_mode,status,is_past_match,is_cancelled,starts_at,entry_points,per_kill_points,prize_pool_points,max_players').order('id', { ascending: false });
@@ -1013,7 +1074,7 @@ async function showAdmin() {
     <label class="field">START TIME (OPTIONAL)<input id="adminStarts" type="datetime-local"></label>
     <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminDescription" maxlength="5000" rows="5" placeholder="Paste room instructions, start time, scoring, screenshot proof, and disqualification rules…"></textarea></label>
     <p class="admin-helper">Tip: include the exact start time, room release time, kill scoring, late-entry policy, and what proof players must submit.</p>
-    <button id="adminCreateTournament" class="join full">＋ Create tournament</button></div>
+    <button type="button" id="adminCreateTournament" class="join full">＋ Create tournament</button></div>
     <div id="adminManageSection" data-admin-page="manage" class="admin-section"><div class="admin-section-title"><span>02</span><div><h3>Manage tournament</h3><p>Select a match first, then edit its settings.</p></div></div>
     <label class="field">SELECT TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
     <label class="field">MATCH NAME / TITLE<input id="adminEditTitle" maxlength="80" placeholder="Tournament title"></label>
@@ -1046,6 +1107,7 @@ async function showAdmin() {
   $('#detailsCopyRoomPassword')?.addEventListener('click', () => copyBattleForgeText(publishedRoom?.room_password,'Room password copied'));
   $('#adminQuickJoinReminder')?.addEventListener('click', () => { const a=$('#adminBroadcastAudience'), t=$('#adminBroadcastTitle'), m=$('#adminBroadcastMessage'); if(a) a.value='match'; syncBroadcastAudience(); if(t) t.value='Match starting soon'; if(m) m.value='Your Free Fire match is starting soon. Open BattleForge and get ready to join the room.'; $('#adminBroadcastTournament')?.focus(); });
   $('#adminSendBroadcast')?.addEventListener('click', sendAdminBroadcast);
+  $('#adminCreateTournament')?.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); submitAdminTournament(event.currentTarget); });
   $('#adminBroadcastAudience')?.addEventListener('change', syncBroadcastAudience);
   $('#adminLoadBroadcasts')?.addEventListener('click', loadAdminBroadcasts);
   $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); await loadAdminSchedule(); });
@@ -1154,7 +1216,7 @@ async function deleteAdminBroadcast(id) {
   if(!isAdmin || !window.confirm('Delete this announcement from every user’s notification feed?')) return;
   const {error}=await supabase.rpc('admin_delete_broadcast_notification',{p_notification_id:Number(id)});
   if(error){console.error('Broadcast deletion failed:',error);const msg=String(error.message||'');toast(/function .*admin_delete_broadcast_notification.*does not exist|could not find the function|schema cache/i.test(msg)?'Database migration missing. Apply 202610240001_leaderboard_notification_controls.sql in Supabase.':'Could not delete notification: '+msg);return;}
-  window.battleForgeBroadcasts=(window.battleForgeBroadcasts||[]).filter(n=>String(n.id)!==String(id)); updateNotificationBadge(); await loadAdminBroadcasts(); toast('Notification deleted.');
+  window.battleForgeBroadcasts=(window.battleForgeBroadcasts||[]).filter(n=>String(n.id)!==String(id)); await updateNotificationBadge(); await loadAdminBroadcasts(); toast('Notification deleted.');
 }
 
 async function sendAdminBroadcast() {
@@ -1398,23 +1460,6 @@ $('#modalContent').addEventListener('click', async e => {
   if (button.id === 'adminClearKick') { if(!isAdmin)return toast('Admin access required.'); const player=window.battleForgeAdminPlayer; const matchId=Number($('#adminKickMatchId')?.value); if(!player?.user_id)return toast('Find the player first.'); if(!Number.isSafeInteger(matchId)||matchId<1)return toast('Enter the match ID.'); if(!window.confirm('Confirm the player has paid a fresh entry fee and allow them to rejoin?'))return; button.disabled=true; const {error}=await supabase.rpc('admin_clear_match_kick',{p_tournament_id:matchId,p_user_id:player.user_id}); button.disabled=false; if(error)return toast(error.message); toast('Rejoin enabled after payment confirmation.'); await loadAdminEntries(); return; }
   if (button.id === 'adminAdjustBalance') { if(!isAdmin)return toast('Admin access required.'); const n=Number($('#adminPlayerNumber')?.value),amount=Number($('#adminBalanceAmount')?.value),bucket=$('#adminBalanceBucket')?.value,note=$('#adminBalanceNote')?.value.trim(); if(!Number.isSafeInteger(n)||n<1||!Number.isFinite(amount)||amount===0||!note||note.length<3)return toast('Enter Player ID, non-zero amount, and reason.'); if(!window.confirm(`Apply ${amount>0?'credit':'deduction'} of ₹${Math.abs(amount).toFixed(2)} to Player #${n} (${bucket})?`))return; button.disabled=true; const {data,error}=await supabase.rpc('admin_adjust_player_balance',{p_player_number:n,p_bucket:bucket,p_amount:amount,p_note:note}); button.disabled=false; if(error)return toast(error.message); toast('Balance adjusted and audit logged.'); $('#adminBalanceAmount').value=''; const find=$('#adminFindPlayer'); if(find) find.click(); return; }
   if (button.dataset.deletePaymentKind) { if(!isAdmin)return toast('Admin access required.'); if(!window.confirm('Delete this '+button.dataset.deletePaymentKind+' transaction record? Pending or approved withdrawals will be refunded. Paid withdrawals will NOT be refunded again because the payout was already sent. Wallet ledger history is retained.'))return; button.disabled=true; const {error}=await supabase.rpc('admin_delete_payment_request',{p_kind:button.dataset.deletePaymentKind,p_request_id:button.dataset.requestId,p_note:null}); button.disabled=false; if(error)return toast(error.message); toast('Transaction record deleted. Financial ledger history is retained.'); await loadAdminPaymentRequests(); await loadPaymentRequests(); await loadWalletSummary(); return; }
-  if (button.id === 'adminCreateTournament') {
-    if (!isAdmin) return toast('Admin access required.');
-    const title = $('#adminTitle').value.trim();
-    const mode = $('#adminMode').value;
-    const entry = Number($('#adminEntry').value);
-    const perKill = Number($('#adminPerKill').value);
-    const prize = Number($('#adminPrize').value);
-    const max = Number($('#adminMax').value);
-    const startsRaw = $('#adminStarts').value;
-    if (title.length < 3 || !Number.isInteger(entry) || entry < 0 || !Number.isInteger(perKill) || perKill < 0 || !Number.isInteger(prize) || prize < 0 || !Number.isInteger(max) || max < 1 || max > 500) return toast('Check tournament fields.');
-    button.disabled = true;
-    const description = $('#adminDescription').value.trim();
-    const { error } = await supabase.rpc('admin_create_tournament_with_rewards', { p_title:title, p_game_mode:mode, p_entry_points:entry, p_per_kill_points:perKill, p_prize_pool_points:prize, p_max_players:max, p_starts_at:startsRaw ? new Date(startsRaw).toISOString() : null, p_description:description });
-    button.disabled = false;
-    if (error) return toast(error.message);
-    await refreshData(); showAdmin(); toast('Tournament created.');
-  }
   if (button.id === 'adminSaveTitle') {
     if (!isAdmin) return toast('Admin access required.');
     const id = Number($('#adminTournament')?.value);
