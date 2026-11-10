@@ -976,8 +976,14 @@ async function updateNotificationBadge() {
   }
 }
 
+function bfLoadingScreen(title, detail, variant='orbit') {
+  const mode=['orbit','pulse','bars','ring'].includes(variant)?variant:'orbit';
+  const art=mode==='bars'?'<div class="bf-loader-bars"><i></i><i></i><i></i><i></i><i></i></div>':mode==='pulse'?'<div class="bf-loader-pulse"><i></i><i></i><i></i></div>':mode==='ring'?'<div class="bf-loader-ring"><i></i></div>':'<div class="bf-loader-orbit"><i></i><b></b><span>BF</span></div>';
+  return '<div class="bf-loading-screen bf-loading-'+mode+'" role="status" aria-live="polite">'+art+'<b>'+esc(title)+'</b><small>'+esc(detail||'Please wait a moment…')+'</small></div>';
+}
+
 async function loadLeaderboard(period = leaderboardPeriod) {
-  leaderboardPeriod = period; const target = $('#leaderboardContent'); if (!target) return; target.innerHTML = '<p class="notice">Loading leaderboard…</p>';
+  leaderboardPeriod = period; const target = $('#leaderboardContent'); if (!target) return; target.innerHTML = bfLoadingScreen('Loading leaderboard','Finding the top players and their results','orbit');
   document.querySelectorAll('[data-lb-period]').forEach(b => { const active = b.dataset.lbPeriod === period; b.classList.toggle('join', active); b.classList.toggle('outline', !active); });
   await loadLifetimeKillRanks(true);
   const { data, error } = await supabase.rpc('get_earnings_leaderboard', { p_period: period });
@@ -994,7 +1000,7 @@ async function loadLeaderboard(period = leaderboardPeriod) {
 async function showHistory() {
   const target = $('#historyContent'); if (!target) return;
   if (!currentUser) { target.innerHTML='<div class="empty-state"><span>◷</span><h3>Past matches</h3><p>Sign in to view match archives and results.</p><button id="historySignIn" class="join">Sign in</button></div>'; return; }
-  target.innerHTML='<p class="notice">Loading past matches…</p>';
+  target.innerHTML=bfLoadingScreen('Opening match archives','Loading your past battles and results','bars');
   const {data:matches,error}=await supabase.from('tournaments').select('id,title,game_mode,starts_at,created_at,description,is_past_match,results_published_at').eq('is_past_match',true).order('starts_at',{ascending:false,nullsFirst:false}).order('created_at',{ascending:false}).limit(5);
   if(error){target.innerHTML='<p class="notice">Past matches could not be loaded. Please try again.</p>';return;}
   if(!matches?.length){target.innerHTML='<div class="empty-state"><span>🏆</span><h3>No past matches yet</h3><p>Matches will appear here when an admin moves them to Past Matches.</p></div>';return;}
@@ -1299,7 +1305,7 @@ async function loadAdminEntries() {
   if (!id) { toast('Choose a match to rank first.'); return; }
   const list = $('#adminResultsRoster') || $('#adminEntries');
   if (!list) return;
-  list.innerHTML = '<p class="admin-helper">Loading registered players and saved results…</p>';
+  list.innerHTML = bfLoadingScreen('Preparing match roster','Loading registered players and saved results','ring');
   const [{ data: entries, error }, { data: saved, error: savedError }] = await Promise.all([
     supabase.rpc('admin_list_tournament_entries', { p_tournament_id: id }),
     supabase.from('tournament_results').select('entry_id,placement,kills,earned_points,published').eq('tournament_id', id)
@@ -1363,7 +1369,7 @@ async function openMatchChat(tournament) {
   if(!currentUser)return showAuth();
   const id=Number(tournament.id),participant=joined.some(entry=>Number(entry.tournament_id)===id);
   if(!participant&&!isAdmin)return toast('Join this match to access its chat.');
-  modal('<div class="bf-match-chat"><div class="eyebrow">BATTLEFORGE COMMUNITY</div><h2>'+esc(tournament.title)+' chat</h2><p class="bf-match-chat-subtitle">'+(isAdmin&&!participant?'Admin view · you can view and moderate this chat':'Only registered players and admins can see this chat')+'</p><div id="bfMatchChatMessages" class="bf-match-chat-messages"><p class="notice">Loading messages…</p></div>'+(participant?'<form id="bfMatchChatForm" data-tournament-id="'+id+'" class="bf-match-chat-form"><input id="bfMatchChatInput" maxlength="500" autocomplete="off" placeholder="Write a message…" required><button class="join" type="submit">Send</button></form>':'<p class="bf-admin-chat-note">Admin read-only access. You do not need to join the match.</p>')+(isAdmin?'<p class="bf-admin-chat-note">Admin moderation: inappropriate messages can be removed.</p>':'')+'<button type="button" id="bfMatchChatClose" class="outline full">Close chat</button></div>');
+  modal('<div class="bf-match-chat"><div class="eyebrow">BATTLEFORGE COMMUNITY</div><h2>'+esc(tournament.title)+' chat</h2><p class="bf-match-chat-subtitle">'+(isAdmin&&!participant?'Admin view · you can view and moderate this chat':'Only registered players and admins can see this chat')+'</p><div id="bfMatchChatMessages" class="bf-match-chat-messages">' + bfLoadingScreen('Loading match chat','Connecting players to the conversation','pulse') + '</div>'+(participant?'<form id="bfMatchChatForm" data-tournament-id="'+id+'" class="bf-match-chat-form"><input id="bfMatchChatInput" maxlength="500" autocomplete="off" placeholder="Write a message…" required><button class="join" type="submit">Send</button></form>':'<p class="bf-admin-chat-note">Admin read-only access. You do not need to join the match.</p>')+(isAdmin?'<p class="bf-admin-chat-note">Admin moderation: inappropriate messages can be removed.</p>':'')+'<button type="button" id="bfMatchChatClose" class="outline full">Close chat</button></div>');
   await loadMatchChat(id);
   $('#bfMatchChatClose')?.addEventListener('click',close);
   if(activeMatchChatChannel){await supabase.removeChannel(activeMatchChatChannel);activeMatchChatChannel=null;}
