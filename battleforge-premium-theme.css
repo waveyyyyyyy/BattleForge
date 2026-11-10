@@ -306,3 +306,64 @@ main.app-shell{max-width:760px;width:100%;padding:13px 13px 112px}
   .bf-avatar-picker-modal .bf-avatar-choice .bf-avatar-art{width:44px;height:44px}
   .wallet-hero{padding:15px!important}
 }
+
+
+/* 2026-11-10: actual layout fixes after Android device feedback */
+#modal.bf-fullscreen-chat{
+  position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;
+  max-height:100dvh!important;display:flex!important;align-items:stretch!important;justify-content:stretch!important;
+  overflow:hidden!important;padding:0!important;border-radius:0!important;z-index:10000!important;
+}
+#modal.bf-fullscreen-chat>.modal-card{
+  display:flex!important;flex-direction:column!important;align-self:stretch!important;
+  width:100vw!important;max-width:none!important;min-width:0!important;
+  height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+  margin:0!important;padding:calc(58px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom))!important;
+  overflow:hidden!important;box-sizing:border-box!important;border-radius:0!important;
+}
+#modal.bf-fullscreen-chat .bf-faq-chat{
+  display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+  width:100%!important;height:100%!important;min-height:0!important;gap:12px!important;overflow:hidden!important;
+}
+#modal.bf-fullscreen-chat .bf-chat-header,
+#modal.bf-fullscreen-chat .bf-faq-form,
+#modal.bf-fullscreen-chat .bf-chat-disclaimer{flex:0 0 auto!important}
+#modal.bf-fullscreen-chat .bf-faq-messages{
+  display:flex!important;flex:1 1 0!important;flex-direction:column!important;min-height:0!important;
+  max-height:none!important;overflow-y:auto!important;overscroll-behavior:contain!important;
+}
+#modal.bf-fullscreen-chat .bf-faq-form{width:100%!important;gap:8px!important}
+#modal.bf-fullscreen-chat .bf-faq-form input{flex:1 1 auto!important;min-width:0!important}
+#modal.bf-fullscreen-chat .close{position:fixed!important;top:calc(10px + env(safe-area-inset-top))!important;right:14px!important;z-index:5!important}
+.bf-support-hub{display:flex;flex-direction:column;gap:12px;padding:8px 0}
+.bf-support-hub-brand{display:flex;align-items:center;gap:14px;margin:6px 0 16px}
+.bf-support-hub-icon{width:64px;height:64px;flex:0 0 64px;display:grid;place-items:center;border-radius:20px;background:linear-gradient(145deg,#284b70,#101c2c);border:1px solid #42b7a5;color:#8ff5e7;font-size:30px}
+.bf-support-hub-brand h2{margin:3px 0;font-size:28px}
+.bf-support-hub-brand p{margin:0;color:#9db1b1;font-size:12px}
+.bf-support-hub-divider{display:flex;align-items:center;gap:10px;margin:6px 0;color:#82999a;font-size:9px;letter-spacing:1px}
+.bf-support-hub-divider:before,.bf-support-hub-divider:after{content:"";height:1px;flex:1;background:#ffffff20}
+#page-wallet .wallet-hero{position:relative!important;display:block!important;padding:15px!important;overflow:hidden!important}
+#page-wallet .wallet-hero>.wallet-glow,
+#page-wallet .wallet-hero>.wallet-art{position:absolute!important;z-index:0!important;pointer-events:none!important}
+#page-wallet .wallet-hero>.wallet-glow{inset:0!important}
+#page-wallet .wallet-hero>.wallet-art{top:12px!important;right:14px!important;left:auto!important;bottom:auto!important;margin:0!important}
+#page-wallet .wallet-hero>.wallet-label,
+#page-wallet .wallet-hero>.wallet-total,
+#page-wallet .wallet-hero>p,
+#page-wallet .wallet-hero>.wallet-actions{position:relative!important;z-index:1!important}
+#page-wallet .wallet-hero>.wallet-label{margin:0!important;line-height:1.2!important}
+#page-wallet .wallet-hero>.wallet-total{margin:5px 0 3px!important;padding:0!important;line-height:1!important}
+#page-wallet .wallet-hero>p{margin:4px 0 9px!important;line-height:1.35!important}
+#page-wallet .wallet-hero>.wallet-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin:0!important;padding:0!important}
+#page-wallet .wallet-hero .wallet-action{min-height:54px!important;padding:8px 10px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:2px!important}
+.bf-avatar-picker-modal{--bf-avatar-sprite:var(--bf-avatar-sprite)!important}
+.bf-avatar-picker-modal .bf-avatar-grid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important}
+.bf-avatar-picker-modal .bf-avatar-choice{display:flex!important;visibility:visible!important;opacity:1!important;min-width:0!important;min-height:82px!important}
+.bf-avatar-picker-modal .bf-avatar-choice .bf-avatar-art{display:block!important;visibility:visible!important;opacity:1!important;width:52px!important;height:52px!important;background-image:var(--bf-avatar-sprite)!important;background-size:500% 200%!important;background-repeat:no-repeat!important}
+@media(max-width:420px){
+  #modal.bf-fullscreen-chat>.modal-card{padding-left:12px!important;padding-right:12px!important}
+  #page-wallet .wallet-hero{padding:13px!important}
+  #page-wallet .wallet-hero .wallet-action{min-height:50px!important;padding:7px 8px!important}
+  .bf-avatar-picker-modal .bf-avatar-choice{min-height:76px!important}
+  .bf-avatar-picker-modal .bf-avatar-choice .bf-avatar-art{width:44px!important;height:44px!important}
+}
