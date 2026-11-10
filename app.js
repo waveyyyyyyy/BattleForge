@@ -603,7 +603,14 @@ async function setupBattleForgePush(requestPermission = false) {
   } finally { pushRegistrationInProgress = false; }
 }
 
+let refreshDataInFlight = null;
 async function refreshData() {
+  if (refreshDataInFlight) return refreshDataInFlight;
+  refreshDataInFlight = refreshDataInternal();
+  try { return await refreshDataInFlight; }
+  finally { refreshDataInFlight = null; }
+}
+async function refreshDataInternal() {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) console.warn(sessionError);
   currentUser = session?.user ?? null;
@@ -1580,20 +1587,29 @@ supabase.auth.onAuthStateChange((event) => {
 // Keep Supabase token refresh aligned with the Android app lifecycle. Avoid manually
 // refreshing a rotating refresh token while the SDK may already be refreshing it.
 if (Capacitor.isNativePlatform()) {
-  App.addListener('appStateChange', async ({ isActive }) => {
-    try {
-      if (isActive) {
+  // Supabase owns refresh-token rotation. Keep only one lifecycle refresh in
+  // flight so rapid resume/auth events cannot race one another.
+  let appResumeInFlight = null;
+  App.addListener('appStateChange', ({ isActive }) => {
+    if (!isActive) {
+      supabase.auth.stopAutoRefresh().catch(error => console.warn('Could not pause auth refresh:', error));
+      return;
+    }
+    if (appResumeInFlight) return;
+    appResumeInFlight = (async () => {
+      try {
         await supabase.auth.startAutoRefresh();
         const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) console.warn('Could not read saved session on resume:', error);
+        if (error) console.warn('Could not restore saved session on resume:', error);
         if (session?.user) {
           await refreshData();
           await checkRequiredAppUpdate();
+        } else {
+          console.info('No active BattleForge session found on app resume.');
         }
-      } else {
-        await supabase.auth.stopAutoRefresh();
-      }
-    } catch (error) { console.warn('Session resume handling failed:', error); }
+      } catch (error) { console.warn('Session resume handling failed:', error); }
+      finally { appResumeInFlight = null; }
+    })();
   });
 }
 window.addEventListener('online', () => { checkRequiredAppUpdate(); });
