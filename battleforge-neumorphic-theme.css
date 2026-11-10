@@ -813,3 +813,93 @@ body{background-image:none!important}
  #page-arena #tournaments .tour .tour-top h3{font-size:18px!important}
  #page-arena #tournaments .tour .meta{gap:8px 12px!important}
 }
+
+
+/* Daily streak: seven distinct progress cells, one per qualifying day. */
+.bf-streak-progress-seven{
+ display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;
+ gap:7px!important;width:100%!important;height:auto!important;
+ margin:16px 0 12px!important;padding:0!important;
+ background:transparent!important;border:0!important;
+}
+.bf-streak-progress-seven .bf-streak-day{
+ display:grid!important;place-items:center!important;
+ min-width:0!important;height:28px!important;
+ border:1px solid #dce4ec!important;border-radius:8px!important;
+ background:#f2f5f9!important;color:#8a98a8!important;
+ font-size:10px!important;font-weight:850!important;
+ box-shadow:none!important;opacity:1!important;
+ transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease!important;
+}
+.bf-streak-progress-seven .bf-streak-day.is-complete{
+ background:#315cf4!important;border-color:#315cf4!important;
+ color:#fff!important;box-shadow:0 3px 9px rgba(49,92,244,.2)!important;
+}
+.bf-streak-card .bf-streak-progress-seven .bf-streak-day{width:auto!important;}
+
+/* Leaderboard top ten: premium podium hierarchy, with clear readable rows. */
+#page-leaderboard #leaderboardContent{
+ display:grid!important;gap:10px!important;margin-top:16px!important;
+}
+#page-leaderboard .leader-row{
+ display:grid!important;grid-template-columns:48px minmax(0,1fr) auto!important;
+ align-items:center!important;gap:12px!important;
+ min-height:76px!important;padding:13px 14px!important;
+ border:1px solid #dce4ec!important;border-radius:16px!important;
+ background:#fff!important;background-image:none!important;
+ box-shadow:0 4px 14px rgba(30,55,80,.055)!important;
+}
+#page-leaderboard .leader-rank{
+ display:grid!important;place-items:center!important;
+ width:42px!important;height:42px!important;border-radius:13px!important;
+ background:#edf2ff!important;color:#315cf4!important;
+ border:1px solid #d7e3ff!important;font-size:15px!important;font-weight:950!important;
+}
+#page-leaderboard .leader-player{min-width:0!important}
+#page-leaderboard .leader-player-copy{display:grid!important;gap:5px!important;min-width:0!important}
+#page-leaderboard .leader-player-copy b{
+ display:flex!important;align-items:center!important;gap:6px!important;
+ flex-wrap:wrap!important;color:#24364b!important;font-size:14px!important;
+ font-weight:850!important;line-height:1.25!important;
+}
+#page-leaderboard .leader-player-copy small{
+ color:#68798b!important;font-size:9px!important;font-weight:800!important;
+ letter-spacing:.75px!important;line-height:1.35!important;
+}
+#page-leaderboard .leader-row>strong{
+ color:#24364b!important;font-size:15px!important;font-weight:950!important;
+ font-variant-numeric:tabular-nums!important;white-space:nowrap!important;
+}
+#page-leaderboard .leader-row:nth-child(1){
+ border-color:#e7d49a!important;
+ background:linear-gradient(105deg,#fffaf0 0%,#fff 72%)!important;
+ box-shadow:0 6px 18px rgba(171,132,41,.10)!important;
+}
+#page-leaderboard .leader-row:nth-child(1) .leader-rank{
+ background:#fff0c5!important;border-color:#e9d18d!important;color:#9a6b00!important;
+}
+#page-leaderboard .leader-row:nth-child(2){
+ border-color:#d8e0e8!important;
+ background:linear-gradient(105deg,#f6f8fb 0%,#fff 72%)!important;
+}
+#page-leaderboard .leader-row:nth-child(2) .leader-rank{
+ background:#e9eef4!important;border-color:#d5dee8!important;color:#536579!important;
+}
+#page-leaderboard .leader-row:nth-child(3){
+ border-color:#ead4c5!important;
+ background:linear-gradient(105deg,#fff7f1 0%,#fff 72%)!important;
+}
+#page-leaderboard .leader-row:nth-child(3) .leader-rank{
+ background:#f7e6d9!important;border-color:#e9cdb9!important;color:#98603d!important;
+}
+#page-leaderboard .leader-row:nth-child(n+4) .leader-rank{
+ background:#f3f6fa!important;border-color:#e1e7ee!important;color:#596b7d!important;
+}
+@media(max-width:520px){
+ #page-leaderboard .leader-row{grid-template-columns:40px minmax(0,1fr) auto!important;gap:9px!important;padding:11px!important;min-height:68px!important}
+ #page-leaderboard .leader-rank{width:36px!important;height:36px!important;border-radius:11px!important;font-size:13px!important}
+ #page-leaderboard .leader-player-copy b{font-size:12px!important}
+ #page-leaderboard .leader-row>strong{font-size:13px!important}
+ .bf-streak-progress-seven{gap:5px!important}
+ .bf-streak-progress-seven .bf-streak-day{height:26px!important;font-size:9px!important}
+}
