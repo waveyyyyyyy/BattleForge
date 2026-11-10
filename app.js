@@ -1487,7 +1487,6 @@ $('#modalContent').addEventListener('click', async event => {
 document.addEventListener('click',async event=>{
  if(event.target.closest('#bfFaqOpen')){openFaqChat();return;}
  if(event.target.closest('#bfStartFaqChat')){startFaqChat();return;}
- if(event.target.closest('#openProfilePicPicker')){openProfilePicPicker();return;}
 if(event.target.closest('#bfCreateSupportTicket')){openSupportTicketForm();return;}
  if(event.target.closest('#bfLoadSupportTickets')){await loadSupportTickets();return;}
  if(event.target.closest('#bfLoadDisputes')){await loadAdminDisputes();return;}
