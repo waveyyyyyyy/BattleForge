@@ -1056,8 +1056,8 @@ async function showAdmin() {
       <div class=\"settings-group referral-url-group\"><div class=\"settings-group-title\"><span>⬇</span><div><b>BattleForge APK download</b><small>Link shown in the Referral Centre</small></div></div><label class=\"field\">REFERRAL APK DOWNLOAD URL<input id=\"adminReferralDownloadUrl\" type=\"url\" placeholder=\"https://your-host/BattleForge.apk\"></label><button id=\"adminSaveReferralUrl\" class=\"join full secondary-action\">Save APK download link</button><p class=\"admin-helper\">Use the direct APK download URL you want players to share. This is separate from your social links.</p></div>
       <p id=\"adminSocialStatus\" class=\"admin-helper settings-save-status\" aria-live=\"polite\"></p>
     </div><div class=\"admin-footer-note\"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Confirmed results are visible to players and credit the entered reward to their earned wallet.</p></div>`);
-  $('#detailsCopyRoomId')?.addEventListener('click', () => copyBattleForgeText(room?.room_id,'Room ID copied'));
-  $('#detailsCopyRoomPassword')?.addEventListener('click', () => copyBattleForgeText(room?.room_password,'Room password copied'));
+  $('#detailsCopyRoomId')?.addEventListener('click', () => copyBattleForgeText(publishedRoom?.room_id,'Room ID copied'));
+  $('#detailsCopyRoomPassword')?.addEventListener('click', () => copyBattleForgeText(publishedRoom?.room_password,'Room password copied'));
   $('#adminQuickJoinReminder')?.addEventListener('click', () => { const a=$('#adminBroadcastAudience'), t=$('#adminBroadcastTitle'), m=$('#adminBroadcastMessage'); if(a) a.value='match'; syncBroadcastAudience(); if(t) t.value='Match starting soon'; if(m) m.value='Your Free Fire match is starting soon. Open BattleForge and get ready to join the room.'; $('#adminBroadcastTournament')?.focus(); });
   $('#adminSendBroadcast')?.addEventListener('click', sendAdminBroadcast);
   $('#adminBroadcastAudience')?.addEventListener('change', syncBroadcastAudience);
@@ -1272,11 +1272,13 @@ async function showTournamentDetails(t) {
   const count = counts[id] ?? joined.filter(e => String(e.tournament_id) === id).length;
   const starts = t.starts_at ? new Date(t.starts_at).toLocaleString() : 'To be announced';
   let roomHtml = '';
+  let publishedRoom = null;
   {
     const [{ data: roster }, { data: room }] = await Promise.all([
       supabase.rpc('get_tournament_roster', { p_tournament_id: Number(id) }),
       has && currentUser ? supabase.from('tournament_rooms').select('room_id,room_password,published').eq('tournament_id', Number(id)).eq('published', true).maybeSingle() : Promise.resolve({data:null})
     ]);
+    publishedRoom = room;
     if (currentUser) await loadLifetimeKillRanks();
     const rosterRanks = new Map([...lifetimeKillRanks.values()].map(stats => [String(stats.player_number), Number(stats.lifetime_kills || 0)]));
     roomHtml = '<section class="match-rules"><div class="rules-heading"><div><small>REGISTERED PLAYERS</small><h3>Match roster · ' + (roster?.length || 0) + '</h3></div></div>' +
