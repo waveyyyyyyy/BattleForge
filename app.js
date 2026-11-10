@@ -365,7 +365,7 @@ function modal(html) {
 let activeMatchChatChannel = null;
 let activeMatchChatNames = new Map();
 function chatSoundsEnabled(){return read('bf_chat_sound_enabled',true)!==false;}
-function chatSoundStyle(){return read('bf_chat_sound_style','classic')||'classic';}
+function chatSoundStyle(){return read('bf_chat_sound_style','soft')||'soft';}
 function chatSoundSwitchMarkup(){
   const enabled=chatSoundsEnabled();
   const style=chatSoundStyle();
@@ -391,10 +391,10 @@ function playChatSound(kind='receive',styleOverride=null){
       osc.type=style==='soft'?'sine':'triangle';
       osc.frequency.setValueAtTime(frequency,start);
       gain.gain.setValueAtTime(.0001,start);
-      gain.gain.exponentialRampToValueAtTime(style==='soft'?.22:.32,start+.012);
-      gain.gain.exponentialRampToValueAtTime(.0001,start+.17);
+      gain.gain.exponentialRampToValueAtTime(style==='soft'?.72:.62,start+.012);
+      gain.gain.exponentialRampToValueAtTime(.0001,start+.22);
       osc.connect(gain);gain.connect(audioContext.destination);
-      osc.start(start);osc.stop(start+.18);
+      osc.start(start);osc.stop(start+.23);
     });
   }catch{}
 }
