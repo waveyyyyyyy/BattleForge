@@ -617,3 +617,105 @@ body :is(.bf-support-hub-icon,.bf-faq-launch,.bf-faq-bubble.bot,
  .history-card.past-match-card{padding:132px 14px 14px!important}
  .history-card.past-match-card:before{height:118px!important}
 }
+
+
+/* 2026-11-10 mobile readability repair: neutral arena canvas, legible match timing, uncluttered launcher. */
+#page-arena,
+#page-arena.active,
+#page-arena .section-head,
+#page-arena #tournaments{
+ background:#edf1f5!important;
+ background-image:none!important;
+ color:#24364b!important;
+}
+#page-arena .hero.hero-premium{
+ background:#ffffff!important;
+ background-image:none!important;
+ border:1px solid #dce4ec!important;
+ box-shadow:0 5px 18px rgba(30,55,80,.06)!important;
+}
+#page-arena .hero.hero-premium:before,
+#page-arena .hero.hero-premium:after{
+ display:none!important;content:none!important;background-image:none!important;
+}
+#page-arena .hero-premium .hero-copy,
+#page-arena .hero-premium .hero-copy *,
+#page-arena .hero-premium .hero-stats,
+#page-arena .hero-premium .hero-stats *{
+ color:#24364b!important;text-shadow:none!important;opacity:1!important;
+}
+#page-arena .hero-premium .hero-kicker,
+#page-arena .hero-premium .hero-sub,
+#page-arena .hero-premium .trust-note{
+ color:#596b7d!important;
+}
+#page-arena .hero-premium h1 .accent{color:#315cf4!important}
+#page-arena .hero-premium .eyebrow{
+ background:#edf2ff!important;border:1px solid #d7e3ff!important;
+ color:#315cf4!important;
+}
+#page-arena .hero-premium .hero-stats{
+ border-top:1px solid #e3e9ef!important;
+}
+#page-arena .hero-premium .hero-stats>div{
+ border-right:1px solid #e3e9ef!important;
+}
+#page-arena .hero-premium .hero-stats>div:last-child{border-right:0!important}
+#page-arena .section-head h2,
+#page-arena .section-head .section-sub,
+#page-arena .section-head .section-eyebrow{
+ color:#24364b!important;opacity:1!important;
+}
+#page-arena .section-head .section-eyebrow{color:#315cf4!important}
+#tournaments .tour .match-time{
+ display:flex!important;align-items:center!important;gap:11px!important;
+ min-width:0!important;margin:0!important;padding:12px!important;
+ background:#edf2ff!important;background-image:none!important;
+ border:1px solid #d7e3ff!important;border-radius:13px!important;
+ color:#24364b!important;box-shadow:none!important;
+}
+#tournaments .tour .match-time>span:last-child{
+ display:grid!important;gap:5px!important;min-width:0!important;
+}
+#tournaments .tour .match-time small{
+ display:block!important;color:#315cf4!important;opacity:1!important;
+ font-size:9px!important;font-weight:900!important;letter-spacing:1px!important;
+}
+#tournaments .tour .match-time b{
+ display:block!important;color:#24364b!important;opacity:1!important;
+ font-size:13px!important;line-height:1.45!important;
+ font-weight:800!important;overflow-wrap:anywhere!important;
+ font-variant-numeric:tabular-nums!important;
+}
+#tournaments .tour .match-time-icon{
+ display:grid!important;place-items:center!important;flex:0 0 38px!important;
+ width:38px!important;height:38px!important;border-radius:11px!important;
+ background:#ffffff!important;border:1px solid #d7e3ff!important;
+ color:#315cf4!important;font-size:22px!important;
+}
+#tournaments .tour .tour-entry-strip{
+ background:#fff8e8!important;border:1px solid #f0e2bd!important;
+}
+#tournaments .tour .entry-label{color:#596b7d!important}
+#tournaments .tour .tour-entry-strip strong{color:#24364b!important;text-shadow:none!important}
+#tournaments .tour .entry-action{color:#596b7d!important}
+#bfFaqOpen.bf-faq-launch{
+ background:#e8efff!important;color:#24364b!important;
+ border:1px solid #cbd9ff!important;box-shadow:0 4px 14px rgba(30,55,80,.14)!important;
+}
+#bfFaqOpen .bf-launcher-avatar{flex:0 0 34px!important}
+@media(max-width:520px){
+ #page-arena .hero.hero-premium{padding:20px 16px 16px!important;margin:12px 0 24px!important}
+ #page-arena .hero-premium .hero-kicker{margin-top:18px!important}
+ #page-arena .hero-premium h1{font-size:clamp(36px,10vw,48px)!important;line-height:.98!important}
+ #page-arena .hero-premium .hero-sub{font-size:13px!important;line-height:1.5!important}
+ #page-arena .hero-premium .hero-actions{gap:10px!important;flex-wrap:wrap!important}
+ #page-arena .section-head{margin:22px 0 14px!important}
+ #tournaments .tour .match-time b{font-size:12px!important}
+ #bfFaqOpen.bf-faq-launch{
+  width:50px!important;height:50px!important;min-width:50px!important;
+  padding:7px!important;justify-content:center!important;gap:0!important;
+  overflow:hidden!important;font-size:0!important;
+ }
+ #bfFaqOpen .bf-launcher-avatar{width:34px!important;height:34px!important}
+}
