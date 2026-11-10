@@ -270,7 +270,7 @@ function battleForgeFaqAnswer(question){
   {keys:['rank','badge','kills','rookie','legend','master','veteran','contender','elite'],answer:'Lifetime kill ranks are based on kills from published match results: Rookie 10+, Contender 50+, Veteran 100+, Elite 500+, Master 1,000+, and Legend 10,000+. Ranks update automatically after verified results are published.'},
   {keys:['withdraw','payout','2%','fee'],answer:'Minimum withdrawal is 100 coins. Only eligible match earnings are withdrawable. Deposited credits follow the wallet rules. BattleForge deducts a 2% processing fee, and manual processing can take up to 24 hours.'},
   {keys:['deposit','upi','payment','add money'],answer:'Minimum deposit is 30 coins. Pay the exact amount to the UPI ID shown in the Deposit screen, submit your UTR and payment confirmation, then wait for manual verification. Verification may take up to 24 hours. Never share your UPI PIN or OTP.'},
-  {keys:['wallet','balance','coins','entry fee'],answer:'Your wallet separates entry-fee-only credits from match earnings. Deposited credits follow the entry-fee rules; match earnings can be withdrawn or used for entry fees. Tournament entry fees are shown on each match card.'},
+  {keys:['wallet','balance','coins','entry fee'],answer:'Your wallet shows your available coin balance and recent activity. Match earnings can be withdrawn or used for entry fees. Tournament entry fees are shown on each match card.'},
   {keys:['room id','password','room','lobby'],answer:'The match Room ID and password appear in the match details after the organiser publishes them. Only players registered for that match can see the room details in the app.'},
   {keys:['dispute','wrong result','incorrect result'],answer:'If you have a published result for a past match, open that match and tap “Dispute this result”. Explain the issue clearly. A moderator can review and update the dispute status.'},
   {keys:['result','ranking','pending','kills result'],answer:'Match results remain Pending Results until an admin publishes the final rankings. Once published, open Past Matches to see ranks, player IDs, kills and rewards.'},
@@ -1591,10 +1591,7 @@ if (Capacitor.isNativePlatform()) {
   // flight so rapid resume/auth events cannot race one another.
   let appResumeInFlight = null;
   App.addListener('appStateChange', ({ isActive }) => {
-    if (!isActive) {
-      supabase.auth.stopAutoRefresh().catch(error => console.warn('Could not pause auth refresh:', error));
-      return;
-    }
+    if (!isActive) return;
     if (appResumeInFlight) return;
     appResumeInFlight = (async () => {
       try {
@@ -1610,6 +1607,11 @@ if (Capacitor.isNativePlatform()) {
       } catch (error) { console.warn('Session resume handling failed:', error); }
       finally { appResumeInFlight = null; }
     })();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      supabase.auth.startAutoRefresh().catch(error => console.warn('Could not restart auth refresh:', error));
+    }
   });
 }
 window.addEventListener('online', () => { checkRequiredAppUpdate(); });
