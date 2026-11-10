@@ -619,6 +619,14 @@ function bfLocalDayKey() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
+async function loadDailyStreakStatus() {
+  if (!currentUser) { dailyStreakStatus = null; return null; }
+  const key = 'daily-streak:'+currentUser.id+':'+bfLocalDayKey();
+  const { data, error } = await bfCachedRead(key, 30000, () => supabase.rpc('claim_daily_streak_reward'));
+  if (error) throw error;
+  if (data) dailyStreakStatus = data;
+  return data;
+}
 
 let refreshDataInFlight = null;
 async function refreshData() {
@@ -640,15 +648,10 @@ async function refreshDataInternal() {
   const { data: controls, error: controlsError } = await bfCachedRead('platform-controls', 15000, () => supabase.from('platform_controls').select('registrations_paused,deposits_paused,withdrawals_paused,maintenance_mode,emergency_message').eq('id',1).maybeSingle());
   if (!controlsError && controls) platformControls = controls;
   if (currentUser) {
-    const streakKey = 'bf-streak-checked:'+currentUser.id+':'+bfLocalDayKey();
-    if (localStorage.getItem(streakKey) !== '1') {
-      const { data: streak, error: streakError } = await supabase.rpc('claim_daily_streak_reward');
-      if (!streakError && streak) {
-        dailyStreakStatus = streak;
-        localStorage.setItem(streakKey, '1');
-        if (Number(streak.rewards_credited_now||0)>0) toast('Daily streak completed! 20 coins added.');
-      }
-    }
+    try {
+      const streak = await loadDailyStreakStatus();
+      if (Number(streak?.rewards_credited_now||0)>0) toast('Daily streak completed! 20 coins added.');
+    } catch (streakError) { console.warn('Daily streak status unavailable:', streakError); }
   }
   applyPlatformGates();
   $('#adminBtn')?.classList.toggle('hidden', !isAdmin);
@@ -682,11 +685,11 @@ async function refreshDataInternal() {
   joined = [];
   counts = {};
   if (currentUser) {
-    const { data: entries, error: entriesError } = await bfCachedRead('entries:'+currentUser.id, 8000, () => supabase.from('tournament_entries')
-      .select('id,tournament_id,in_game_name,created_at').eq('user_id', currentUser.id));
+    const { data: entries, error: entriesError } = await supabase.from('tournament_entries')
+      .select('id,tournament_id,in_game_name,created_at').eq('user_id', currentUser.id);
     if (!entriesError) joined = entries ?? [];
   }
-  const { data: countRows, error: countError } = await bfCachedRead('tournament-counts', 10000, () => supabase.rpc('get_tournament_counts'));
+  const { data: countRows, error: countError } = await supabase.rpc('get_tournament_counts');
   if (!countError && Array.isArray(countRows)) {
     for (const row of countRows) counts[String(row.tournament_id)] = Number(row.player_count);
   }
@@ -825,8 +828,7 @@ async function showProfile() {
   const {data:referralDownloadSetting}=await supabase.rpc('get_battleforge_referral_download_url'); const referralDownloadUrl=(Array.isArray(referralDownloadSetting)?referralDownloadSetting[0]?.download_url:referralDownloadSetting?.download_url)||'https://www.dropbox.com/scl/fi/rdkpfx9lggtvavhzntc6k/BattleForge.apk?rlkey=klsepxvg2ejzjh70tcugy3bmn&st=528fxegd&dl=0';
   const resultRows=myResults||[], wins=resultRows.filter(x=>Number(x.placement)===1).length, kills=resultRows.reduce((n,x)=>n+Number(x.kills||0),0);
   const rankStats=await loadLifetimeKillRanks(true), lifetimeKills=Number(rankStats.get(currentUser.id)?.lifetime_kills ?? kills), currentRank=killRankFor(lifetimeKills);
-  const {data:streakStatus,error:streakError}=await supabase.rpc('claim_daily_streak_reward');
-  if(!streakError&&streakStatus)dailyStreakStatus=streakStatus;
+  try { await loadDailyStreakStatus(); } catch(streakError) { console.warn('Daily streak status unavailable:',streakError); }
   const streakDays=Number(dailyStreakStatus?.current_streak||0),streakCycleDay=streakDays?((streakDays-1)%7)+1:0;
   const warningHistoryHtml=(myWarnings||[]).map(w=>'<div class="profile-history-row"><div><b>Account warning</b><small>'+esc(new Date(w.created_at).toLocaleString())+' · '+esc(w.reason)+'</small></div></div>').join('')||'<p class="profile-help">No account warnings.</p>';
   const disputeHistoryHtml=(myDisputes||[]).map(d=>'<div class="profile-history-row"><div><b>Match #'+esc(d.tournament_id)+' · '+esc(d.status)+'</b><small>'+esc(new Date(d.created_at).toLocaleString())+' · '+esc(d.reason)+'</small>'+(d.admin_note?'<small>Moderator: '+esc(d.admin_note)+'</small>':'')+'</div></div>').join('')||'<p class="profile-help">No match disputes submitted.</p>';
