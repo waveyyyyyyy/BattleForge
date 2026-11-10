@@ -349,6 +349,8 @@ function modal(html) {
   // Keep dialogs anchored to the visible viewport even when the Arena page was scrolled far down.
   window.scrollTo(0, 0);
   const overlay = $('#modal');
+  // Settings are moved out of modalContent; remove the previous dialog's copy before rendering.
+  $('#modal .modal-card > .bf-chat-settings-wrap')?.remove();
   $('#modalContent').innerHTML = html;
   overlay.classList.toggle('profile-modal', html.includes('profile-sheet'));
   overlay.classList.toggle('bf-fullscreen-chat', html.includes('bf-chat-header') || html.includes('bf-match-chat'));
@@ -1401,7 +1403,7 @@ async function publishBulkResults(button) {
 function matchChatMessageHtml(row, username) {
   const own=String(row.user_id)===String(currentUser?.id);
   const reactions=read('bf_chat_reactions_'+String(row.id),[]);
-  const emojis=['👍','❤️','😂','🔥','😮','👏'];
+  const emojis=['😂','😭','😘','👽','🥀','🤑','😡','☠️','🤕','😱','❤️','🎉','💔','💦'];
   return '<article class="bf-match-chat-message '+(own?'is-own':'')+'" data-chat-message="'+esc(row.id)+'"><div class="bf-match-chat-meta"><b>'+esc(username)+(own?' · YOU':'')+'</b><time>'+esc(new Date(row.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</time></div><p>'+esc(row.message)+'</p><div class="bf-chat-reactions" aria-label="Message reactions">'+emojis.map(emoji=>'<button type="button" class="bf-chat-reaction '+(reactions.includes(emoji)?'active':'')+'" data-chat-reaction="'+emoji+'" data-message-id="'+esc(row.id)+'" aria-label="React '+emoji+'">'+emoji+'</button>').join('')+'</div>'+(isAdmin?'<button type="button" class="bf-chat-delete" data-chat-delete="'+esc(row.id)+'">Remove</button>':'')+'</article>';
 }
 async function loadMatchChat(tournamentId) {
@@ -1416,7 +1418,7 @@ async function openMatchChat(tournament) {
   if(!currentUser)return showAuth();
   const id=Number(tournament.id),participant=joined.some(entry=>Number(entry.tournament_id)===id);
   if(!participant&&!isAdmin)return toast('Join this match to access its chat.');
-  modal('<div class="bf-match-chat"><header class="bf-match-chat-header"><div class="bf-match-chat-heading"><div class="eyebrow">BATTLEFORGE COMMUNITY</div><h2>'+esc(tournament.title)+' chat</h2><p>'+(isAdmin&&!participant?'Admin view · moderation enabled':'Match conversation · registered players')+'</p></div>'+chatSoundSwitchMarkup()+'</header><div id="bfMatchChatMessages" class="bf-match-chat-messages">' + bfLoadingScreen('Loading match chat','Connecting players to the conversation','pulse') + '</div>'+(participant?'<form id="bfMatchChatForm" data-tournament-id="'+id+'" class="bf-match-chat-form"><button type="button" class="bf-chat-emoji-toggle" id="bfChatEmojiToggle" aria-label="Choose emoji">☺</button><input id="bfMatchChatInput" maxlength="500" autocomplete="off" placeholder="Message…" aria-label="Write a message" required><button class="bf-chat-send" type="submit" aria-label="Send message"><span aria-hidden="true">➤</span></button><div class="bf-chat-emoji-picker" id="bfChatEmojiPicker" hidden>'+['😀','😂','🥹','😍','🔥','❤️','👍','👏','😭','😎','🤝','🎮','🏆','💯','😮','🙏'].map(emoji=>'<button type="button" data-chat-emoji="'+emoji+'">'+emoji+'</button>').join('')+'</div></form>':'<p class="bf-admin-chat-note">Read-only admin view · you do not need to join this match</p>')+(isAdmin?'<p class="bf-admin-chat-note">Admin moderation is enabled for this conversation.</p>':'')+'</div>');
+  modal('<div class="bf-match-chat"><header class="bf-match-chat-header"><div class="bf-match-chat-heading"><div class="eyebrow">BATTLEFORGE COMMUNITY</div><h2>'+esc(tournament.title)+' chat</h2><p>'+(isAdmin&&!participant?'Admin view · moderation enabled':'Match conversation · registered players')+'</p></div>'+chatSoundSwitchMarkup()+'</header><div id="bfMatchChatMessages" class="bf-match-chat-messages">' + bfLoadingScreen('Loading match chat','Connecting players to the conversation','pulse') + '</div>'+(participant?'<form id="bfMatchChatForm" data-tournament-id="'+id+'" class="bf-match-chat-form"><button type="button" class="bf-chat-emoji-toggle" id="bfChatEmojiToggle" aria-label="Choose emoji">☺</button><input id="bfMatchChatInput" maxlength="500" autocomplete="off" placeholder="Message…" aria-label="Write a message" required><button class="bf-chat-send" type="submit" aria-label="Send message"><span aria-hidden="true">➤</span></button><div class="bf-chat-emoji-picker" id="bfChatEmojiPicker" hidden>'+['😂','😭','😘','👽','🥀','🤑','😡','☠️','🤕','😱','❤️','🎉','💔','💦'].map(emoji=>'<button type="button" data-chat-emoji="'+emoji+'">'+emoji+'</button>').join('')+'</div></form>':'<p class="bf-admin-chat-note">Read-only admin view · you do not need to join this match</p>')+(isAdmin?'<p class="bf-admin-chat-note">Admin moderation is enabled for this conversation.</p>':'')+'</div>');
   await loadMatchChat(id);
   if(activeMatchChatChannel){await supabase.removeChannel(activeMatchChatChannel);activeMatchChatChannel=null;}
   activeMatchChatChannel=supabase.channel('bf-match-chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'tournament_chat_messages',filter:'tournament_id=eq.'+id},async payload=>{
