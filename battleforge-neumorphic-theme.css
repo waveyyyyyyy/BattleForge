@@ -1,0 +1,123 @@
+/* BattleForge Neumorphic Light Theme
+   Visual-only layer. Deliberately does not alter layout geometry, event targets,
+   pointer/touch behavior, navigation, or application logic. */
+:root{
+ color-scheme:light!important;
+ --bg:#e8eef2;--panel:#f7f9fb;--line:#d6e0e7;--text:#273443;--muted:#788895;
+ --lime:#315cf4;--orange:#315cf4;
+ --bf-bg:#e8eef2;--bf-panel:#f7f9fb;--bf-line:#d6e0e7;--bf-text:#273443;--bf-muted:#788895;--bf-lime:#315cf4;
+}
+html,body{background:#e8eef2!important;color:#273443!important}
+body{
+ background:linear-gradient(145deg,#e4ebf0 0%,#edf2f5 52%,#e4ebf0 100%)!important;
+ color:#273443!important;
+}
+body p,body .section-sub,body .page-heading p,body .hero-sub,body small{color:#71808e}
+.top{
+ background:rgba(237,243,247,.92)!important;border-bottom:1px solid #d8e2e9!important;
+ box-shadow:0 5px 18px rgba(94,115,132,.10)!important;backdrop-filter:blur(14px);
+}
+.brand{color:#263646!important}.brand small{color:#7b8995!important}
+.mark{background:linear-gradient(145deg,#fff,#dce7ef)!important;color:#315cf4!important;
+ box-shadow:6px 6px 14px #cbd5dd,-6px -6px 14px #fff!important}
+.accent,.eyebrow,.section-eyebrow,.muted{color:#315cf4!important}
+.avatar,.notification-bell,.header-coin-balance{
+ color:#334456!important;background:#edf2f6!important;border:1px solid #d8e1e8!important;
+ box-shadow:4px 4px 10px #cbd5dd,-4px -4px 10px #fff!important;
+}
+.admin-button,.join,.hero-actions .join{
+ color:#fff!important;background:linear-gradient(120deg,#3288ed,#343df0)!important;
+ border:0!important;border-radius:14px!important;box-shadow:5px 5px 12px #c8d2dc,-4px -4px 12px #fff!important;
+}
+.app-shell{color:#293746}
+.hero-premium{
+ background:#edf2f6!important;border:1px solid #e2e9ee!important;border-radius:26px!important;
+ box-shadow:10px 10px 24px #cbd5dd,-10px -10px 24px #fff!important;
+}
+.hero-premium:before{opacity:.12!important}
+.hero-premium:after{opacity:.08!important}
+.hero-premium h1,.hero-premium .hero-kicker,.hero-premium .hero-sub,
+.hero-premium .trust-note,.hero-premium .hero-stats b,.hero-premium .hero-stats small{
+ color:#293746!important;text-shadow:none!important;
+}
+.hero-premium h1 .accent{color:#315cf4!important}
+.hero-premium .eyebrow{color:#315cf4!important;background:#e8efff!important;border-color:#d7e2ff!important}
+.hero-premium .live-dot{background:#315cf4!important;box-shadow:none!important}
+.hero-stats{background:transparent!important;border-top:1px solid #d8e1e8!important}
+.hero-emblem{opacity:.14!important}
+.section-head h2,.page-heading h1,.detail-hero h2{color:#263646!important}
+.page-heading h1 .accent{color:#315cf4!important}
+.pill,.tag{
+ color:#315cf4!important;background:#e8efff!important;border:1px solid #d5e0ff!important;border-radius:99px!important;
+}
+.panel,.tour,.wallet-hero,.wallet-notice,.rule-card,.history-card,.history-item,.leader-row,
+.leaderboard-row,.activity-row,.activity-item,.room-card,.profile-block,.profile-metrics>div,
+.detail-stats>div,.bf-ticket-card,.bf-analytics-card,.bf-analytics-panel,.bf-admin-player-card{
+ color:#2c3b49!important;background:#edf2f6!important;border:1px solid #e0e7ed!important;
+ box-shadow:7px 7px 16px #cbd5dd,-7px -7px 16px #fff!important;
+}
+.tour{border-radius:19px!important;overflow:hidden}
+.tour .tour-body{color:#2c3b49!important}
+.tour h3,.tour strong,.tour .prize b,.history-card h3,.leader-row b{color:#293746!important}
+.tour p,.tour .meta,.tour small,.history-card p,.leader-row small{color:#788895!important}
+.tour-banner{filter:saturate(.72);opacity:.85}
+.tour .join{background:linear-gradient(120deg,#3288ed,#343df0)!important;color:#fff!important}
+.outline,.text-button,.leaderboard-tabs button{
+ color:#315cf4!important;background:#edf2f6!important;border:1px solid #dce5eb!important;
+ box-shadow:4px 4px 9px #cbd5dd,-4px -4px 9px #fff!important;border-radius:12px!important;
+}
+.wallet-hero{background:#edf2f6!important}
+.wallet-total,.wallet-total span,.wallet-label,.wallet-hero>p{color:#2c3b49!important}
+.wallet-action,.wallet-actions>.wallet-action{
+ color:#315cf4!important;background:#edf2f6!important;border:1px solid #e0e7ed!important;border-radius:16px!important;
+ box-shadow:5px 5px 11px #cbd5dd,-5px -5px 11px #fff!important;
+}
+.wallet-action b,.wallet-action span{color:#315cf4!important}
+.bottom{
+ background:rgba(235,241,245,.96)!important;border-top:1px solid #d6e0e7!important;
+ box-shadow:0 -6px 20px rgba(111,130,145,.12)!important;backdrop-filter:blur(16px);
+}
+.navitem{color:#8795a1!important}
+.navitem.active{color:#315cf4!important;background:#eaf0ff!important;border-radius:15px!important;
+ box-shadow:inset 3px 3px 7px #d2dce5,inset -3px -3px 7px #fff!important}
+.navitem small{color:inherit!important}
+.modal{background:rgba(213,224,232,.72)!important;backdrop-filter:blur(8px)}
+.modal-card,#modal:not(.hidden)>.modal-card{
+ color:#293746!important;background:#edf2f6!important;border:1px solid #e0e7ed!important;
+ box-shadow:12px 12px 28px #c5d0d9,-12px -12px 28px #fff!important;
+}
+.modal-card h2,.modal-card h3,.modal-card b,.modal-card strong{color:#293746}
+.modal-card p,.modal-card small,.modal-card label{color:#71808e}
+.close{color:#405365!important;background:transparent!important}
+.field,.field label{color:#637484!important}
+.field input,.field select,.field textarea,input,select,textarea,
+.bf-faq-form input{
+ color:#2c3b49!important;background:#edf2f6!important;border:1px solid #dce5eb!important;
+ border-radius:12px!important;box-shadow:inset 4px 4px 8px #d1dbe3,inset -4px -4px 8px #fff!important;
+}
+input::placeholder,textarea::placeholder{color:#9aa7b1!important}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+ outline:2px solid #315cf4!important;outline-offset:3px!important;
+}
+.entry,.detail-info>div,.bf-admin-role-row,.bf-admin-audit-row{border-color:#d7e1e8!important;color:#344555!important}
+.entry b,.entry strong,.detail-info b{color:#293746!important}
+.room-card{background:#edf2f6!important}
+.room-label,.roster>strong,.joined-label{color:#315cf4!important}
+.player-chip{color:#344555!important;background:#e9eff4!important;border-color:#d6e0e7!important}
+.player-chip i{color:#315cf4!important}
+.bf-streak-card{background:#eaf0ff!important;border:1px solid #d5e0ff!important;color:#293746!important}
+.bf-streak-card h3,.bf-streak-card p,.bf-streak-card small{color:#344555!important}
+.bf-streak-progress{background:#d3deea!important}
+.bf-streak-progress span{background:#315cf4!important}
+.bf-faq-launch{background:linear-gradient(120deg,#3288ed,#343df0)!important;color:#fff!important;border:1px solid #fff!important;box-shadow:6px 6px 14px #c4cfd8,-5px -5px 13px #fff!important}
+.bf-faq-bubble.bot{background:#e1eaff!important;color:#2c3b49!important}
+.bf-faq-bubble.user{background:#315cf4!important;color:#fff!important}
+.bf-chat-header,.bf-chat-intro,.bf-chat-disclaimer{color:#344555!important}
+.bf-ticket-status,.bf-analytics-card small,.bf-analytics-card span,.bf-analytics-updated{color:#71808e!important}
+.bf-admin-player-card .bf-admin-player-copy b,.bf-admin-profile-head h3{color:#293746!important}
+.bf-copy-room{background:#e8efff!important;color:#315cf4!important;border:1px solid #d5e0ff!important}
+.toast{background:#263746!important;color:#fff!important;border:1px solid #526577!important}
+.notice,.rules-disclaimer{color:#526474!important}
+.support-cta{background:#edf2f6!important;color:#315cf4!important;border:1px solid #dce5eb!important;box-shadow:6px 6px 14px #cbd5dd,-6px -6px 14px #fff!important}
+.bf-legal-footer,.bf-legal-footer a{color:#71808e!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
