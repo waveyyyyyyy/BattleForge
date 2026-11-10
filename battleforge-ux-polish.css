@@ -366,3 +366,25 @@ img,video,canvas{max-width:100%;height:auto}
   .bf-chat-switch,.bf-chat-switch:after{transition:none!important}
   #modal.bf-fullscreen-chat .bf-match-chat-messages,#modal.bf-fullscreen-chat .bf-faq-messages{scroll-behavior:auto!important}
 }
+
+
+/* Chat preferences live in a tidy overflow menu, not beside the conversation title. */
+.bf-chat-settings-wrap{position:relative!important;display:flex!important;flex:0 0 auto!important;align-items:center!important}
+.bf-chat-settings-button{display:grid!important;place-items:center!important;width:38px!important;height:38px!important;min-width:38px!important;padding:0!important;border:1px solid #e1e7ec!important;border-radius:50%!important;background:#f7f9fb!important;color:#526474!important;font-size:25px!important;line-height:1!important;box-shadow:none!important}
+.bf-chat-settings-button[aria-expanded="true"]{background:#edf2ff!important;border-color:#cbd8ff!important;color:#315cf4!important}
+.bf-chat-settings-panel{position:absolute!important;z-index:60!important;top:calc(100% + 9px)!important;right:0!important;width:min(286px,calc(100vw - 28px))!important;padding:13px!important;border:1px solid #e0e7ed!important;border-radius:16px!important;background:#fff!important;color:#263442!important;box-shadow:0 12px 36px rgba(24,43,61,.18)!important}
+.bf-chat-settings-panel[hidden]{display:none!important}
+.bf-chat-settings-title{margin:0 0 10px!important;color:#263442!important;font-size:13px!important;font-weight:750!important}
+.bf-chat-settings-panel .bf-chat-sound-control{width:100%!important;justify-content:space-between!important;box-sizing:border-box!important;padding:10px!important;background:#f7f9fb!important}
+.bf-chat-settings-panel .bf-chat-sound-copy b{font-size:12px!important}
+.bf-chat-settings-panel .bf-chat-sound-copy small{font-size:10px!important}
+.bf-chat-sound-options{display:grid!important;grid-template-columns:1fr!important;gap:5px!important;margin-top:12px!important}
+.bf-chat-sound-options>span{margin-bottom:2px!important;color:#758391!important;font-size:10px!important;font-weight:700!important;text-transform:uppercase!important;letter-spacing:.06em!important}
+.bf-chat-sound-options button{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;min-height:35px!important;padding:7px 10px!important;border:1px solid #e5ebef!important;border-radius:9px!important;background:#fff!important;color:#405364!important;text-align:left!important;font-size:12px!important;box-shadow:none!important}
+.bf-chat-sound-options button span{color:#82909c!important;font-size:10px!important}
+.bf-chat-sound-options button.active{border-color:#b9caff!important;background:#f0f4ff!important;color:#315cf4!important;font-weight:700!important}
+.bf-chat-sound-options button.active span{color:#315cf4!important}
+@media(max-width:380px){
+ .bf-chat-settings-button{width:34px!important;height:34px!important;min-width:34px!important}
+ .bf-chat-settings-panel{right:-3px!important}
+}
