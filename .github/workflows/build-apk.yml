@@ -196,10 +196,10 @@ jobs:
               }
           '''
           if "signingConfigs {" not in s:
-              s, n = re.subn(r'(android\\s*\\{)', r'\\1\\n' + signing, s, count=1)
+              s, n = re.subn(r'(android\s*\{)', r'\1\n' + signing, s, count=1)
               if n != 1:
                   raise SystemExit("Could not add Android release signing configuration")
-          s, n = re.subn(r'(buildTypes\\s*\\{\\s*release\\s*\\{)', r'\\1\\n            signingConfig signingConfigs.release', s, count=1)
+          s, n = re.subn(r'(buildTypes\s*\{\s*release\s*\{)', r'\1\n            signingConfig signingConfigs.release', s, count=1)
           if n != 1:
               raise SystemExit("Could not attach release signing config to buildTypes.release")
           p.write_text(s)
