@@ -46,3 +46,26 @@ begin
     alter publication supabase_realtime add table public.tournament_chat_messages;
   end if;
 end $$;
+
+
+-- Return the latest 100 messages with player names in one authorized query.
+create or replace function public.get_tournament_chat_messages(p_tournament_id bigint)
+returns table(id uuid, user_id uuid, username text, message text, created_at timestamptz)
+language plpgsql stable security definer set search_path = ''
+as $$
+begin
+  if auth.uid() is null then raise exception 'Sign in to view this match chat'; end if;
+  if not public.is_battleforge_admin() and not exists (
+    select 1 from public.tournament_entries e
+    where e.tournament_id=p_tournament_id and e.user_id=auth.uid()
+  ) then raise exception 'Only registered players and admins can view this match chat'; end if;
+  return query
+    select recent.id,recent.user_id,coalesce(p.username,'Player')::text,recent.message,recent.created_at
+    from (select m.id,m.user_id,m.message,m.created_at from public.tournament_chat_messages m
+          where m.tournament_id=p_tournament_id order by m.created_at desc limit 100) recent
+    left join public.player_accounts p on p.user_id=recent.user_id
+    order by recent.created_at asc;
+end;
+$$;
+revoke all on function public.get_tournament_chat_messages(bigint) from public, anon;
+grant execute on function public.get_tournament_chat_messages(bigint) to authenticated;
