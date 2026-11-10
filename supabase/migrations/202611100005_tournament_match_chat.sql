@@ -73,7 +73,7 @@ grant execute on function public.get_tournament_chat_messages(bigint) to authent
 
 -- Keep storage bounded: retain only the latest 200 messages for each match.
 create or replace function public.trim_tournament_chat_history()
-returns trigger language plpgsql set search_path = ''
+returns trigger language plpgsql security definer set search_path = ''
 as $$
 begin
   delete from public.tournament_chat_messages
