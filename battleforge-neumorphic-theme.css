@@ -719,3 +719,97 @@ body :is(.bf-support-hub-icon,.bf-faq-launch,.bf-faq-bubble.bot,
  }
  #bfFaqOpen .bf-launcher-avatar{width:34px!important;height:34px!important}
 }
+
+
+/* Final arena + tournament-card cleanup: remove the red page wash and restore a clear type hierarchy. */
+html,body{background:#edf1f5!important}
+body{background-image:none!important}
+#page-arena,
+.page-view#page-arena,
+#page-arena.active,
+#page-arena::before,
+#page-arena::after{
+ background-color:#edf1f5!important;background-image:none!important;
+ color:#24364b!important;
+}
+#page-arena .hero.hero-premium{background:#fff!important;background-image:none!important}
+#page-arena .hero.hero-premium::before,
+#page-arena .hero.hero-premium::after{display:none!important;background:none!important}
+#page-arena .section-head,
+#page-arena .section-head *{color:#24364b!important;text-shadow:none!important}
+#page-arena .section-head .eyebrow,
+#page-arena .section-head .section-eyebrow{color:#315cf4!important}
+#page-arena #tournaments{background:transparent!important;background-image:none!important}
+#page-arena #tournaments .tour{
+ display:flex!important;flex-direction:column!important;
+ background:#fff!important;background-image:none!important;
+ border:1px solid #dce4ec!important;border-radius:18px!important;
+ box-shadow:0 4px 16px rgba(30,55,80,.07)!important;
+ color:#24364b!important;
+}
+#page-arena #tournaments .tour::after{display:none!important}
+#page-arena #tournaments .tour .tour-banner{
+ flex:0 0 150px!important;height:150px!important;min-height:150px!important;
+ border:0!important;border-bottom:1px solid #e5eaf0!important;
+}
+#page-arena #tournaments .tour .tour-body{
+ display:flex!important;flex-direction:column!important;gap:12px!important;
+ padding:16px!important;background:#fff!important;color:#24364b!important;
+}
+#page-arena #tournaments .tour .tour-top,
+#page-arena #tournaments .tour .tour-top *{
+ color:#24364b!important;text-shadow:none!important;opacity:1!important;
+}
+#page-arena #tournaments .tour .tour-top h3{
+ color:#1f3045!important;font-size:19px!important;font-weight:850!important;
+ line-height:1.25!important;letter-spacing:-.25px!important;
+}
+#page-arena #tournaments .tour .tour-top p{
+ color:#596b7d!important;font-size:12px!important;font-weight:500!important;
+ line-height:1.45!important;opacity:1!important;
+}
+#page-arena #tournaments .tour .tag{
+ flex:0 0 auto!important;background:#edf2ff!important;
+ border:1px solid #d7e3ff!important;color:#315cf4!important;
+ font-size:10px!important;font-weight:900!important;
+}
+#page-arena #tournaments .tour .meta,
+#page-arena #tournaments .tour .meta *{
+ color:#596b7d!important;opacity:1!important;text-shadow:none!important;
+ font-size:11px!important;font-weight:650!important;line-height:1.45!important;
+}
+#page-arena #tournaments .tour .prize-row{
+ background:transparent!important;border:0!important;padding:0!important;
+}
+#page-arena #tournaments .tour .prize{
+ background:#f7f9fc!important;border:1px solid #e3e9ef!important;
+ color:#24364b!important;
+}
+#page-arena #tournaments .tour .prize b{
+ color:#24364b!important;font-size:15px!important;text-shadow:none!important;
+}
+#page-arena #tournaments .tour .prize small{
+ color:#596b7d!important;opacity:1!important;font-size:9px!important;
+ line-height:1.4!important;
+}
+#page-arena #tournaments .tour .join{
+ background:#315cf4!important;color:#fff!important;
+ border:0!important;box-shadow:0 5px 14px rgba(49,92,244,.16)!important;
+}
+#page-arena #tournaments .tour .join *{color:#fff!important}
+#page-arena #tournaments .tour .tour-entry-strip{
+ background:#fff8e8!important;border:1px solid #f0e2bd!important;
+ color:#24364b!important;
+}
+#page-arena #tournaments .tour .entry-label{color:#596b7d!important}
+#page-arena #tournaments .tour .tour-entry-strip strong{color:#24364b!important}
+#page-arena #tournaments .tour .entry-action{color:#596b7d!important}
+@media(max-width:520px){
+ #page-arena{padding-top:0!important}
+ #page-arena .section-head{margin:22px 0 13px!important}
+ #page-arena #tournaments{gap:14px!important}
+ #page-arena #tournaments .tour .tour-banner{height:142px!important;min-height:142px!important;flex-basis:142px!important}
+ #page-arena #tournaments .tour .tour-body{padding:14px!important;gap:11px!important}
+ #page-arena #tournaments .tour .tour-top h3{font-size:18px!important}
+ #page-arena #tournaments .tour .meta{gap:8px 12px!important}
+}
