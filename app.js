@@ -364,6 +364,20 @@ function modal(html) {
 }
 let activeMatchChatChannel = null;
 let activeMatchChatNames = new Map();
+function chatSoundsEnabled(){return read('bf_chat_sound_enabled',true)!==false;}
+function playChatSound(kind='receive'){
+  if(!chatSoundsEnabled())return;
+  try{
+    const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;
+    audioContext ||= new Ctx();
+    if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
+    const osc=audioContext.createOscillator(),gain=audioContext.createGain(),now=audioContext.currentTime;
+    osc.type='sine';osc.frequency.setValueAtTime(kind==='send'?740:kind==='receive'?560:420,now);
+    gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.035,now+.018);gain.gain.exponentialRampToValueAtTime(.0001,now+.16);
+    osc.connect(gain);gain.connect(audioContext.destination);osc.start(now);osc.stop(now+.17);
+  }catch{}
+}
+function updateChatSoundToggle(){const toggle=$('#bfChatSoundToggle');if(toggle){toggle.checked=chatSoundsEnabled();toggle.setAttribute('aria-checked',String(toggle.checked));}}
 function close() { if(activeMatchChatChannel){supabase.removeChannel(activeMatchChatChannel).catch(()=>{});activeMatchChatChannel=null;} const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-fullscreen-chat'); }
 function setPage(tab) {
   const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules','leaderboard'].includes(tab) ? tab : 'arena');
@@ -1369,16 +1383,17 @@ async function openMatchChat(tournament) {
   if(!currentUser)return showAuth();
   const id=Number(tournament.id),participant=joined.some(entry=>Number(entry.tournament_id)===id);
   if(!participant&&!isAdmin)return toast('Join this match to access its chat.');
-  modal('<div class="bf-match-chat"><div class="eyebrow">BATTLEFORGE COMMUNITY</div><h2>'+esc(tournament.title)+' chat</h2><p class="bf-match-chat-subtitle">'+(isAdmin&&!participant?'Admin view · you can view and moderate this chat':'Only registered players and admins can see this chat')+'</p><div id="bfMatchChatMessages" class="bf-match-chat-messages">' + bfLoadingScreen('Loading match chat','Connecting players to the conversation','pulse') + '</div>'+(participant?'<form id="bfMatchChatForm" data-tournament-id="'+id+'" class="bf-match-chat-form"><input id="bfMatchChatInput" maxlength="500" autocomplete="off" placeholder="Write a message…" required><button class="join" type="submit">Send</button></form>':'<p class="bf-admin-chat-note">Admin read-only access. You do not need to join the match.</p>')+(isAdmin?'<p class="bf-admin-chat-note">Admin moderation: inappropriate messages can be removed.</p>':'')+'<button type="button" id="bfMatchChatClose" class="outline full">Close chat</button></div>');
+  modal('<div class="bf-match-chat"><div class="bf-match-chat-top"><div><div class="eyebrow">BATTLEFORGE COMMUNITY</div><h2>'+esc(tournament.title)+' chat</h2></div><label class="bf-chat-sound-setting"><input id="bfChatSoundToggle" type="checkbox" '+(chatSoundsEnabled()?'checked':'')+'><span>Message sounds</span></label></div><p class="bf-match-chat-subtitle">'+(isAdmin&&!participant?'Admin view · you can view and moderate this chat':'Only registered players and admins can see this chat')+'</p><div id="bfMatchChatMessages" class="bf-match-chat-messages">' + bfLoadingScreen('Loading match chat','Connecting players to the conversation','pulse') + '</div>'+(participant?'<form id="bfMatchChatForm" data-tournament-id="'+id+'" class="bf-match-chat-form"><input id="bfMatchChatInput" maxlength="500" autocomplete="off" placeholder="Write a message…" required><button class="join" type="submit">Send</button></form>':'<p class="bf-admin-chat-note">Admin read-only access. You do not need to join the match.</p>')+(isAdmin?'<p class="bf-admin-chat-note">Admin moderation: inappropriate messages can be removed.</p>':'')+'<button type="button" id="bfMatchChatClose" class="outline full">Close chat</button></div>');
   await loadMatchChat(id);
   $('#bfMatchChatClose')?.addEventListener('click',close);
+  $('#bfChatSoundToggle')?.addEventListener('change',event=>{localStorage.setItem('bf_chat_sound_enabled',JSON.stringify(event.target.checked));if(event.target.checked)playChatSound('toggle');});
   if(activeMatchChatChannel){await supabase.removeChannel(activeMatchChatChannel);activeMatchChatChannel=null;}
   activeMatchChatChannel=supabase.channel('bf-match-chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'tournament_chat_messages',filter:'tournament_id=eq.'+id},async payload=>{
     const row=payload.new,target=$('#bfMatchChatMessages');if(!target)return;
     let senderName=activeMatchChatNames.get(String(row.user_id));
     if(!senderName){await loadMatchChat(id);return;}
     target.querySelector('.bf-chat-empty')?.remove();
-    if(!target.querySelector('[data-chat-message="'+CSS.escape(String(row.id))+'"]')){target.insertAdjacentHTML('beforeend',matchChatMessageHtml(row,senderName));target.scrollTop=target.scrollHeight;}
+    if(!target.querySelector('[data-chat-message="'+CSS.escape(String(row.id))+'"]')){target.insertAdjacentHTML('beforeend',matchChatMessageHtml(row,senderName));target.scrollTop=target.scrollHeight;if(String(row.user_id)!==String(currentUser?.id))playChatSound('receive');}
   }).subscribe();
 }
 document.addEventListener('click',async event=>{
@@ -1397,6 +1412,7 @@ async function sendMatchChatMessage(form) {
   if(button)button.disabled=false;
   if(error){toast(error.message||'Could not send message.');return;}
   if(input)input.value='';
+  playChatSound('send');
   await loadMatchChat(id);
 }
 async function showTournamentDetails(t) {
@@ -1419,8 +1435,10 @@ async function showTournamentDetails(t) {
     publishedRoom = room;
     if (currentUser) await loadLifetimeKillRanks();
     const rosterRanks = new Map([...lifetimeKillRanks.values()].map(stats => [String(stats.player_number), Number(stats.lifetime_kills || 0)]));
-    roomHtml = '<section class="match-rules"><div class="rules-heading"><div><small>REGISTERED PLAYERS</small><h3>Match roster · ' + (roster?.length || 0) + '</h3></div></div>' +
-      (roster?.length ? '<div class="roster"><div class="roster-chips">' + roster.map((p, i) => '<span class="player-chip bf-roster-player"><i>' + (i + 1) + '</i><span class="bf-roster-player-copy">' + esc(p.in_game_name) + rankBadgeHtml(rosterRanks.get(String(p.player_number)) || 0) + '<small>ID #' + esc(p.player_number) + '</small></span></span>').join('') + '</div></div>' : '<p class="match-rules-copy">No players have joined this match yet.</p>') + '</section>' +
+    const rosterCount = Number(counts[id] ?? roster?.length ?? count ?? 0);
+    const canViewRoster = has || isAdmin;
+    roomHtml = '<section class="match-rules"><div class="rules-heading"><div><small>REGISTERED PLAYERS</small><h3>Match roster · ' + rosterCount + '</h3></div></div>' +
+      (rosterCount < 1 ? '<p class="match-rules-copy">No players have registered yet.</p>' : canViewRoster ? (roster?.length ? '<div class="roster"><div class="roster-chips">' + roster.map((p, i) => '<span class="player-chip bf-roster-player"><i>' + (i + 1) + '</i><span class="bf-roster-player-copy">' + esc(p.in_game_name) + rankBadgeHtml(rosterRanks.get(String(p.player_number)) || 0) + '<small>ID #' + esc(p.player_number) + '</small></span></span>').join('') + '</div></div>' : '<p class="match-rules-copy">Player list could not be loaded. Please try again.</p>') : '<p class="match-rules-copy bf-roster-locked">Register for this match to view the player list.</p>') + '</section>' +
       (has && room?.published ? '<div class="room-card"><small class="room-label">MATCH ROOM</small><div class="room-value"><span>ID <b>' + esc(room.room_id || 'Not set') + '</b></span><button type="button" id="detailsCopyRoomId" class="outline bf-copy-room">Copy ID</button></div><div class="room-value"><span>Password <b>' + esc(room.room_password || 'Not set') + '</b></span><button type="button" id="detailsCopyRoomPassword" class="outline bf-copy-room">Copy password</button></div></div>' : '');
   }
   const full = t.status === 'full' || count >= Number(t.max_players) || t.is_cancelled === true;
