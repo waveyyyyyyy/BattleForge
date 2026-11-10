@@ -313,7 +313,7 @@ function openFaqChat(){
 }
 function startFaqChat(){
  const robot='<svg class="bf-bot-avatar" viewBox="0 0 80 80" role="img" aria-label="BLAZE robot assistant"><defs><linearGradient id="bfBotShell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#284b70"/><stop offset="1" stop-color="#101c2c"/></linearGradient><linearGradient id="bfBotGlow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8ff5e7"/><stop offset="1" stop-color="#42b7a5"/></linearGradient></defs><path d="M40 8v8" stroke="#8ff5e7" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="7" r="4" fill="#42b7a5"/><rect x="13" y="19" width="54" height="43" rx="15" fill="url(#bfBotShell)" stroke="#6ed8ca" stroke-width="2"/><rect x="20" y="27" width="40" height="25" rx="9" fill="#0a1420" stroke="#355d7a"/><ellipse cx="30" cy="39" rx="4" ry="5" fill="url(#bfBotGlow)"/><ellipse cx="50" cy="39" rx="4" ry="5" fill="url(#bfBotGlow)"/><path d="M33 47q7 5 14 0" fill="none" stroke="#8ff5e7" stroke-width="2.5" stroke-linecap="round"/><path d="M13 34H7v13h7M67 34h6v13h-7" fill="none" stroke="#42b7a5" stroke-width="3" stroke-linecap="round"/><path d="M27 63v7m26-7v7" stroke="#9bb4c8" stroke-width="4" stroke-linecap="round"/><rect x="24" y="69" width="12" height="5" rx="2.5" fill="#42b7a5"/><rect x="44" y="69" width="12" height="5" rx="2.5" fill="#42b7a5"/></svg>';
- modal('<div class="bf-faq-chat"><header class="bf-chat-header">'+robot+'<div class="bf-chat-identity"><span class="eyebrow">BATTLEFORGE ASSISTANT</span><h2>BLAZE</h2><span class="bf-chat-online"><i></i> Online · Instant FAQ help</span></div></header><p class="bf-chat-intro">Your quick guide to BattleForge. Ask about matches, coins, payments, results, ranks or account rules.</p><div id="bfFaqMessages" class="bf-faq-messages"><div class="bf-faq-bubble bot"><b>Hey, I’m BLAZE.</b><br>What can I help you with today?</div></div><form id="bfFaqForm" class="bf-faq-form"><input id="bfFaqInput" maxlength="240" placeholder="Ask me anything about BattleForge…" autocomplete="off" required><button class="join" type="submit" aria-label="Send message">Send</button></form><p class="bf-chat-disclaimer">Automated FAQ assistant · No access to your account or payment controls</p></div>');
+ modal('<div class="bf-faq-chat"><header class="bf-chat-header">'+robot+'<div class="bf-chat-identity"><span class="eyebrow">BATTLEFORGE ASSISTANT</span><h2>BLAZE</h2><span class="bf-chat-online"><i></i> Online · Instant FAQ help</span></div>'+chatSoundSwitchMarkup()+'</header><p class="bf-chat-intro">Your quick guide to BattleForge. Ask about matches, coins, payments, results, ranks or account rules.</p><div id="bfFaqMessages" class="bf-faq-messages"><div class="bf-faq-bubble bot"><b>Hey, I’m BLAZE.</b><br>What can I help you with today?</div></div><form id="bfFaqForm" class="bf-faq-form"><input id="bfFaqInput" maxlength="240" placeholder="Message BLAZE…" aria-label="Message BLAZE" autocomplete="off" required><button class="bf-chat-send" type="submit" aria-label="Send message"><span aria-hidden="true">➤</span></button></form><p class="bf-chat-disclaimer">Automated FAQ assistant · No access to your account or payment controls</p></div>');
 }
 function battleForgeFaqAnswer(question){
  const q=String(question||'').toLowerCase();
@@ -365,6 +365,10 @@ function modal(html) {
 let activeMatchChatChannel = null;
 let activeMatchChatNames = new Map();
 function chatSoundsEnabled(){return read('bf_chat_sound_enabled',true)!==false;}
+function chatSoundSwitchMarkup(){
+  const enabled=chatSoundsEnabled();
+  return '<label class="bf-chat-sound-control" for="bfChatSoundToggle"><span class="bf-chat-sound-copy"><b>Message sounds</b><small id="bfChatSoundState">'+(enabled?'On':'Off')+'</small></span><input id="bfChatSoundToggle" type="checkbox" role="switch" aria-label="Message sounds" aria-checked="'+String(enabled)+'" '+(enabled?'checked':'')+'><span class="bf-chat-switch" aria-hidden="true"></span></label>';
+}
 function playChatSound(kind='receive'){
   if(!chatSoundsEnabled())return;
   try{
@@ -372,12 +376,22 @@ function playChatSound(kind='receive'){
     audioContext ||= new Ctx();
     if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
     const osc=audioContext.createOscillator(),gain=audioContext.createGain(),now=audioContext.currentTime;
-    osc.type='sine';osc.frequency.setValueAtTime(kind==='send'?740:kind==='receive'?560:420,now);
-    gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.035,now+.018);gain.gain.exponentialRampToValueAtTime(.0001,now+.16);
-    osc.connect(gain);gain.connect(audioContext.destination);osc.start(now);osc.stop(now+.17);
+    const frequency=kind==='send'?740:kind==='receive'?880:520;
+    osc.type='triangle';osc.frequency.setValueAtTime(frequency,now);
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(kind==='receive'?.14:.11,now+.025);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+.24);
+    osc.connect(gain);gain.connect(audioContext.destination);osc.start(now);osc.stop(now+.25);
   }catch{}
 }
-function updateChatSoundToggle(){const toggle=$('#bfChatSoundToggle');if(toggle){toggle.checked=chatSoundsEnabled();toggle.setAttribute('aria-checked',String(toggle.checked));}}
+function updateChatSoundToggle(){
+  const toggle=$('#bfChatSoundToggle');
+  if(toggle){
+    toggle.checked=chatSoundsEnabled();
+    toggle.setAttribute('aria-checked',String(toggle.checked));
+    const state=$('#bfChatSoundState');if(state)state.textContent=toggle.checked?'On':'Off';
+  }
+}
 function close() { if(activeMatchChatChannel){supabase.removeChannel(activeMatchChatChannel).catch(()=>{});activeMatchChatChannel=null;} const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-fullscreen-chat'); }
 function setPage(tab) {
   const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules','leaderboard'].includes(tab) ? tab : 'arena');
@@ -1383,10 +1397,8 @@ async function openMatchChat(tournament) {
   if(!currentUser)return showAuth();
   const id=Number(tournament.id),participant=joined.some(entry=>Number(entry.tournament_id)===id);
   if(!participant&&!isAdmin)return toast('Join this match to access its chat.');
-  modal('<div class="bf-match-chat"><div class="bf-match-chat-top"><div><div class="eyebrow">BATTLEFORGE COMMUNITY</div><h2>'+esc(tournament.title)+' chat</h2></div><label class="bf-chat-sound-setting"><input id="bfChatSoundToggle" type="checkbox" '+(chatSoundsEnabled()?'checked':'')+'><span>Message sounds</span></label></div><p class="bf-match-chat-subtitle">'+(isAdmin&&!participant?'Admin view · you can view and moderate this chat':'Only registered players and admins can see this chat')+'</p><div id="bfMatchChatMessages" class="bf-match-chat-messages">' + bfLoadingScreen('Loading match chat','Connecting players to the conversation','pulse') + '</div>'+(participant?'<form id="bfMatchChatForm" data-tournament-id="'+id+'" class="bf-match-chat-form"><input id="bfMatchChatInput" maxlength="500" autocomplete="off" placeholder="Write a message…" required><button class="join" type="submit">Send</button></form>':'<p class="bf-admin-chat-note">Admin read-only access. You do not need to join the match.</p>')+(isAdmin?'<p class="bf-admin-chat-note">Admin moderation: inappropriate messages can be removed.</p>':'')+'<button type="button" id="bfMatchChatClose" class="outline full">Close chat</button></div>');
+  modal('<div class="bf-match-chat"><header class="bf-match-chat-header"><div class="bf-match-chat-heading"><div class="eyebrow">BATTLEFORGE COMMUNITY</div><h2>'+esc(tournament.title)+' chat</h2><p>'+(isAdmin&&!participant?'Admin view · moderation enabled':'Match conversation · registered players')+'</p></div>'+chatSoundSwitchMarkup()+'</header><div id="bfMatchChatMessages" class="bf-match-chat-messages">' + bfLoadingScreen('Loading match chat','Connecting players to the conversation','pulse') + '</div>'+(participant?'<form id="bfMatchChatForm" data-tournament-id="'+id+'" class="bf-match-chat-form"><input id="bfMatchChatInput" maxlength="500" autocomplete="off" placeholder="Message…" aria-label="Write a message" required><button class="bf-chat-send" type="submit" aria-label="Send message"><span aria-hidden="true">➤</span></button></form>':'<p class="bf-admin-chat-note">Read-only admin view · you do not need to join this match</p>')+(isAdmin?'<p class="bf-admin-chat-note">Admin moderation is enabled for this conversation.</p>':'')+'</div>');
   await loadMatchChat(id);
-  $('#bfMatchChatClose')?.addEventListener('click',close);
-  $('#bfChatSoundToggle')?.addEventListener('change',event=>{localStorage.setItem('bf_chat_sound_enabled',JSON.stringify(event.target.checked));if(event.target.checked)playChatSound('toggle');});
   if(activeMatchChatChannel){await supabase.removeChannel(activeMatchChatChannel);activeMatchChatChannel=null;}
   activeMatchChatChannel=supabase.channel('bf-match-chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'tournament_chat_messages',filter:'tournament_id=eq.'+id},async payload=>{
     const row=payload.new,target=$('#bfMatchChatMessages');if(!target)return;
@@ -1699,12 +1711,17 @@ if(event.target.closest('#bfCreateSupportTicket')){openSupportTicketForm();retur
  }
 });
 document.addEventListener('change',event=>{
+ if(event.target.id==='bfChatSoundToggle'){
+  localStorage.setItem('bf_chat_sound_enabled',JSON.stringify(event.target.checked));
+  updateChatSoundToggle();
+  if(event.target.checked)playChatSound('toggle');
+ }
  if(event.target.id==='bfDisableTournament'){const id=Number(event.target.value);const t=(window.battleForgeAdminTournaments||[]).find(x=>Number(x.id)===id);if($('#bfTournamentDisabled'))$('#bfTournamentDisabled').checked=!!t?.is_cancelled;}
 });
 document.addEventListener('submit',async event=>{
  if(event.target.id==='bfFaqForm'){
   event.preventDefault();const input=$('#bfFaqInput');const question=input?.value.trim();if(!question)return;
-  appendFaqMessage(question,'user');appendFaqMessage(battleForgeFaqAnswer(question),'bot');input.value='';input.focus();
+  appendFaqMessage(question,'user');playChatSound('send');appendFaqMessage(battleForgeFaqAnswer(question),'bot');playChatSound('receive');input.value='';input.focus();
  }
  if(event.target.id==='bfTicketForm'){event.preventDefault();await createSupportTicket();}
  if(event.target.id==='bfMatchDisputeForm'){event.preventDefault();await submitMatchDispute(event.target);}
