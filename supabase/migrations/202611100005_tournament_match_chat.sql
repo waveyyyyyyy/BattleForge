@@ -19,7 +19,7 @@ drop policy if exists "Match participants and admins can read match chat" on pub
 create policy "Match participants and admins can read match chat"
 on public.tournament_chat_messages for select to authenticated
 using (
-  public.is_battleforge_admin()
+  coalesce((public.get_my_admin_access()->>'is_admin')::boolean,false)
   or exists (select 1 from public.tournament_entries e
     where e.tournament_id = tournament_chat_messages.tournament_id
       and e.user_id = (select auth.uid()))
@@ -37,7 +37,7 @@ with check (
 drop policy if exists "Admins can moderate match chat" on public.tournament_chat_messages;
 create policy "Admins can moderate match chat"
 on public.tournament_chat_messages for delete to authenticated
-using (public.is_battleforge_admin());
+using (coalesce((public.get_my_admin_access()->>'is_admin')::boolean,false));
 do $$
 begin
   if not exists (select 1 from pg_publication_tables
@@ -55,7 +55,7 @@ language plpgsql stable security definer set search_path = ''
 as $$
 begin
   if auth.uid() is null then raise exception 'Sign in to view this match chat'; end if;
-  if not public.is_battleforge_admin() and not exists (
+  if not coalesce((public.get_my_admin_access()->>'is_admin')::boolean,false) and not exists (
     select 1 from public.tournament_entries e
     where e.tournament_id=p_tournament_id and e.user_id=auth.uid()
   ) then raise exception 'Only registered players and admins can view this match chat'; end if;
