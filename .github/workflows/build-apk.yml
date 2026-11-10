@@ -30,6 +30,7 @@ jobs:
           cp interaction-performance.css public/interaction-performance.css
           cp battleforge-ux-polish.css public/battleforge-ux-polish.css
           cp battleforge-premium-theme.css public/battleforge-premium-theme.css
+          cp battleforge-neumorphic-theme.css public/battleforge-neumorphic-theme.css
       - name: Assign a unique version to every APK build
         env:
           BUILD_NUMBER: ${{ github.run_number }}
