@@ -1391,7 +1391,7 @@ async function openMatchChat(tournament) {
   activeMatchChatChannel=supabase.channel('bf-match-chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'tournament_chat_messages',filter:'tournament_id=eq.'+id},async payload=>{
     const row=payload.new,target=$('#bfMatchChatMessages');if(!target)return;
     let senderName=activeMatchChatNames.get(String(row.user_id));
-    if(!senderName){await loadMatchChat(id);return;}
+    if(!senderName){await loadMatchChat(id);if(String(row.user_id)!==String(currentUser?.id))playChatSound('receive');return;}
     target.querySelector('.bf-chat-empty')?.remove();
     if(!target.querySelector('[data-chat-message="'+CSS.escape(String(row.id))+'"]')){target.insertAdjacentHTML('beforeend',matchChatMessageHtml(row,senderName));target.scrollTop=target.scrollHeight;if(String(row.user_id)!==String(currentUser?.id))playChatSound('receive');}
   }).subscribe();
