@@ -425,3 +425,9 @@ main.app-shell{max-width:760px;width:100%;padding:13px 13px 112px}
 .bf-past-rank-copy b{display:block}
 .bf-past-rank-copy small{display:block}
 #profileBtn{display:grid;place-items:center;overflow:hidden}
+
+/* Active match roster player identity */
+.bf-player-avatar-roster{width:32px;height:32px}
+.bf-roster-player{display:inline-flex!important;align-items:center;gap:8px;white-space:normal!important;max-width:100%}
+.bf-roster-player-copy{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;min-width:0}
+.bf-roster-player-copy small{display:block;flex-basis:100%;font-size:10px;opacity:.72}
