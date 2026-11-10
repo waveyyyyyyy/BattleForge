@@ -365,23 +365,37 @@ function modal(html) {
 let activeMatchChatChannel = null;
 let activeMatchChatNames = new Map();
 function chatSoundsEnabled(){return read('bf_chat_sound_enabled',true)!==false;}
+function chatSoundStyle(){return read('bf_chat_sound_style','classic')||'classic';}
 function chatSoundSwitchMarkup(){
   const enabled=chatSoundsEnabled();
-  return '<label class="bf-chat-sound-control" for="bfChatSoundToggle"><span class="bf-chat-sound-copy"><b>Message sounds</b><small id="bfChatSoundState">'+(enabled?'On':'Off')+'</small></span><input id="bfChatSoundToggle" type="checkbox" role="switch" aria-label="Message sounds" aria-checked="'+String(enabled)+'" '+(enabled?'checked':'')+'><span class="bf-chat-switch" aria-hidden="true"></span></label>';
+  const style=chatSoundStyle();
+  return '<div class="bf-chat-settings-wrap"><button type="button" id="bfChatSettingsButton" class="bf-chat-settings-button" aria-label="Chat settings" aria-expanded="false" title="Chat settings"><span aria-hidden="true">⋮</span></button><section id="bfChatSettingsPanel" class="bf-chat-settings-panel" hidden><div class="bf-chat-settings-title">Chat settings</div><label class="bf-chat-sound-control" for="bfChatSoundToggle"><span class="bf-chat-sound-copy"><b>Message sounds</b><small id="bfChatSoundState">'+(enabled?'On':'Off')+'</small></span><input id="bfChatSoundToggle" type="checkbox" role="switch" aria-label="Message sounds" aria-checked="'+String(enabled)+'" '+(enabled?'checked':'')+'><span class="bf-chat-switch" aria-hidden="true"></span></label><div class="bf-chat-sound-options"><span>Choose a sound</span><button type="button" data-chat-sound-preview="classic" class="'+(style==='classic'?'active':'')+'">Classic <span>▶</span></button><button type="button" data-chat-sound-preview="pop" class="'+(style==='pop'?'active':'')+'">Pop <span>▶</span></button><button type="button" data-chat-sound-preview="soft" class="'+(style==='soft'?'active':'')+'">Soft <span>▶</span></button></div></section></div>';
 }
-function playChatSound(kind='receive'){
-  if(!chatSoundsEnabled())return;
+function playChatSound(kind='receive',styleOverride=null){
+  if(!styleOverride&&!chatSoundsEnabled())return;
   try{
     const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;
     audioContext ||= new Ctx();
     if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
-    const osc=audioContext.createOscillator(),gain=audioContext.createGain(),now=audioContext.currentTime;
-    const frequency=kind==='send'?740:kind==='receive'?880:520;
-    osc.type='triangle';osc.frequency.setValueAtTime(frequency,now);
-    gain.gain.setValueAtTime(.0001,now);
-    gain.gain.exponentialRampToValueAtTime(kind==='receive'?.14:.11,now+.025);
-    gain.gain.exponentialRampToValueAtTime(.0001,now+.24);
-    osc.connect(gain);gain.connect(audioContext.destination);osc.start(now);osc.stop(now+.25);
+    const style=styleOverride||chatSoundStyle();
+    const patterns={
+      classic:{send:[740],receive:[880,1174]},
+      pop:{send:[880,1174],receive:[1046,1568]},
+      soft:{send:[587],receive:[659,880]}
+    };
+    const notes=patterns[style]?.[kind==='send'?'send':'receive']||patterns.classic.receive;
+    const now=audioContext.currentTime;
+    notes.forEach((frequency,index)=>{
+      const start=now+index*.105;
+      const osc=audioContext.createOscillator(),gain=audioContext.createGain();
+      osc.type=style==='soft'?'sine':'triangle';
+      osc.frequency.setValueAtTime(frequency,start);
+      gain.gain.setValueAtTime(.0001,start);
+      gain.gain.exponentialRampToValueAtTime(style==='soft'?.22:.32,start+.012);
+      gain.gain.exponentialRampToValueAtTime(.0001,start+.17);
+      osc.connect(gain);gain.connect(audioContext.destination);
+      osc.start(start);osc.stop(start+.18);
+    });
   }catch{}
 }
 function updateChatSoundToggle(){
@@ -1714,7 +1728,7 @@ document.addEventListener('change',event=>{
  if(event.target.id==='bfChatSoundToggle'){
   localStorage.setItem('bf_chat_sound_enabled',JSON.stringify(event.target.checked));
   updateChatSoundToggle();
-  if(event.target.checked)playChatSound('toggle');
+  if(event.target.checked)playChatSound('receive');
  }
  if(event.target.id==='bfDisableTournament'){const id=Number(event.target.value);const t=(window.battleForgeAdminTournaments||[]).find(x=>Number(x.id)===id);if($('#bfTournamentDisabled'))$('#bfTournamentDisabled').checked=!!t?.is_cancelled;}
 });
@@ -1728,6 +1742,26 @@ document.addEventListener('submit',async event=>{
 });
 
 
+document.addEventListener('click',event=>{
+ const settingsButton=event.target.closest?.('#bfChatSettingsButton');
+ const previewButton=event.target.closest?.('[data-chat-sound-preview]');
+ if(settingsButton){
+  const panel=$('#bfChatSettingsPanel');
+  if(panel){const opening=panel.hidden;panel.hidden=!opening;settingsButton.setAttribute('aria-expanded',String(opening));}
+  return;
+ }
+ if(previewButton){
+  const style=previewButton.dataset.chatSoundPreview;
+  localStorage.setItem('bf_chat_sound_style',JSON.stringify(style));
+  document.querySelectorAll('[data-chat-sound-preview]').forEach(button=>button.classList.toggle('active',button===previewButton));
+  playChatSound('receive',style);
+  return;
+ }
+ if(!event.target.closest?.('.bf-chat-settings-wrap')){
+  const panel=$('#bfChatSettingsPanel'),button=$('#bfChatSettingsButton');
+  if(panel&&!panel.hidden){panel.hidden=true;button?.setAttribute('aria-expanded','false');}
+ }
+});
 document.addEventListener('click',async event=>{
  if(event.target.closest('#bfViewMyTickets')){await openMySupportTickets();return;}
  if(event.target.closest('#bfBackToFaq')){openFaqChat();return;}
