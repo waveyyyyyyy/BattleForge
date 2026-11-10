@@ -1429,7 +1429,7 @@ async function showTournamentDetails(t) {
   let publishedRoom = null;
   {
     const [{ data: roster }, { data: room }] = await Promise.all([
-      supabase.rpc('get_tournament_roster', { p_tournament_id: Number(id) }),
+      (has || isAdmin) ? supabase.rpc('get_tournament_roster', { p_tournament_id: Number(id) }) : Promise.resolve({data:null}),
       has && currentUser ? supabase.from('tournament_rooms').select('room_id,room_password,published').eq('tournament_id', Number(id)).eq('published', true).maybeSingle() : Promise.resolve({data:null})
     ]);
     publishedRoom = room;
