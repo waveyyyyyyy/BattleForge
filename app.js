@@ -362,7 +362,8 @@ function modal(html) {
     card.style.alignSelf = 'flex-start';
   }
 }
-function close() { const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-fullscreen-chat'); }
+let activeMatchChatChannel = null;
+function close() { if(activeMatchChatChannel){supabase.removeChannel(activeMatchChatChannel).catch(()=>{});activeMatchChatChannel=null;} const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-fullscreen-chat'); }
 function setPage(tab) {
   const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules','leaderboard'].includes(tab) ? tab : 'arena');
   document.querySelectorAll('.page-view').forEach(page => page.classList.toggle('active', page.dataset.page === target));
@@ -499,6 +500,10 @@ async function loadWalletSummary() {
   const old=$('#walletActivity'); if(old) { const {data:player}=await supabase.from('player_accounts').select('player_number').eq('user_id',currentUser.id).maybeSingle(); const playerNo=player?.player_number; old.insertAdjacentHTML('afterbegin',`<p class="notice"><b>Your BattleForge Player ID / referral code: ${esc(playerNo||'Loading')}</b><br>Friends can enter this code in Profile → Refer code. You earn 5 coins after their first completed withdrawal.</p>`); }
 }
 
+function formatMatchCountdown(startsAt) { const target=startsAt?new Date(startsAt).getTime():NaN; if(!Number.isFinite(target))return '—'; const seconds=Math.max(0,Math.floor((target-Date.now())/1000)); const hours=Math.floor(seconds/3600),minutes=Math.floor((seconds%3600)/60),secs=seconds%60; return String(hours).padStart(2,'0')+':'+String(minutes).padStart(2,'0')+':'+String(secs).padStart(2,'0'); }
+function updateMatchCountdowns(){document.querySelectorAll('[data-match-countdown]').forEach(node=>{node.textContent=formatMatchCountdown(node.dataset.startsAt);});}
+let matchCountdownTicker=null;
+function startMatchCountdownTicker(){updateMatchCountdowns();if(matchCountdownTicker===null)matchCountdownTicker=window.setInterval(updateMatchCountdowns,1000);}
 function renderWallet() {
   const headerCoins = $('#headerCoinBalance'); if (headerCoins) headerCoins.textContent = currentUser ? Number(balance).toLocaleString('en-IN',{maximumFractionDigits:2}) : '—';
   const total = $('#walletBalance'); if (total) total.textContent = currentUser ? String(balance) : '—';
@@ -519,8 +524,9 @@ async function render() {
     const count = counts[id] ?? joined.filter(e => String(e.tournament_id) === id).length;
     const full = t.status === 'full' || count >= Number(t.max_players) || t.is_cancelled === true;
     const globallyPaused = platformControls.registrations_paused || platformControls.maintenance_mode;
-    return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="tour-entry-strip"><span class="entry-label">ENTRY FEE</span><strong>◈ ' + entry + ' <small>COINS</small></strong><span class="entry-action">' + (has ? 'YOU’RE IN ✓' : full ? 'MATCH FULL' : 'TAP TO VIEW ↗') + '</span></div><div class="match-time"><span class="match-time-icon">◷</span><span><small>MATCH STARTS</small><b>' + (t.starts_at ? esc(new Date(t.starts_at).toLocaleString(undefined,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})) : 'Time to be announced') + '</b></span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>✦ ' + Math.max(0, Number(t.max_players) - count) + ' SPOTS LEFT</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' COINS</b><small>DISPLAYED PRIZE POOL</small></div><div class="prize"><b>' + perKill + ' COINS</b><small>PER KILL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open' || globallyPaused) ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : t.is_cancelled ? 'DISABLED' : globallyPaused ? 'REGISTRATIONS PAUSED' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' COINS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
+    return '<article class="tour" data-detail="' + esc(id) + '" role="button" tabindex="0" aria-label="View tournament details for ' + esc(t.title) + '"><div class="tour-banner"></div><div class="tour-body"><div class="tour-top"><div><h3>' + esc(t.title) + '</h3><p>' + esc(mode) + ' tournament • online registration</p></div><span class="tag">' + esc(mode) + '</span></div><div class="tour-entry-strip"><span class="entry-label">ENTRY FEE</span><strong>◈ ' + entry + ' <small>COINS</small></strong><span class="entry-action">' + (has ? 'YOU’RE IN ✓' : full ? 'MATCH FULL' : 'TAP TO VIEW ↗') + '</span></div><div class="match-time"><span class="match-time-icon">◷</span><span><small>MATCH STARTS</small><b>' + (t.starts_at ? esc(new Date(t.starts_at).toLocaleString(undefined,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})) : 'Time to be announced') + '</b><small class="bf-countdown-label">STARTS IN</small><strong class="bf-match-countdown" data-match-countdown data-starts-at="' + esc(t.starts_at || '') + '">' + formatMatchCountdown(t.starts_at) + '</strong></span></div><div class="meta"><span>👥 ' + count + ' / ' + Number(t.max_players) + ' players</span><span>✦ ' + Math.max(0, Number(t.max_players) - count) + ' SPOTS LEFT</span></div><div class="prize-row"><div class="prize"><b>' + prize + ' COINS</b><small>DISPLAYED PRIZE POOL</small></div><div class="prize"><b>' + perKill + ' COINS</b><small>PER KILL</small></div><button class="join" data-join="' + esc(id) + '" ' + ((has || full || t.status !== 'open' || globallyPaused) ? 'disabled' : '') + '>' + (has ? 'JOINED ✓' : t.is_cancelled ? 'DISABLED' : globallyPaused ? 'REGISTRATIONS PAUSED' : full ? 'FULL' : currentUser ? 'REGISTER • ' + entry + ' COINS' : 'SIGN IN TO JOIN') + '</button></div></div></article>';
   }).join('') : '<p class="notice">No tournaments are published yet.</p>';
+  startMatchCountdownTicker();
   const profileBtn=$('#profileBtn'); if(profileBtn){profileBtn.textContent=currentUser?'Profile':'Sign in';profileBtn.setAttribute('aria-label',currentUser?'Player profile':'Sign in');}
 }
 
@@ -1340,6 +1346,43 @@ async function publishBulkResults(button) {
   toast('Rankings saved and wallet balances reconciled.');await loadAdminEntries();
 }
 
+function matchChatMessageHtml(row, username) {
+  const own=String(row.user_id)===String(currentUser?.id);
+  return '<article class="bf-match-chat-message '+(own?'is-own':'')+'" data-chat-message="'+esc(row.id)+'"><div class="bf-match-chat-meta"><b>'+esc(username)+(own?' · YOU':'')+'</b><time>'+esc(new Date(row.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</time></div><p>'+esc(row.message)+'</p></article>';
+}
+async function loadMatchChat(tournamentId) {
+  const target=$('#bfMatchChatMessages');if(!target)return;
+  const {data:rows,error}=await supabase.from('tournament_chat_messages').select('id,user_id,message,created_at').eq('tournament_id',Number(tournamentId)).order('created_at',{ascending:true}).limit(100);
+  if(error){target.innerHTML='<p class="notice">Could not load match chat. Please try again.</p>';return;}
+  const ids=[...new Set((rows||[]).map(row=>row.user_id))];let names=new Map();
+  if(ids.length){const {data:players}=await supabase.from('player_accounts').select('user_id,username').in('user_id',ids);names=new Map((players||[]).map(player=>[String(player.user_id),player.username||'Player']));}
+  target.innerHTML=(rows||[]).map(row=>matchChatMessageHtml(row,names.get(String(row.user_id))||'Player')).join('')||'<div class="bf-chat-empty"><b>No messages yet</b><p>Say hello and get your squad ready.</p></div>';
+  target.scrollTop=target.scrollHeight;
+}
+async function openMatchChat(tournament) {
+  if(!currentUser)return showAuth();
+  const id=Number(tournament.id),participant=joined.some(entry=>Number(entry.tournament_id)===id);
+  if(!participant&&!isAdmin)return toast('Join this match to access its chat.');
+  modal('<div class="bf-match-chat"><div class="eyebrow">BATTLEFORGE COMMUNITY</div><h2>'+esc(tournament.title)+' chat</h2><p class="bf-match-chat-subtitle">'+(isAdmin&&!participant?'Admin view · you can view and moderate this chat':'Only registered players and admins can see this chat')+'</p><div id="bfMatchChatMessages" class="bf-match-chat-messages"><p class="notice">Loading messages…</p></div>'+(participant?'<form id="bfMatchChatForm" data-tournament-id="'+id+'" class="bf-match-chat-form"><input id="bfMatchChatInput" maxlength="500" autocomplete="off" placeholder="Write a message…" required><button class="join" type="submit">Send</button></form>':'<p class="bf-admin-chat-note">Admin read-only access. You do not need to join the match.</p>')+(isAdmin?'<p class="bf-admin-chat-note">Admin moderation: inappropriate messages can be removed.</p>':'')+'<button type="button" id="bfMatchChatClose" class="outline full">Close chat</button></div>');
+  await loadMatchChat(id);
+  $('#bfMatchChatClose')?.addEventListener('click',close);
+  if(activeMatchChatChannel){await supabase.removeChannel(activeMatchChatChannel);activeMatchChatChannel=null;}
+  activeMatchChatChannel=supabase.channel('bf-match-chat-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'tournament_chat_messages',filter:'tournament_id=eq.'+id},async payload=>{
+    const row=payload.new,target=$('#bfMatchChatMessages');if(!target)return;
+    const {data:player}=await supabase.from('player_accounts').select('username').eq('user_id',row.user_id).maybeSingle();
+    target.querySelector('.bf-chat-empty')?.remove();
+    if(!target.querySelector('[data-chat-message="'+CSS.escape(String(row.id))+'"]')){target.insertAdjacentHTML('beforeend',matchChatMessageHtml(row,player?.username||(String(row.user_id)===String(currentUser?.id)?'You':'Player')));target.scrollTop=target.scrollHeight;}
+  }).subscribe();
+}
+async function sendMatchChatMessage(form) {
+  const input=$('#bfMatchChatInput'),message=String(input?.value||'').trim(),id=Number(form.dataset.tournamentId);
+  if(!message||!id)return;
+  const button=form.querySelector('button[type="submit"]');if(button)button.disabled=true;
+  const {error}=await supabase.from('tournament_chat_messages').insert({tournament_id:id,user_id:currentUser.id,message});
+  if(button)button.disabled=false;
+  if(error){toast(error.message||'Could not send message.');return;}
+  if(input)input.value='';
+}
 async function showTournamentDetails(t) {
   if (!t) return;
   const id = String(t.id);
@@ -1371,8 +1414,10 @@ async function showTournamentDetails(t) {
     '<div class="detail-info"><div><span>🕒</span><section><small>START TIME</small><b>' + esc(starts) + '</b></section></div><div><span>🎮</span><section><small>GAME MODE</small><b>' + esc(mode) + '</b></section></div><div><span>👥</span><section><small>REGISTRATION</small><b>' + (has ? 'You are registered' : full ? 'Tournament full' : t.status === 'open' ? 'Open to join' : 'Registration closed') + '</b></section></div></div>' +
     '<section class="match-rules"><div class="rules-heading"><div><small>ORGANISER NOTES</small><h3>Match description & rules</h3></div><button id="detailsCopyRules" class="outline" '+(t.description ? '' : 'disabled')+'>Copy rules</button></div><div class="match-rules-copy">'+esc(t.description || 'The organiser has not added custom match instructions yet. Please check back before the match.')+'</div></section>' +
     roomHtml +
+    ((has || isAdmin) ? '<button type="button" id="detailsMatchChat" class="outline full bf-open-match-chat">Open match chat ↗</button>' : '') +
     (canJoin ? '<button id="detailsJoin" class="join full">Join tournament · ' + entry + ' COINS</button>' : has ? '<button class="join full" disabled>REGISTERED ✓</button>' : !currentUser ? '<button id="detailsSignIn" class="join full">Sign in to join</button>' : '<button class="join full" disabled>' + (full ? 'TOURNAMENT FULL' : 'REGISTRATION CLOSED') + '</button>'));
   $('#detailsJoin')?.addEventListener('click', () => startJoin(t));
+  $('#detailsMatchChat')?.addEventListener('click', () => openMatchChat(t));
   $('#detailsSignIn')?.addEventListener('click', showAuth);
 }
 function startJoin(tournament) {
@@ -1424,6 +1469,7 @@ $('#openWithdrawal')?.addEventListener('click', showWithdrawalForm);
 $('#refreshPaymentRequests')?.addEventListener('click', loadPaymentRequests);
 $('#adminBtn').onclick = showAdmin;
 $('#modalContent').addEventListener('submit', async e => {
+  if(e.target.id==='bfMatchChatForm'){e.preventDefault();await sendMatchChatMessage(e.target);return;}
   if (e.target.id === 'depositRequestForm' || e.target.id === 'withdrawalRequestForm') {
     e.preventDefault();
     await createPaymentRequest(e.target.id === 'depositRequestForm' ? 'deposit' : 'withdrawal');
