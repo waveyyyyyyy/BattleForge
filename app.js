@@ -1044,9 +1044,24 @@ async function loadAdminPlayerDirectory(offset=0){
  if(!isAdmin||(!adminIsOwner&&!adminPermissions.has('player_lookup')))return toast('Player lookup permission required.');
  const target=$('#bfAdminPlayerDirectoryList');if(!target)return;
  const search=$('#bfAdminPlayerSearch')?.value.trim()||'';
- target.innerHTML='<p class="admin-helper">Loading registered players…</p>';
+ target.innerHTML='<p class="admin-helper">Checking admin session and loading players…</p>';
+ // Verify/refresh the real Supabase user before calling the protected directory RPC.
+ // Never grant anon access to this function: it returns private player account data.
+ const {data:{user:verifiedUser},error:authError}=await supabase.auth.getUser();
+ if(authError||!verifiedUser){
+  target.innerHTML='<p class="notice">Your admin session has expired. Please sign in again, then reopen All registered players.</p>';
+  return;
+ }
+ if(currentUser?.id&&verifiedUser.id!==currentUser.id){
+  target.innerHTML='<p class="notice">Your signed-in account changed. Refresh the app and reopen the admin portal.</p>';
+  return;
+ }
  const {data,error}=await supabase.rpc('admin_list_all_players',{p_search:search,p_limit:100,p_offset:Math.max(0,offset)});
- if(error){target.innerHTML='<p class="notice">Could not load players: '+esc(error.message)+'</p>';return;}
+ if(error){
+  console.error('BattleForge player directory RPC failed',error);
+  target.innerHTML='<p class="notice">Could not load players: '+esc(error.message)+'</p>';
+  return;
+ }
  window.battleForgeAdminDirectoryOffset=Math.max(0,offset);const rows=data||[];
  target.innerHTML=rows.length?rows.map(p=>'<button type="button" class="bf-admin-player-card" data-open-admin-player="'+esc(p.player_number)+'">'+'<span class="bf-admin-player-copy"><b>'+esc(p.username||('Player #'+p.player_number))+'</b><small>PLAYER ID #'+esc(p.player_number)+' · '+Number(p.entries_count||0)+' matches · '+Number(p.wins_count||0)+' wins</small></span><span class="bf-admin-player-arrow">›</span></button>').join(''):'<p class="admin-helper">No registered players found.</p>';
  $('#bfAdminPlayersPrev').disabled=offset<=0;$('#bfAdminPlayersNext').disabled=rows.length<100;$('#bfAdminPlayerPageInfo').textContent=rows.length?'Showing '+(offset+1)+'–'+(offset+rows.length)+' · Search: '+(search||'All players'):'No results';
