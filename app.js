@@ -16,26 +16,30 @@ const authStorage = IS_NATIVE_APP ? {
     try {
       const { value } = await Preferences.get({ key: 'bf_auth_' + key });
       if (value !== null && value !== undefined) return value;
-    } catch (error) { console.warn('Native auth storage read failed:', error); }
-    // One-time migration from the previous WebView localStorage session.
+    } catch (error) { console.warn('Native auth Preferences read failed; trying WebView storage:', error); }
     try {
       const legacy = window.localStorage.getItem(key);
       if (legacy) {
-        await Preferences.set({ key: 'bf_auth_' + key, value: legacy });
+        try { await Preferences.set({ key: 'bf_auth_' + key, value: legacy }); } catch (error) { console.warn('Could not migrate legacy auth storage:', error); }
         return legacy;
       }
-    } catch (error) { console.warn('Legacy auth migration failed:', error); }
+    } catch (error) { console.warn('Native auth WebView fallback read failed:', error); }
     return null;
   },
   async setItem(key, value) {
-    await Preferences.set({ key: 'bf_auth_' + key, value });
+    let saved = false;
+    try { await Preferences.set({ key: 'bf_auth_' + key, value }); saved = true; }
+    catch (error) { console.error('Native auth Preferences write failed:', error); }
+    try { window.localStorage.setItem(key, value); saved = true; }
+    catch (error) { console.warn('Native auth WebView backup write failed:', error); }
+    if (!saved) throw new Error('Could not persist the BattleForge login session on this device.');
   },
   async removeItem(key) {
-    await Preferences.remove({ key: 'bf_auth_' + key });
+    try { await Preferences.remove({ key: 'bf_auth_' + key }); } catch (error) { console.warn('Native auth Preferences cleanup failed:', error); }
     try { window.localStorage.removeItem(key); } catch {}
   }
 } : window.localStorage;
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true, autoRefreshToken: !IS_NATIVE_APP, storage: authStorage, storageKey: AUTH_STORAGE_KEY } });
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true, autoRefreshToken: true, storage: authStorage, storageKey: AUTH_STORAGE_KEY } });
 
 const $ = (s) => document.querySelector(s);
 let balance = 0;
@@ -530,19 +534,19 @@ async function requireUsernameSetup() {
   if(!currentUser || usernameSetupOpen) return;
   const {data,error}=await supabase.from('player_accounts').select('username').eq('user_id',currentUser.id).maybeSingle();
   if(error){console.warn('Could not verify username setup',error);return;}
-  if(data?.username && /^[A-Za-z0-9_]{3,24}$/.test(data.username)) return;
+  if(data?.username && /^[A-Za-z0-9_ ]{3,24}$/.test(data.username)) return;
   usernameSetupOpen=true;
-  modal(`<div class="username-onboarding"><div class="eyebrow">ONE LAST STEP</div><h2>Choose your BattleForge username</h2><p>You must set a unique username before using the app. This applies to Google and email accounts.</p><label class="field">USERNAME<input id="requiredUsername" type="text" minlength="3" maxlength="24" pattern="[A-Za-z0-9_]{3,24}" autocomplete="nickname" placeholder="YourUniqueName"></label><p class="profile-help">3–24 letters, numbers, or underscores. No spaces.</p><p id="requiredUsernameStatus" class="profile-help" aria-live="polite"></p><button id="saveRequiredUsername" class="join full">Save username & continue</button><button id="requiredUsernameLogout" class="outline full">Log out</button></div>`);
+  modal(`<div class="username-onboarding"><div class="eyebrow">ONE LAST STEP</div><h2>Choose your BattleForge username</h2><p>You must set a unique username before using the app. This applies to Google and email accounts.</p><label class="field">USERNAME<input id="requiredUsername" type="text" minlength="3" maxlength="24" pattern="[A-Za-z0-9_]{3,24}" autocomplete="nickname" placeholder="YourUniqueName"></label><p class="profile-help">3–24 characters. Letters, numbers, spaces, and underscores only.</p><p id="requiredUsernameStatus" class="profile-help" aria-live="polite"></p><button id="saveRequiredUsername" class="join full">Save username & continue</button><button id="requiredUsernameLogout" class="outline full">Log out</button></div>`);
 }
 async function saveRequiredUsername() {
   const input=$('#requiredUsername'), status=$('#requiredUsernameStatus'), button=$('#saveRequiredUsername');
   const username=(input?.value||'').trim();
-  if(!/^[A-Za-z0-9_]{3,24}$/.test(username)){if(status)status.textContent='Use 3–24 letters, numbers, or underscores.';return;}
+  if(!/^[A-Za-z0-9_ ]{3,24}$/.test(username)){if(status)status.textContent='Use 3–24 letters, numbers, or underscores.';return;}
   button.disabled=true; if(status)status.textContent='Checking availability…';
   try {
-    if(!await usernameIsAvailable(username)){if(status)status.textContent='Username not available. Please choose another.';toast('Username not available.');return;}
+    if(!await usernameIsAvailable(username)){if(status)status.textContent='That username is already in use. Please choose another.';toast('That username is already in use.');return;}
     const {error}=await supabase.rpc('update_player_profile',{p_username:username,p_avatar_url:null});
-    if(error){const msg=String(error.message||'');if(/duplicate|unique|username.*taken|already exists/i.test(msg)){if(status)status.textContent='Username not available. Please choose another.';toast('Username not available.');return;}throw error;}
+    if(error){const msg=String(error.message||'');if(/duplicate|unique|username.*taken|already exists/i.test(msg)){if(status)status.textContent='That username is already in use. Please choose another.';toast('That username is already in use.');return;}throw error;}
     usernameSetupOpen=false;close();await refreshData();toast('Username saved. Welcome to BattleForge!');
   } catch(error){if(status)status.textContent=error?.message||'Could not save username.';toast(error?.message||'Could not save username.');}
   finally{if(button)button.disabled=false;}
@@ -840,14 +844,14 @@ async function authAction(kind) {
   const password = $('#authPassword')?.value;
   const username = ($('#signupUsername')?.value || '').trim();
   if (!email || !password || password.length < 8) { toast('Enter a valid email and password (8+ characters).'); return; }
-  if (kind === 'signup' && !/^[A-Za-z0-9_]{3,24}$/.test(username)) { toast('Choose a username of 3–24 letters, numbers, or underscores.'); return; }
+  if (kind === 'signup' && !/^[A-Za-z0-9_ ]{3,24}$/.test(username)) { toast('Choose a username of 3–24 characters using only letters, numbers, spaces, and underscores.'); return; }
   const btn = kind === 'signin' ? $('#signInBtn') : $('#signUpBtn');
   if (btn) btn.disabled = true;
   const result = kind === 'signin'
     ? await supabase.auth.signInWithPassword({ email, password })
     : await supabase.auth.signUp({ email, password, options: { data: { username } } });
   if (btn) btn.disabled = false;
-  if (result.error) { const msg=String(result.error.message||''); toast(kind==='signup' && /duplicate|unique|username.*taken|already exists/i.test(msg) ? 'Username not available. Please choose another.' : result.error.message); return; }
+  if (result.error) { const msg=String(result.error.message||''); toast(kind==='signup' && /duplicate|unique|username.*taken|already exists/i.test(msg) ? 'That username is already in use. Please choose another.' : result.error.message); return; }
   if (kind === 'signup' && !result.data.session) {
     modal('<h2>Check your email</h2><p>Supabase may require email confirmation. Open the confirmation email, then return and sign in.</p><button id="backToSignIn" class="join full">Back to sign in</button>');
     return;
@@ -883,8 +887,8 @@ async function showProfile() {
   const led=ledger||[], withdrawals=paidWithdrawals||[];
   modal(`<div class="profile-sheet"><div class="profile-top bf-profile-top"><div class="bf-profile-identity"><div class="bf-profile-identity-copy"><div class="eyebrow">PLAYER PROFILE</div><h2 class="bf-profile-player-name">${esc(a.username||currentUser.user_metadata?.full_name||'Player')}${rankBadgeHtml(lifetimeKills,'lg')}</h2><p>Player ID <b>${esc(a.player_number||'Loading')}</b>${currentRank?' · '+esc(currentRank.label):' · Unranked'}</p></div></div></div>
   <div class="profile-metrics"><div><small>TOTAL BALANCE</small><b>₹${(Number(w.deposited_balance||0)+Number(w.earned_balance||0)).toFixed(2)}</b></div><div><small>ENTRY-FEE CREDITS</small><b>₹${Number(w.deposited_balance||0).toFixed(2)}</b></div><div><small>MATCH EARNINGS</small><b>₹${Number(w.earned_balance||0).toFixed(2)}</b></div><div><small>MATCH RESULTS</small><b>${resultRows.length}</b></div><div><small>WINS / KILLS</small><b>${wins} / ${kills}</b></div><div><small>LIFETIME KILLS</small><b>${lifetimeKills.toLocaleString('en-IN')}</b></div><div><small>WITHDRAWALS</small><b>${withdrawals.length}</b></div></div>
-  <section class="profile-block bf-streak-card"><div class="eyebrow">DAILY ARENA STREAK</div><h3>${streakDays} day streak</h3><p>Join at least 3 different matches each day. Complete 7 consecutive days to earn 20 coins.</p><div class="bf-streak-progress"><span style="width:${streakCycleDay/7*100}%"></span></div><small>REWARD CYCLE: ${streakCycleDay} / 7 days · TODAY: ${Number(dailyStreakStatus?.today_matches||0)} / 3 matches · ${Math.max(0,3-Number(dailyStreakStatus?.today_matches||0))} more to qualify</small><small>Cancelled tournaments do not count.</small></section>
-  <details class="profile-block profile-accordion" open><summary>Edit profile</summary><label class="field">USERNAME (LETTERS, NUMBERS, UNDERSCORES)<input id="profileUsername" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]{3,24}" value="${esc(a.username||'')}" placeholder="ChooseUniqueName" autocomplete="nickname"></label><p class="profile-help">${Number(a.username_change_count||0)===0?'Your first username change is free.':'Each additional username change costs ₹5 from entry-fee-only credits.'} Only letters, numbers, and underscores; no spaces or other special characters.</p><button id="savePlayerProfile" class="join full">Save profile</button><p id="profileSaveStatus" class="profile-help"></p>
+  <section class="profile-block bf-streak-card"><div class="eyebrow">DAILY ARENA STREAK</div><h3>${streakDays} day streak</h3><p>Join at least 3 different matches each day. Complete 7 consecutive days to earn 20 coins.</p><div class="bf-streak-progress bf-streak-progress-seven" role="img" aria-label="${streakCycleDay} of 7 qualifying days completed">${Array.from({length:7},(_,i)=>`<span class="bf-streak-day${i<streakCycleDay?' is-complete':''}" aria-hidden="true">${i+1}</span>`).join('')}</div><small>REWARD CYCLE: ${streakCycleDay} / 7 days · TODAY: ${Number(dailyStreakStatus?.today_matches||0)} / 3 matches · ${Math.max(0,3-Number(dailyStreakStatus?.today_matches||0))} more to qualify</small><small>Cancelled tournaments do not count.</small></section>
+  <details class="profile-block profile-accordion" open><summary>Edit profile</summary><label class="field">USERNAME (LETTERS, NUMBERS, SPACES, UNDERSCORES)<input id="profileUsername" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]{3,24}" value="${esc(a.username||'')}" placeholder="ChooseUniqueName" autocomplete="nickname"></label><p class="profile-help">${Number(a.username_change_count||0)===0?'Your first username change is free.':'Each additional username change costs ₹5 from entry-fee-only credits.'} Letters, numbers, spaces, and underscores only. No other special characters.</p><button id="savePlayerProfile" class="join full">Save profile</button><p id="profileSaveStatus" class="profile-help"></p>
   </details><details class="profile-block profile-accordion"><summary>Referral centre</summary><p>Your referral code: <b>${esc(a.player_number||'—')}</b></p>${a.referred_by_player_number?`<p class="notice">You were referred by Player ID <b>${esc(a.referred_by_player_number)}</b>. Referral code already used; it can never be changed.</p>`:`<label class="field">REFER CODE<input id="applyReferralCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="20" placeholder="Enter someone else's Player ID"></label><button id="applyReferralCodeBtn" class="join full">Apply refer code</button><p class="profile-help">You can apply only one referral code for your lifetime. Once applied, it cannot be changed.</p>`}<p><a class="support-cta" href="${esc(referralDownloadUrl)}" target="_blank" rel="noopener noreferrer"><b>Download BattleForge APK</b><span>↗</span></a></p><p class="profile-help">Share this APK link with friends so they can install BattleForge and use your referral code.</p><div class="profile-metrics"><div><small>INVITED PLAYERS</small><b>${totalReferrals}</b></div><div><small>REWARDS EARNED</small><b>${rewarded} · ₹${(rewarded*5).toFixed(2)}</b></div><div><small>WAITING FOR FIRST WITHDRAWAL</small><b>${Math.max(0,totalReferrals-rewarded)}</b></div></div><p class="profile-help">Earn 5 coins when a referred player completes their first withdrawal.</p></details><details class="profile-block profile-accordion"><summary>Full activity history</summary><div class="profile-history">${led.length?led.map(x=>`<div class="profile-history-row"><div><b>${esc(x.entry_type||'Wallet activity')}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.note?' · '+esc(x.note):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No wallet activity recorded yet.</p>'}</div></section>
   </details><details class="profile-block profile-accordion"><summary>Deposit history</summary><div class="profile-history">${(depositHistory||[]).length?(depositHistory||[]).map(x=>`<div class="profile-history-row"><div><b>${esc(String(x.status||'pending').toUpperCase())}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.payment_reference?' · Ref '+esc(x.payment_reference):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No deposit requests yet.</p>'}</div></section>
   </details><details class="profile-block profile-accordion"><summary>Withdrawal history</summary><div class="profile-history">${withdrawals.length?withdrawals.map(x=>`<div class="profile-history-row"><div><b>${esc(String(x.status||'pending').toUpperCase())}</b><small>${esc(new Date(x.created_at).toLocaleString())} · Fee ₹${Number(x.fee_amount||0).toFixed(2)}</small></div><b>₹${Number(x.net_amount??x.amount??0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No withdrawal requests yet.</p>'}</div></section>
@@ -907,12 +911,12 @@ async function applyReferralCode() {
 async function savePlayerProfile() {
   const button=$('#savePlayerProfile'), status=$('#profileSaveStatus');
   const username=($('#profileUsername')?.value||'').trim();
-  if(!/^[A-Za-z0-9_]{3,24}$/.test(username)){toast('Username must be 3–24 letters, numbers, or underscores only.');return;}
+  if(!/^[A-Za-z0-9_ ]{3,24}$/.test(username)){toast('Username must be 3–24 characters. Use only letters, numbers, spaces, and underscores.');return;}
   button.disabled=true; button.textContent='Saving…';
   try {
-    if(!await usernameIsAvailable(username)){const msg='Username not available. Please choose another.';if(status)status.textContent=msg;toast(msg);return;}
+    if(!await usernameIsAvailable(username)){const msg='That username is already in use. Please choose another.';if(status)status.textContent=msg;toast(msg);return;}
     const {error}=await supabase.rpc('update_player_profile',{p_username:username,p_avatar_url:null});
-    if(error){if(/duplicate|unique|username.*taken|already exists/i.test(String(error.message||'')))throw new Error('Username not available. Please choose another.');throw error;}
+    if(error){if(/duplicate|unique|username.*taken|already exists/i.test(String(error.message||'')))throw new Error('That username is already in use. Please choose another.');throw error;}
     if(status) status.textContent='Profile saved.'; toast('Profile updated!'); await refreshData(); await showProfile();
   } catch(error){console.error('Profile update failed',error);toast(error?.message||'Could not save profile.');if(status)status.textContent=error?.message||'Could not save profile.';}
   finally{if(button){button.disabled=false;button.textContent='Save profile';}}
@@ -963,7 +967,7 @@ async function loadLeaderboard(period = leaderboardPeriod) {
     target.innerHTML = '<div class="empty-state"><span>⚠</span><b>Could not load the leaderboard</b><p>' + esc(error.message || 'Connection error') + '</p><p>Try tapping Overall, Monthly, or Daily again.</p></div>';
     return;
   }
-  const rows = Array.isArray(data) ? data : [];
+  const rows = (Array.isArray(data) ? data : []).slice(0, 10);
   const userIds=rows.map(r=>r.user_id).filter(Boolean);
   target.innerHTML = rows.length ? rows.map((r,i) => { const stats=lifetimeKillRanks.get(String(r.user_id)); const kills=Number(stats?.lifetime_kills||0); const name=String(r.username||stats?.username||'').trim()||('Player '+(r.player_number||'')); return `<article class="leader-row"><span class="leader-rank">${i===0?'👑':String(i+1).padStart(2,'0')}</span><div class="leader-player"><div class="leader-player-copy"><b>${esc(name)}${rankBadgeHtml(kills)}</b><small>${period==='all'?'ALL-TIME':period==='month'?'THIS MONTH':'TODAY'}${kills?' · '+kills.toLocaleString('en-IN')+' LIFETIME KILLS':''}</small></div></div><strong>₹${Number(r.total_earned||0).toLocaleString('en-IN',{maximumFractionDigits:2})}</strong></article>`; }).join('') : '<div class="empty-state"><span>🏆</span><b>No verified earnings yet</b><p>Published match rewards will appear here.</p></div>';
 }
@@ -1622,48 +1626,24 @@ supabase.auth.onAuthStateChange((event) => {
     setTimeout(() => refreshData(), 0);
   }
 });
-// Keep exactly one Supabase refresh loop on Android.
-// The SDK manages refresh automatically on web. Native apps must start it only
-// while foregrounded and stop it while backgrounded to avoid refresh races.
+// Supabase owns one refresh loop on both web and Android. Keep native storage
+// persistent and restore app data when the Capacitor process resumes.
 if (IS_NATIVE_APP) {
-  let authRefreshRunning = false;
   let appResumeInFlight = null;
-
-  const setNativeAuthRefreshState = async (isActive) => {
-    if (isActive) {
-      if (!authRefreshRunning) {
-        authRefreshRunning = true;
-        try { await supabase.auth.startAutoRefresh(); }
-        catch (error) {
-          authRefreshRunning = false;
-          console.warn('Could not start native auth refresh:', error);
-        }
-      }
-      if (appResumeInFlight) return;
-      appResumeInFlight = (async () => {
-        try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          if (error) console.warn('Could not restore saved session on resume:', error);
-          if (session?.user) {
-            await refreshData();
-            await checkRequiredAppUpdate();
-          }
-        } catch (error) { console.warn('Session resume handling failed:', error); }
-        finally { appResumeInFlight = null; }
-      })();
-    } else if (authRefreshRunning) {
-      authRefreshRunning = false;
-      try { await supabase.auth.stopAutoRefresh(); }
-      catch (error) { console.warn('Could not stop native auth refresh:', error); }
-    }
-  };
-
   App.addListener('appStateChange', ({ isActive }) => {
-    setNativeAuthRefreshState(isActive);
+    if (!isActive || appResumeInFlight) return;
+    appResumeInFlight = (async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) console.warn('Could not restore saved session on resume:', error);
+        if (session?.user) {
+          await refreshData();
+          await checkRequiredAppUpdate();
+        }
+      } catch (error) { console.warn('Session resume handling failed:', error); }
+      finally { appResumeInFlight = null; }
+    })();
   });
-  // App starts in the foreground. Start one refresh loop; appStateChange
-  // pauses/resumes that same loop rather than adding visibility listeners.
-  setNativeAuthRefreshState(true);
 }
 window.addEventListener('online', () => { checkRequiredAppUpdate(); });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
