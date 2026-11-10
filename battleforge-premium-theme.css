@@ -447,3 +447,17 @@ main.app-shell{max-width:760px;width:100%;padding:13px 13px 112px}
 .bf-copy-room{white-space:nowrap;min-height:36px;padding:8px 11px;font-size:11px;flex-shrink:0}.room-card .room-value{display:flex;align-items:center;justify-content:space-between;gap:12px}.room-card .room-value>span{min-width:0;overflow-wrap:anywhere}.bf-room-admin-field{display:flex;align-items:end;gap:8px}.bf-room-admin-field .field{flex:1;min-width:0}.bf-room-admin-field .bf-copy-room{margin-bottom:10px}
 /* Admin analytics dashboard */
 .bf-analytics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}.bf-analytics-card{min-width:0;padding:14px;border:1px solid var(--line);border-radius:13px;background:linear-gradient(145deg,#192332,#111923)}.bf-analytics-card small{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase}.bf-analytics-card strong{display:block;margin:9px 0 5px;font-size:clamp(20px,5vw,27px);font-weight:900;overflow-wrap:anywhere}.bf-analytics-card span{display:block;color:var(--muted);font-size:10px;line-height:1.4}.bf-analytics-panel{margin:18px 0;padding:15px;border:1px solid var(--line);border-radius:14px;background:#121923}.bf-analytics-day{display:grid;grid-template-columns:52px minmax(0,1fr) 28px;align-items:center;gap:9px;margin:11px 0;font-size:10px}.bf-analytics-day>span{color:var(--muted)}.bf-analytics-day>b{text-align:right}.bf-analytics-track{height:8px;border-radius:20px;background:#293342;overflow:hidden}.bf-analytics-track i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#42b7a5,#83d5c6);min-width:2px}.bf-analytics-match{display:grid;grid-template-columns:minmax(0,1fr) 62px 72px;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:11px}.bf-analytics-match:last-child{border-bottom:0}.bf-analytics-match>div:first-child{min-width:0}.bf-analytics-match b,.bf-analytics-match small{display:block;overflow-wrap:anywhere}.bf-analytics-match small{margin-top:4px;color:var(--muted);font-size:9px}.bf-analytics-updated{text-align:right;color:var(--muted);font-size:10px}@media(max-width:380px){.bf-analytics-grid{grid-template-columns:1fr}.bf-room-admin-field{gap:5px}.bf-copy-room{padding:7px 8px}}
+
+/* Android status-bar safe area: only add space when the device reports an inset.
+   Devices reporting zero keep the existing header position and dimensions. */
+.top{
+  box-sizing:border-box!important;
+  height:calc(76px + env(safe-area-inset-top, 0px))!important;
+  padding-top:env(safe-area-inset-top, 0px)!important;
+}
+@media(max-width:650px){
+  .top{
+    height:calc(65px + env(safe-area-inset-top, 0px))!important;
+    padding-top:env(safe-area-inset-top, 0px)!important;
+  }
+}
