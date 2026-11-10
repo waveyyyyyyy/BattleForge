@@ -69,3 +69,24 @@ end;
 $$;
 revoke all on function public.get_tournament_chat_messages(bigint) from public, anon;
 grant execute on function public.get_tournament_chat_messages(bigint) to authenticated;
+
+
+-- Keep storage bounded: retain only the latest 200 messages for each match.
+create or replace function public.trim_tournament_chat_history()
+returns trigger language plpgsql set search_path = ''
+as $$
+begin
+  delete from public.tournament_chat_messages
+  where tournament_id=new.tournament_id
+    and id in (
+      select id from public.tournament_chat_messages
+      where tournament_id=new.tournament_id
+      order by created_at desc,id desc offset 200
+    );
+  return new;
+end;
+$$;
+revoke all on function public.trim_tournament_chat_history() from public,anon,authenticated;
+drop trigger if exists tournament_chat_keep_latest_200 on public.tournament_chat_messages;
+create trigger tournament_chat_keep_latest_200 after insert on public.tournament_chat_messages
+for each row execute function public.trim_tournament_chat_history();
