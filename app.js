@@ -351,7 +351,7 @@ function modal(html) {
   const overlay = $('#modal');
   $('#modalContent').innerHTML = html;
   overlay.classList.toggle('profile-modal', html.includes('profile-sheet'));
-  overlay.classList.toggle('bf-fullscreen-chat', html.includes('bf-chat-header'));
+  overlay.classList.toggle('bf-fullscreen-chat', html.includes('bf-chat-header') || html.includes('bf-match-chat'));
   overlay.classList.remove('hidden');
   overlay.scrollTop = 0;
   // Reset both scroll containers; Android WebViews can otherwise retain the prior dialog's position.
@@ -1414,7 +1414,7 @@ async function showTournamentDetails(t) {
     if (currentUser) await loadLifetimeKillRanks();
     const rosterRanks = new Map([...lifetimeKillRanks.values()].map(stats => [String(stats.player_number), Number(stats.lifetime_kills || 0)]));
     roomHtml = '<section class="match-rules"><div class="rules-heading"><div><small>REGISTERED PLAYERS</small><h3>Match roster · ' + (roster?.length || 0) + '</h3></div></div>' +
-      (roster?.length ? '<div class="roster"><div class="roster-chips">' + roster.map((p, i) => '<span class="player-chip bf-roster-player"><i>' + (i + 1) + '</i>' +  + '<span class="bf-roster-player-copy">' + esc(p.in_game_name) + rankBadgeHtml(rosterRanks.get(String(p.player_number)) || 0) + '<small>ID #' + esc(p.player_number) + '</small></span></span>').join('') + '</div></div>' : '<p class="match-rules-copy">No players have joined this match yet.</p>') + '</section>' +
+      (roster?.length ? '<div class="roster"><div class="roster-chips">' + roster.map((p, i) => '<span class="player-chip bf-roster-player"><i>' + (i + 1) + '</i><span class="bf-roster-player-copy">' + esc(p.in_game_name) + rankBadgeHtml(rosterRanks.get(String(p.player_number)) || 0) + '<small>ID #' + esc(p.player_number) + '</small></span></span>').join('') + '</div></div>' : '<p class="match-rules-copy">No players have joined this match yet.</p>') + '</section>' +
       (has && room?.published ? '<div class="room-card"><small class="room-label">MATCH ROOM</small><div class="room-value"><span>ID <b>' + esc(room.room_id || 'Not set') + '</b></span><button type="button" id="detailsCopyRoomId" class="outline bf-copy-room">Copy ID</button></div><div class="room-value"><span>Password <b>' + esc(room.room_password || 'Not set') + '</b></span><button type="button" id="detailsCopyRoomPassword" class="outline bf-copy-room">Copy password</button></div></div>' : '');
   }
   const full = t.status === 'full' || count >= Number(t.max_players) || t.is_cancelled === true;
