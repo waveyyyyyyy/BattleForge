@@ -167,6 +167,60 @@ jobs:
           chmod +x android/gradlew
           cd android
           ./gradlew assembleDebug
+      - name: Build and verify signed release APK when keystore secrets are configured
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
+            echo "::warning::Signed release skipped. Add ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD GitHub Actions secrets."
+            exit 0
+          fi
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/android/app/battleforge-upload.jks"
+          export ANDROID_KEYSTORE_PATH="$GITHUB_WORKSPACE/android/app/battleforge-upload.jks"
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("android/app/build.gradle")
+          s = p.read_text()
+          signing = '''
+              signingConfigs {
+                  release {
+                      storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                      storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                      keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                  }
+              }
+          '''
+          if "signingConfigs {" not in s:
+              s, n = re.subn(r'(android\\s*\\{)', r'\\1\\n' + signing, s, count=1)
+              if n != 1:
+                  raise SystemExit("Could not add Android release signing configuration")
+          s, n = re.subn(r'(buildTypes\\s*\\{\\s*release\\s*\\{)', r'\\1\\n            signingConfig signingConfigs.release', s, count=1)
+          if n != 1:
+              raise SystemExit("Could not attach release signing config to buildTypes.release")
+          p.write_text(s)
+          PY
+          cd android
+          ./gradlew assembleRelease
+          APK="app/build/outputs/apk/release/app-release.apk"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+          test -n "$APKSIGNER"
+          "$APKSIGNER" verify --verbose --print-certs "$APK"
+          sha256sum "$APK" > "$GITHUB_WORKSPACE/release-apk-sha256.txt"
+          cp "$APK" "$GITHUB_WORKSPACE/BattleForge-release.apk"
+      - name: Upload signed release APK
+        if: ${{ success() && hashFiles('BattleForge-release.apk') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: BattleForge-signed-release-APK
+          path: |
+            BattleForge-release.apk
+            release-apk-sha256.txt
+          if-no-files-found: error
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
