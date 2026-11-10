@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, "feature/payment-minimums-earned-withdrawal-policy"]
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -230,6 +230,15 @@ jobs:
             BattleForge-release.apk
             release-apk-sha256.txt
           if-no-files-found: error
+      - name: Publish direct APK download
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          TAG="battleforge-apk-${BUILD_NUMBER}"
+          gh release create "$TAG" android/app/build/outputs/apk/debug/app-debug.apk \
+            --title "BattleForge Android APK build #${BUILD_NUMBER}" \
+            --notes "Direct APK download for BattleForge build #${BUILD_NUMBER}. Install this APK on Android."
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
