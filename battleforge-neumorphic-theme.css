@@ -1371,3 +1371,47 @@ body{background-image:none!important}
  #bfIntroScreen .bf-intro-logo{animation:none!important;opacity:1!important;transform:none!important;-webkit-mask-image:none!important;mask-image:none!important}
  #bfIntroScreen .bf-intro-tagline{animation:none!important;opacity:1!important}
 }
+
+
+/* 2026-11-11 logo fit repair: centre the complete wordmark in the space
+   left by the header actions, and scale it down instead of clipping it. */
+.top{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:center!important;
+ column-gap:8px!important;
+}
+.top>.brand{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ width:100%!important;
+ min-width:0!important;
+ max-width:100%!important;
+ flex:initial!important;
+ margin:0!important;
+ overflow:visible!important;
+}
+.top>.brand .brand-logo-image{
+ display:block!important;
+ width:100%!important;
+ max-width:164px!important;
+ min-width:0!important;
+ height:auto!important;
+ max-height:48px!important;
+ margin:0 auto!important;
+ object-fit:contain!important;
+ object-position:center center!important;
+ flex:0 1 auto!important;
+}
+.top>.top-actions{
+ width:max-content!important;
+ max-width:100%!important;
+ min-width:0!important;
+ justify-self:end!important;
+ flex:0 0 auto!important;
+}
+@media(max-width:380px){
+ .top{column-gap:5px!important;padding-left:8px!important;padding-right:8px!important}
+ .top>.brand .brand-logo-image{max-width:148px!important;max-height:44px!important}
+}
