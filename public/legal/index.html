@@ -10,7 +10,7 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:90px}
 body{margin:0;background:radial-gradient(ellipse at 50% 0%,#e7edff 0,transparent 520px),var(--bg);color:var(--text);font:15px/1.78 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1080px;margin:auto;padding:30px 22px 72px}
+.wrap{max-width:1080px;margin:auto;padding:calc(30px + env(safe-area-inset-top,0px)) 22px 72px}
 header{position:relative;overflow:hidden;padding:38px clamp(22px,5vw,52px) 34px;border:1px solid #263b5e;border-radius:24px;background:linear-gradient(125deg,#101d35 0%,#172b4d 62%,#244a9a 100%);color:#fff;box-shadow:0 18px 48px rgba(22,42,78,.16)}
 header:after{content:"";position:absolute;width:330px;height:330px;border:1px solid rgba(255,255,255,.11);border-radius:50%;right:-110px;top:-190px;box-shadow:0 0 0 32px rgba(255,255,255,.035),0 0 0 66px rgba(255,255,255,.025);pointer-events:none}
 .brand{display:inline-flex;align-items:center;gap:10px;font-weight:850;letter-spacing:.16em;color:#cbd8ff;font-size:11px}
@@ -33,7 +33,7 @@ a:hover{color:#1739a5}
 footer{border-top:1px solid var(--line);margin-top:38px;padding:22px 4px 0;color:var(--muted);font-size:12px}
 footer p{margin:5px 0}
 @media(min-width:900px){.wrap{padding-top:38px}.card{padding:42px 52px}.nav a{min-width:160px}}
-@media(max-width:600px){.wrap{padding:12px 12px 42px}header{padding:26px 22px 24px;border-radius:18px}h1{margin-top:20px;letter-spacing:-1px}.nav{top:6px;margin:12px 0 16px;padding:6px}.nav a{flex:1;padding:10px 8px;font-size:12px}.card{border-radius:16px;padding:22px 18px;margin:14px 0 18px}h2{margin-bottom:18px}h3{margin-top:25px}body{font-size:14px;line-height:1.75}}
+@media(max-width:600px){.wrap{padding:calc(18px + env(safe-area-inset-top,0px)) 12px 42px}header{padding:26px 22px 24px;border-radius:18px}h1{margin-top:20px;letter-spacing:-1px}.nav{top:6px;margin:12px 0 16px;padding:6px}.nav a{flex:1;padding:10px 8px;font-size:12px}.card{border-radius:16px;padding:22px 18px;margin:14px 0 18px}h2{margin-bottom:18px}h3{margin-top:25px}body{font-size:14px;line-height:1.75}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
 @media print{body{background:#fff}.wrap{max-width:none;padding:0}header{background:#fff;color:#111;border:0;box-shadow:none;padding:0}header h1,header .muted,.updated,.brand{color:#111}.nav{display:none}.card{box-shadow:none;border:0;padding:0;break-inside:auto}a{color:#111;text-decoration:none}}
 </style>
