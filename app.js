@@ -312,48 +312,81 @@ async function updateSupportTicket(id){
 function openFaqChat(){
  modal('<div class="bf-support-hub"><div class="bf-support-hub-brand"><div class="bf-support-hub-icon">✦</div><div><span class="eyebrow">BATTLEFORGE ASSISTANT</span><h2>BLAZE</h2><p>Choose how you want to get help.</p></div></div><button type="button" id="bfStartFaqChat" class="join full">Chat with BLAZE →</button><div class="bf-support-hub-divider"><span>SUPPORT OPTIONS</span></div><button type="button" id="bfCreateSupportTicket" class="outline full">Create a support ticket</button><button type="button" id="bfViewMyTickets" class="outline full">My support tickets</button><a class="support-cta" href="https://t.me/battleforgeff" target="_blank" rel="noopener noreferrer">Talk to a human · Telegram support ↗</a></div>');
 }
-let blazeConversation = [];
-let blazeRequestInFlight = false;
+let blazeLastIntent = '';
+let blazeClearTimer = null;
+const BLAZE_CHAT_TTL = 5 * 60 * 1000;
 function startFaqChat(){
- blazeConversation = [];
- blazeRequestInFlight = false;
+ if(blazeClearTimer)clearInterval(blazeClearTimer);
+ blazeLastIntent='';
  const robot='<svg class="bf-bot-avatar" viewBox="0 0 80 80" role="img" aria-label="BLAZE robot assistant"><defs><linearGradient id="bfBotShell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#284b70"/><stop offset="1" stop-color="#101c2c"/></linearGradient><linearGradient id="bfBotGlow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8ff5e7"/><stop offset="1" stop-color="#42b7a5"/></linearGradient></defs><path d="M40 8v8" stroke="#8ff5e7" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="7" r="4" fill="#42b7a5"/><rect x="13" y="19" width="54" height="43" rx="15" fill="url(#bfBotShell)" stroke="#6ed8ca" stroke-width="2"/><rect x="20" y="27" width="40" height="25" rx="9" fill="#0a1420" stroke="#355d7a"/><ellipse cx="30" cy="39" rx="4" ry="5" fill="url(#bfBotGlow)"/><ellipse cx="50" cy="39" rx="4" ry="5" fill="url(#bfBotGlow)"/><path d="M33 47q7 5 14 0" fill="none" stroke="#8ff5e7" stroke-width="2.5" stroke-linecap="round"/><path d="M13 34H7v13h7M67 34h6v13h-7" fill="none" stroke="#42b7a5" stroke-width="3" stroke-linecap="round"/><path d="M27 63v7m26-7v7" stroke="#9bb4c8" stroke-width="4" stroke-linecap="round"/><rect x="24" y="69" width="12" height="5" rx="2.5" fill="#42b7a5"/><rect x="44" y="69" width="12" height="5" rx="2.5" fill="#42b7a5"/></svg>';
- modal('<div class="bf-faq-chat"><header class="bf-chat-header">'+robot+'<div class="bf-chat-identity"><span class="eyebrow">BATTLEFORGE ASSISTANT</span><h2>BLAZE</h2><span class="bf-chat-online"><i></i> Online · AI assistant</span></div>'+chatSoundSwitchMarkup()+'</header><p class="bf-chat-intro">Talk to me normally, or ask me anything about BattleForge. I’m here to help.</p><div id="bfFaqMessages" class="bf-faq-messages" aria-live="polite"><div class="bf-faq-bubble bot"><b>Hey, I’m BLAZE.</b><br>We can talk about anything — and I know my way around BattleForge too. What’s up?</div></div><form id="bfFaqForm" class="bf-faq-form"><input id="bfFaqInput" maxlength="1200" placeholder="Message BLAZE…" aria-label="Message BLAZE" autocomplete="off" required><button class="bf-chat-send" type="submit" aria-label="Send message"><span aria-hidden="true">➤</span></button></form><p class="bf-chat-disclaimer">AI assistant · Never share passwords, OTPs or UPI PINs.</p></div>');
+ modal('<div class="bf-faq-chat"><header class="bf-chat-header">'+robot+'<div class="bf-chat-identity"><span class="eyebrow">BATTLEFORGE ASSISTANT</span><h2>BLAZE</h2><span class="bf-chat-online"><i></i> Online · Ready to chat</span></div>'+chatSoundSwitchMarkup()+'</header><p class="bf-chat-intro">Talk to me normally, or ask me anything about BattleForge. I’m here to help.</p><div id="bfFaqMessages" class="bf-faq-messages" aria-live="polite"><div class="bf-faq-bubble bot"><b>Hey, I’m BLAZE.</b><br>What’s up? We can chat, or I can help you find your way around BattleForge.</div></div><form id="bfFaqForm" class="bf-faq-form"><input id="bfFaqInput" maxlength="500" placeholder="Message BLAZE…" aria-label="Message BLAZE" autocomplete="off" required><button class="bf-chat-send" type="submit" aria-label="Send message"><span aria-hidden="true">➤</span></button></form><p class="bf-chat-disclaimer">Chat is temporary and automatically clears every 5 minutes. Messages are not saved.</p></div>');
+ // Keep all chat text and conversational context in memory only. Clear the visible transcript every five minutes.
+ blazeClearTimer=window.setInterval(()=>{
+  const box=$('#bfFaqMessages');
+  if(!box)return;
+  box.replaceChildren();
+  blazeLastIntent='';
+  const welcome=document.createElement('div');
+  welcome.className='bf-faq-bubble bot';
+  welcome.textContent='Fresh start! I automatically clear this chat every 5 minutes to keep it temporary. What can I help with?';
+  box.appendChild(welcome);
+ },BLAZE_CHAT_TTL);
+}
+function battleForgeFaqAnswer(question){
+ const raw=String(question||'').trim();
+ const q=raw.toLowerCase().replace(/[’']/g,"'").replace(/[^a-z0-9₹% ]/g,' ').replace(/\s+/g,' ').trim();
+ if(!q)return 'Say something and I’m listening 😄';
+ const has=(...terms)=>terms.some(term=>q.includes(term));
+ const remember=(intent,answer)=>{blazeLastIntent=intent;return answer;};
+ // Natural conversation: greetings, small talk, reactions and follow-ups.
+ if(/^(hi|hey|hello|yo|heyy+|hii+|sup|what'?s up|wassup|good morning|good evening|good afternoon)\b/.test(q))return remember('greeting',"Heyyy! 😄 What’s going on? Need help with BattleForge or just wanna chat?");
+ if(has('how are you','how r u','you good','how you doing'))return remember('smalltalk',"I'm doing good, bro 😄 Ready whenever you are. How's your day going?");
+ if(has('who are you','your name','what are you'))return remember('identity',"I'm BLAZE 🔥 — BattleForge's built-in assistant. I can chat normally and help explain how the app works.");
+ if(has('thank you','thanks','thx','appreciate it'))return remember('thanks',"Anytime! 😎 That's what I'm here for.");
+ if(has('good bot','nice one','you are smart','youre smart'))return remember('compliment',"Haha, appreciate that 😄 Got anything else?");
+ if(has('bye','good night','see you later','gotta go'))return remember('bye',"Catch you later! Take care, and I'll be here when you need me. 👋");
+ if(has('joke','make me laugh','tell me something funny'))return remember('joke',"Why did the gamer bring a ladder to the tournament? Bro wanted to reach the next level. 😂");
+ if(has('what can you do','help me','how can you help','capabilities'))return remember('capabilities',"I can chat with you, explain BattleForge features and rules, help with tournaments, coins, deposits, withdrawals, referrals, ranks, results and app navigation. I can't see private account records or perform payments.");
+ if(has('streak','daily reward','daily matches'))return remember('streak','Daily streak: join at least 3 different matches each day for 7 consecutive days. Complete the 7th day and receive 20 coins. Cancelled or disabled tournaments do not count.');
+ if(has('rank','badge','rookie','legend','master','veteran','contender','elite','kill level'))return remember('rank','Lifetime kill ranks use published results: Rookie 10+, Contender 50+, Veteran 100+, Elite 500+, Master 1,000+, and Legend 10,000+ verified kills. They update after verified results are published.');
+ if(has('withdraw','payout','cash out','withdrawal','2% fee'))return remember('withdraw','Minimum withdrawal is 100 coins. Only eligible match earnings can be withdrawn; deposited coins cannot. A 2% processing fee applies, and manual processing may take up to 24 hours. I can explain the rules, but I cannot see your individual request status.');
+ if(has('deposit','upi','payment','add money','top up','utr'))return remember('deposit','Minimum deposit is 30 coins. Open Wallet → Deposit, pay the exact amount to the UPI ID shown there, submit your UTR and payment confirmation, then wait for manual admin verification. It can take up to 24 hours. Never share your UPI PIN or OTP.');
+ if(has('wallet','balance','coins','entry fee','money'))return remember('wallet','Your Wallet shows your coin balance and activity. 1 coin = ₹1. Match earnings can be withdrawn or used for entry fees; deposited coins are for entry fees only. I cannot read your live balance, so check the Wallet screen for the exact amount.');
+ if(has('room id','password','room','lobby'))return remember('room','Room ID and password appear in the match details after the organiser publishes them. They are available only to players registered for that match. Open the joined match to check.');
+ if(has('dispute','wrong result','incorrect result','result issue'))return remember('dispute','Open the relevant match in Past Matches and use “Dispute this result” if available. Explain what is wrong clearly so the team can review it.');
+ if(has('result','ranking','pending','kills result','past match'))return remember('results','Results remain Pending Results until an admin publishes the final rankings. After publication, open Past Matches to see ranks, verified kills and rewards.');
+ if(has('tournament','solo','duo','squad','join','register','match'))return remember('tournament','BattleForge supports Free Fire Solo, Duo and Squad tournaments. Open Arena, choose a match card, and check its current entry fee, schedule, slots and rules before joining. You need enough eligible coins.');
+ if(has('referral','refer','invite','referrer'))return remember('referral','Your BattleForge Player ID is also your referral code. The referral reward is 5 coins after the referred player completes their first withdrawal. Referral bonus coins are restricted to entry-fee use.');
+ if(has('username','name change','ign','player id','unique id'))return remember('account','Your Player ID is unique. Usernames use letters, numbers and underscores. The first username change is free; later changes cost 5 coins. Use your exact Free Fire IGN when joining a match.');
+ if(has('notification','bell','announcement'))return remember('notifications','BattleForge notifications show match updates and announcements. Open the Notifications tab to read them.');
+ if(has('support','human','contact','complaint','ticket'))return remember('support','You can create a support ticket from the Support area, check it under My support tickets, or contact the human team at https://t.me/battleforgeff.');
+ if(has('privacy','terms','policy','refund','rules'))return remember('policy','You can find BattleForge rules and legal information from your Profile area. For a specific policy question, tell me which part you mean and I’ll explain what I know.');
+ if(has('lag','slow','crash','bug','not working','error','stuck'))return remember('troubleshoot','Try closing and reopening BattleForge and checking your internet connection. If it keeps happening, tell me which screen and what you tapped — I can help narrow it down. For account or payment issues, use Support.');
+ if(has('love you','❤️','❤'))return remember('affection','Ayy, sending good vibes back! ❤️');
+ if(has('bored','nothing to do'))return remember('bored','We can talk games, Free Fire, tournaments, or random stuff. What are you in the mood for?');
+ // Understand short follow-ups using the most recent topic, without storing a transcript.
+ if(/^(how|why|what about|and|then|so|where|when|that|it|this|more|explain|tell me more|how so)\b/.test(q)&&blazeLastIntent){
+  const followups={
+   withdraw:'For withdrawals, the key points are: at least 100 coins, eligible match earnings only, 2% fee, and up to 24 hours for manual processing. Your exact request status is in Wallet → Withdraw.',
+   deposit:'For deposits, the minimum is 30 coins. Submit the UTR and confirmation in Wallet → Deposit. Admin verification can take up to 24 hours.',
+   wallet:'Remember: deposited coins are entry-fee-only. Verified match earnings can be used for entry fees or withdrawn.',
+   tournament:'Open Arena and tap the match card. That is where the current entry fee, format, schedule and available slots are shown.',
+   results:'Pending means the admin has not published the final result yet. Check Past Matches after publication.',
+   referral:'The 5-coin referral reward is triggered after your referred player completes their first withdrawal. It is not withdrawable.',
+   rank:'Ranks are based on lifetime verified kills from published results. Check your Profile for your current rank.',
+   room:'Room details only show after the organiser publishes them, and only to registered players.',
+   support:'You can create a ticket inside Support or contact https://t.me/battleforgeff for human help.'
+  };
+  if(followups[blazeLastIntent])return followups[blazeLastIntent];
+ }
+ if(has('free fire','freefire','ff max','battle royale','gaming','game'))return remember('gaming',"Free Fire vibes 😎 Are you playing ranked, Clash Squad, or tournaments lately?");
+ if(has('weather','news','cricket','football','movie','music'))return remember('smalltalk',"I can chat about that in a general way, but I don't have live internet or current updates. What's on your mind?");
+ if(q.split(' ').length<=3)return remember('chat',"Got you 😄 Tell me a little more so I can understand what you mean.");
+ return remember('unknown',"I'm listening 😄 I can chat casually and help with BattleForge, but I don't have live internet or access to private account records. What's the main thing you want to know?");
 }
 function appendFaqMessage(textValue,kind){
- const box=$('#bfFaqMessages');if(!box)return null;
- const bubble=document.createElement('div');bubble.className='bf-faq-bubble '+kind;bubble.textContent=String(textValue??'');box.appendChild(bubble);box.scrollTop=box.scrollHeight;return bubble;
-}
-async function sendBlazeMessage(question){
- if(blazeRequestInFlight)return;
- const input=$('#bfFaqInput'),form=$('#bfFaqForm'),send=form?.querySelector('button[type="submit"]');
- if(!currentUser){
-  appendFaqMessage('Please sign in to chat with BLAZE. Your chat is available to BattleForge players.','bot');
-  return;
- }
- const nextMessages=[...blazeConversation,{role:'user',content:question}].slice(-12);
- blazeRequestInFlight=true;
- if(input)input.disabled=true;
- if(send)send.disabled=true;
- const typing=appendFaqMessage('BLAZE is thinking…','bot bf-typing');
- try{
-  const {data,error}=await supabase.functions.invoke('blaze-chat',{body:{messages:nextMessages}});
-  if(error)throw error;
-  const reply=String(data?.reply||'').trim();
-  if(!reply)throw new Error('BLAZE returned an empty reply.');
-  typing?.remove();
-  blazeConversation=[...nextMessages,{role:'assistant',content:reply}].slice(-12);
-  appendFaqMessage(reply,'bot');
-  playChatSound('receive');
- }catch(error){
-  console.warn('BLAZE request failed:',error);
-  typing?.remove();
-  appendFaqMessage('I couldn’t reach my AI service just now. Please try again in a moment. If this keeps happening, contact BattleForge support on Telegram: https://t.me/battleforgeff.','bot');
- }finally{
-  blazeRequestInFlight=false;
-  if(input){input.disabled=false;input.focus();}
-  if(send)send.disabled=false;
- }
+ const box=$('#bfFaqMessages');if(!box)return;
+ const bubble=document.createElement('div');bubble.className='bf-faq-bubble '+kind;bubble.textContent=textValue;box.appendChild(bubble);box.scrollTop=box.scrollHeight;
 }
 
 function toast(message) {
@@ -1805,8 +1838,8 @@ document.addEventListener('change',event=>{
 });
 document.addEventListener('submit',async event=>{
  if(event.target.id==='bfFaqForm'){
-  event.preventDefault();const input=$('#bfFaqInput');const question=input?.value.trim();if(!question||blazeRequestInFlight)return;
-  appendFaqMessage(question,'user');playChatSound('send');input.value='';await sendBlazeMessage(question);
+  event.preventDefault();const input=$('#bfFaqInput');const question=input?.value.trim();if(!question)return;
+  appendFaqMessage(question,'user');playChatSound('send');appendFaqMessage(battleForgeFaqAnswer(question),'bot');playChatSound('receive');input.value='';input.focus();
  }
  if(event.target.id==='bfTicketForm'){event.preventDefault();await createSupportTicket();}
  if(event.target.id==='bfMatchDisputeForm'){event.preventDefault();await submitMatchDispute(event.target);}
