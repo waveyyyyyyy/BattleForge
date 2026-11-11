@@ -151,14 +151,20 @@ jobs:
           source = Path("public/assets/battleforge-logo.svg")
           if not source.exists():
               raise SystemExit("Official BattleForge logo SVG is missing.")
-          # The app launcher is a square, so use only the BF emblem and omit
-          # the tiny horizontal wordmark. This lets the actual mark fill the icon.
+          # Render at the SVG's native coordinate space, then physically crop
+          # to the BF emblem bounds. Changing viewBox alone was not reliable
+          # across launcher asset generation and allowed the wordmark to leak in.
           svg = source.read_text()
-          svg = svg.replace('viewBox="0 0 947 321"', 'viewBox="0 0 770 200"', 1)
-          png = cairosvg.svg2png(bytestring=svg.encode("utf-8"), output_width=1024, output_height=1024)
-          logo = Image.open(BytesIO(png)).convert("RGBA")
+          png = cairosvg.svg2png(bytestring=svg.encode("utf-8"), output_width=947, output_height=321)
+          rendered = Image.open(BytesIO(png)).convert("RGBA")
+          emblem = rendered.crop((0, 0, 770, 200))
+          # Fit the emblem inside a square with generous, symmetric safe-area
+          # padding so Android's rounded/adaptive masks cannot clip its edges.
+          emblem.thumbnail((820, 360), Image.Resampling.LANCZOS)
           canvas = Image.new("RGBA", (1024, 1024), (255, 255, 255, 255))
-          canvas.alpha_composite(logo, ((1024-logo.width)//2, (1024-logo.height)//2))
+          x = (1024 - emblem.width) // 2
+          y = (1024 - emblem.height) // 2
+          canvas.alpha_composite(emblem, (x, y))
           Path("assets").mkdir(exist_ok=True)
           canvas.convert("RGB").save("assets/icon.png", optimize=True)
           PY
