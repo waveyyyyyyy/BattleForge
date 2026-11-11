@@ -84,10 +84,23 @@ footer{background:#fff;border-top:1px solid var(--line);padding:35px 0 22px}.foo
 .manifesto-card h3{font-size:25px}
 .feature-item{grid-template-columns:1fr 18px;row-gap:7px}
 .feature-item>span{grid-column:1/-1}
-}</style>
+}
+/* LOADING SCREEN / OFFICIAL ANIMATED APP MARK */
+.launch-screen{gap:10px;animation:launchExit .7s 1.35s cubic-bezier(.7,0,.2,1) forwards}
+.launch-brand{width:min(78vw,340px);height:245px;min-height:0;flex:none}
+.launch-brand:before{width:155px;box-shadow:0 0 0 18px #ffffff0c,0 0 0 38px #ffffff09,0 0 0 58px #ffffff07}
+.launch-brand .brand-orbit{width:245px}
+.launch-brand .brand-orbit-two{width:205px}
+.launch-brand .brand-orbit-three{width:165px}
+.launch-brand .brand-logo-plate{width:190px;padding:15px 13px;box-shadow:11px 12px 0 #092c9b,0 16px 42px #061d7c66}
+.launch-brand .brand-logo-plate:before{inset:6px}
+.launch-word{margin-top:-4px}
+@media(max-width:650px){.launch-brand{width:280px;height:210px}.launch-brand .brand-orbit{width:220px}.launch-brand .brand-orbit-two{width:180px}.launch-brand .brand-orbit-three{width:145px}.launch-brand .brand-logo-plate{width:170px;padding:13px 11px}}
+@media(prefers-reduced-motion:reduce){.launch-screen{display:none}}
+</style>
 </head>
 <body>
-<div class="launch-screen" aria-hidden="true"><div class="launch-mark"><span>B</span><span>F</span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">INITIALIZING PLAYER SYSTEM</div></div>
+<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">INITIALIZING PLAYER SYSTEM</div></div>
 <div class="page-progress" aria-hidden="true"><span id="page-progress-bar"></span></div>
 <header><div class="wrap nav"><a class="logo" href="#top" aria-label="BattleForge home"><img src="assets/battleforge-logo.svg" alt="BattleForge"></a>
 <nav class="navlinks" id="navlinks"><a href="#identity">Manifesto</a><a href="#formats">Formats</a><a href="#inside">Inside BF</a><a href="#rewards">Rewards</a><a href="#how">How it works</a><a href="#faq">Info</a></nav>
