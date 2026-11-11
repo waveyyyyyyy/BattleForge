@@ -186,7 +186,7 @@ jobs:
           # Legacy launchers use a complete opaque square icon.
           legacy = Image.new("RGBA", (1024, 1024), (255, 255, 255, 255))
           legacy_mark = lockup.copy()
-          legacy_mark.thumbnail((760, 760), Image.Resampling.LANCZOS)
+          legacy_mark.thumbnail((920, 920), Image.Resampling.LANCZOS)
           legacy_x = (1024 - legacy_mark.width) // 2
           legacy_y = (1024 - legacy_mark.height) // 2
           legacy.alpha_composite(legacy_mark, (legacy_x, legacy_y))
@@ -196,7 +196,7 @@ jobs:
           # lockup inside the central 66% safe zone using a separate layer.
           foreground = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
           adaptive_mark = lockup.copy()
-          adaptive_mark.thumbnail((600, 600), Image.Resampling.LANCZOS)
+          adaptive_mark.thumbnail((820, 820), Image.Resampling.LANCZOS)
           adaptive_x = (1024 - adaptive_mark.width) // 2
           adaptive_y = (1024 - adaptive_mark.height) // 2
           foreground.alpha_composite(adaptive_mark, (adaptive_x, adaptive_y))
