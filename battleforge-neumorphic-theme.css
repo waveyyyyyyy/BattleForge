@@ -1415,3 +1415,47 @@ body{background-image:none!important}
  .top{column-gap:5px!important;padding-left:8px!important;padding-right:8px!important}
  .top>.brand .brand-logo-image{max-width:148px!important;max-height:44px!important}
 }
+
+
+/* 2026-11-11: restore the Arena brand to the left and keep the full wordmark visible. */
+.top{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:center!important;
+ column-gap:8px!important;
+}
+.top>.brand{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:flex-start!important;
+ justify-self:start!important;
+ width:100%!important;
+ min-width:0!important;
+ max-width:100%!important;
+ margin:0!important;
+ overflow:visible!important;
+}
+.top>.brand .brand-logo-image{
+ display:block!important;
+ width:min(100%,164px)!important;
+ max-width:164px!important;
+ min-width:0!important;
+ height:auto!important;
+ max-height:48px!important;
+ margin:0!important;
+ object-fit:contain!important;
+ object-position:left center!important;
+ flex:0 1 auto!important;
+}
+.top>.top-actions{
+ justify-self:end!important;
+ min-width:0!important;
+ max-width:100%!important;
+ flex:0 0 auto!important;
+}
+@media(max-width:380px){
+ .top{column-gap:5px!important;padding-left:8px!important;padding-right:8px!important}
+ .top>.brand .brand-logo-image{
+  width:min(100%,148px)!important;max-width:148px!important;max-height:44px!important;
+ }
+}
