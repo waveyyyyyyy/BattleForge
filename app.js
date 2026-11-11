@@ -992,10 +992,31 @@ async function savePlayerProfile() {
 async function showNotifications() {
   const items = window.battleForgeBroadcasts || [];
   const ids = await getSeenNotificationIds();
+  const unreadCount = items.filter(n => !ids.includes(String(n.id))).length;
   const pushAction = Capacitor.isNativePlatform()
-    ? '<button id="enablePhoneNotifications" class="outline full">Enable phone notifications</button>'
+    ? '<button id="enablePhoneNotifications" class="outline full bf-notification-push">Enable phone notifications</button>'
     : '';
-  modal(`<div class="notification-sheet"><div class="eyebrow">BATTLEFORGE UPDATES</div><h2>Notifications</h2><p class="profile-help">Announcements from the BattleForge admins.</p>${items.length ? items.map(n => `<article class="notification-card ${ids.includes(String(n.id)) ? '' : 'unread'}"><div class="notification-card-top"><b>${esc(n.title)}</b><small>${esc(new Date(n.created_at).toLocaleString())}</small></div><p>${esc(n.message)}</p></article>`).join('') : '<div class="empty-state"><span>♢</span><h3>You’re all caught up</h3><p>Admin announcements will appear here.</p></div>'}${pushAction}<button id="markNotificationsRead" class="join full">Mark all as read</button></div>`);
+  const cards = items.length ? items.map(n => {
+    const unread = !ids.includes(String(n.id));
+    const date = n.created_at ? new Date(n.created_at).toLocaleString([], {dateStyle:'medium',timeStyle:'short'}) : 'BattleForge update';
+    return `<article class="notification-card bf-notification-item ${unread ? 'unread' : 'read'}">
+      <div class="bf-notification-icon" aria-hidden="true">${unread ? '✦' : '✓'}</div>
+      <div class="bf-notification-copy">
+        <div class="notification-card-top"><b>${esc(n.title || 'BattleForge update')}</b><small>${esc(date)}</small></div>
+        <p>${esc(n.message || '')}</p>
+        <span class="bf-notification-status">${unread ? 'NEW' : 'READ'}</span>
+      </div>
+    </article>`;
+  }).join('') : '<div class="empty-state bf-notification-empty"><span>✓</span><h3>You’re all caught up</h3><p>New tournament announcements and important updates will appear here.</p></div>';
+  modal(`<section class="notification-sheet bf-notifications">
+    <div class="bf-notifications-heading">
+      <div><div class="eyebrow">BATTLEFORGE UPDATES</div><h2>Notifications</h2><p class="profile-help">Tournament news and important announcements.</p></div>
+      <span class="bf-notification-count">${unreadCount} unread</span>
+    </div>
+    ${unreadCount ? '<button id="markNotificationsRead" class="outline full bf-notification-mark">Mark all as read</button>' : ''}
+    <div class="bf-notification-list">${cards}</div>
+    ${pushAction}
+  </section>`);
   $('#markNotificationsRead')?.addEventListener('click', async () => {
     const button = $('#markNotificationsRead');
     if (button) { button.disabled = true; button.textContent = 'Saving…'; }
