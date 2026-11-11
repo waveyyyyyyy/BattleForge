@@ -151,10 +151,13 @@ jobs:
           source = Path("public/assets/battleforge-logo.svg")
           if not source.exists():
               raise SystemExit("Official BattleForge logo SVG is missing.")
-          png = cairosvg.svg2png(url=str(source), output_width=1024, output_height=1024)
+          # The app launcher is a square, so use only the BF emblem and omit
+          # the tiny horizontal wordmark. This lets the actual mark fill the icon.
+          svg = source.read_text()
+          svg = svg.replace('viewBox="0 0 947 321"', 'viewBox="0 0 770 200"', 1)
+          png = cairosvg.svg2png(bytestring=svg.encode("utf-8"), output_width=1024, output_height=1024)
           logo = Image.open(BytesIO(png)).convert("RGBA")
           canvas = Image.new("RGBA", (1024, 1024), (255, 255, 255, 255))
-          logo.thumbnail((900, 420), Image.Resampling.LANCZOS)
           canvas.alpha_composite(logo, ((1024-logo.width)//2, (1024-logo.height)//2))
           Path("assets").mkdir(exist_ok=True)
           canvas.convert("RGB").save("assets/icon.png", optimize=True)
