@@ -11,17 +11,16 @@
   <link rel="stylesheet" href="./interaction-performance.css?v=20261111-07">
   <link rel="stylesheet" href="./battleforge-ux-polish.css?v=20261111-07">
   <link rel="stylesheet" href="./battleforge-premium-theme.css?v=20261111-07">
-  <link rel="stylesheet" href="./battleforge-neumorphic-theme.css?v=20261111-09">
+  <link rel="stylesheet" href="./battleforge-neumorphic-theme.css?v=20261111-10">
   <title>BattleForge Arena</title>
 </head>
 <body>
   <div id="bfIntroScreen" role="status" aria-label="BattleForge is starting">
-    <div class="bf-intro-orb" aria-hidden="true"><span class="bf-intro-shine"></span><span class="bf-intro-mouth"></span></div>
-    <div class="bf-intro-wordmark">BATTLE<span>FORGE</span></div>
+    <img class="bf-intro-logo" src="./assets/battleforge-logo.svg" alt="BattleForge" fetchpriority="high">
     <div class="bf-intro-tagline">ENTER THE ARENA</div>
     <div class="bf-intro-loader" aria-hidden="true"><i></i><i></i><i></i></div>
   </div>
-  <script>window.addEventListener("load",()=>{const intro=document.getElementById("bfIntroScreen");if(!intro)return;setTimeout(()=>{intro.classList.add("is-hidden");setTimeout(()=>intro.remove(),500);},1700);},{once:true});</script>
+  <script>window.addEventListener("load",()=>{const intro=document.getElementById("bfIntroScreen");if(!intro)return;setTimeout(()=>{intro.classList.add("is-hidden");setTimeout(()=>intro.remove(),450);},2450);},{once:true});</script>
   <header class="top">
     <a class="brand" href="#arena" data-home><span class="mark">BF</span><span>BATTLE<span class="accent">FORGE</span><small>COMMUNITY ARENA</small></span></a>
     <div class="top-actions"><div class="header-coin-balance" aria-label="Your coin balance" title="Your coin balance"><span class="header-coin-icon" aria-hidden="true">●</span><span id="headerCoinBalance">—</span><span class="header-coin-label">COINS</span></div><button id="adminBtn" class="admin-button hidden" aria-label="Admin panel">ADMIN</button><button id="notificationBell" class="notification-bell" aria-label="Notifications" title="Notifications">♢<span id="notificationBadge" class="notification-badge hidden">0</span></button><button id="profileBtn" class="avatar" aria-label="Player profile">Sign in</button></div>
