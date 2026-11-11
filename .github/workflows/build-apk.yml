@@ -145,26 +145,50 @@ jobs:
           python - <<'PY'
           from PIL import Image
           from pathlib import Path
-
-          import cairosvg
           from io import BytesIO
+          import cairosvg
+
           source = Path("public/assets/battleforge-logo.svg")
           if not source.exists():
               raise SystemExit("Official BattleForge logo SVG is missing.")
-          # Render at the SVG's native coordinate space, then physically crop
-          # to the BF emblem bounds. Changing viewBox alone was not reliable
-          # across launcher asset generation and allowed the wordmark to leak in.
+
+          # Render the complete official lockup, then compose its two parts
+          # as a single centred vertical mark: emblem above, blue wordmark below.
           svg = source.read_text()
-          png = cairosvg.svg2png(bytestring=svg.encode("utf-8"), output_width=947, output_height=321)
+          png = cairosvg.svg2png(
+              bytestring=svg.encode("utf-8"),
+              output_width=947,
+              output_height=321,
+          )
           rendered = Image.open(BytesIO(png)).convert("RGBA")
           emblem = rendered.crop((0, 0, 770, 200))
-          # Fit the emblem inside a square with generous, symmetric safe-area
-          # padding so Android's rounded/adaptive masks cannot clip its edges.
-          emblem.thumbnail((820, 360), Image.Resampling.LANCZOS)
+          wordmark = rendered.crop((0, 268, 947, 321))
+
+          # Make the wordmark the same width as the emblem, preserving its
+          # aspect ratio so the lettering remains complete and centred.
+          wordmark_width = 770
+          wordmark_height = round(wordmark.height * wordmark_width / wordmark.width)
+          wordmark = wordmark.resize(
+              (wordmark_width, wordmark_height),
+              Image.Resampling.LANCZOS,
+          )
+
+          gap = 22
+          lockup = Image.new(
+              "RGBA",
+              (770, emblem.height + gap + wordmark.height),
+              (255, 255, 255, 0),
+          )
+          lockup.alpha_composite(emblem, (0, 0))
+          lockup.alpha_composite(wordmark, (0, emblem.height + gap))
+
+          # Keep the complete mark inside the adaptive-icon safe area.
+          lockup.thumbnail((650, 650), Image.Resampling.LANCZOS)
           canvas = Image.new("RGBA", (1024, 1024), (255, 255, 255, 255))
-          x = (1024 - emblem.width) // 2
-          y = (1024 - emblem.height) // 2
-          canvas.alpha_composite(emblem, (x, y))
+          x = (1024 - lockup.width) // 2
+          y = (1024 - lockup.height) // 2
+          canvas.alpha_composite(lockup, (x, y))
+
           Path("assets").mkdir(exist_ok=True)
           canvas.convert("RGB").save("assets/icon.png", optimize=True)
           PY
