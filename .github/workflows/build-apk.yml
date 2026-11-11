@@ -141,23 +141,23 @@ jobs:
           PY
       - name: Prepare BattleForge launcher icon
         run: |
-          python -m pip install --user Pillow
+          python -m pip install --user Pillow cairosvg
           python - <<'PY'
           from PIL import Image
           from pathlib import Path
 
-          source = Path("IMG_20261023_162105_815.jpg")
+          import cairosvg
+          from io import BytesIO
+          source = Path("public/assets/battleforge-logo.svg")
           if not source.exists():
-              raise SystemExit("Uploaded BattleForge icon image was not found in the repository root.")
-          image = Image.open(source).convert("RGB")
-          width, height = image.size
-          side = min(width, height)
-          left = (width - side) // 2
-          top = (height - side) // 2
-          image = image.crop((left, top, left + side, top + side))
-          image = image.resize((1024, 1024), Image.Resampling.LANCZOS)
+              raise SystemExit("Official BattleForge logo SVG is missing.")
+          png = cairosvg.svg2png(url=str(source), output_width=1024, output_height=1024)
+          logo = Image.open(BytesIO(png)).convert("RGBA")
+          canvas = Image.new("RGBA", (1024, 1024), (255, 255, 255, 255))
+          logo.thumbnail((900, 420), Image.Resampling.LANCZOS)
+          canvas.alpha_composite(logo, ((1024-logo.width)//2, (1024-logo.height)//2))
           Path("assets").mkdir(exist_ok=True)
-          image.save("assets/icon.png", optimize=True)
+          canvas.convert("RGB").save("assets/icon.png", optimize=True)
           PY
           npx --yes @capacitor/assets generate --android
       - name: Sync app

@@ -1341,9 +1341,14 @@ body{background-image:none!important}
 #bfIntroScreen{gap:0!important;background:#fff!important;overflow:hidden!important}
 #bfIntroScreen .bf-intro-logo{
  display:block;width:min(78vw,560px);height:auto;max-height:34vh;object-fit:contain;
- opacity:0;clip-path:inset(0 100% 0 0);
+ opacity:0;transform:translate3d(0,8px,0) scale(.985);
+ -webkit-mask-image:linear-gradient(90deg,#000 0%,#000 48%,transparent 52%,transparent 100%);
+ mask-image:linear-gradient(90deg,#000 0%,#000 48%,transparent 52%,transparent 100%);
+ -webkit-mask-size:220% 100%;mask-size:220% 100%;
+ -webkit-mask-position:100% 0;mask-position:100% 0;
  filter:drop-shadow(0 12px 22px rgba(23,75,152,.10));
- animation:bf-logo-type 1.65s steps(24,end) .18s forwards;
+ animation:bf-logo-type 1.55s cubic-bezier(.22,.8,.2,1) .12s forwards;
+ will-change:transform,opacity,-webkit-mask-position,mask-position;
 }
 #bfIntroScreen .bf-intro-tagline{
  margin-top:28px!important;color:#315cf4!important;letter-spacing:3px!important;
@@ -1351,18 +1356,18 @@ body{background-image:none!important}
 }
 #bfIntroScreen .bf-intro-loader{margin-top:18px!important}
 @keyframes bf-logo-type{
- 0%{opacity:0;clip-path:inset(0 100% 0 0);transform:translateY(8px) scale(.985)}
- 12%{opacity:1}
- 100%{opacity:1;clip-path:inset(0 0 0 0);transform:translateY(0) scale(1)}
+ 0%{opacity:0;transform:translate3d(0,8px,0) scale(.985);-webkit-mask-position:100% 0;mask-position:100% 0}
+ 10%{opacity:1}
+ 100%{opacity:1;transform:translate3d(0,0,0) scale(1);-webkit-mask-position:0 0;mask-position:0 0}
 }
 @keyframes bf-logo-tagline{to{opacity:1;transform:translateY(0)}}
 .brand{min-width:0!important;flex:0 1 auto!important}
 .brand-logo-image{
- display:block;width:clamp(112px,34vw,164px);height:auto;max-height:56px;
+ display:block;width:clamp(112px,34vw,164px);height:auto;max-height:48px;
  object-fit:contain;object-position:left center;flex:0 1 auto;min-width:0;
 }
 @media(max-width:380px){.brand-logo-image{width:clamp(104px,31vw,132px);max-height:46px}}
 @media(prefers-reduced-motion:reduce){
- #bfIntroScreen .bf-intro-logo{animation:none!important;opacity:1!important;clip-path:none!important}
+ #bfIntroScreen .bf-intro-logo{animation:none!important;opacity:1!important;transform:none!important;-webkit-mask-image:none!important;mask-image:none!important}
  #bfIntroScreen .bf-intro-tagline{animation:none!important;opacity:1!important}
 }
