@@ -1459,3 +1459,16 @@ body{background-image:none!important}
   width:min(100%,148px)!important;max-width:148px!important;max-height:44px!important;
  }
 }
+
+
+/* BLAZE conversational AI: keep replies readable and show a quiet typing state. */
+#modal .bf-faq-chat{display:flex!important;flex-direction:column!important;gap:12px!important;min-height:min(72vh,720px)!important}
+#modal .bf-faq-messages{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:10px!important;min-height:180px!important;max-height:58vh!important;overflow-y:auto!important;padding:12px 4px!important;overscroll-behavior:contain!important}
+#modal .bf-faq-bubble{max-width:min(88%,560px)!important;padding:11px 14px!important;border-radius:16px!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;line-height:1.5!important;font-size:14px!important}
+#modal .bf-faq-bubble.bot{align-self:flex-start!important;background:#edf2ff!important;color:#24364b!important;border:1px solid #dce6ff!important}
+#modal .bf-faq-bubble.user{align-self:flex-end!important;background:#315cf4!important;color:#fff!important;border:1px solid #315cf4!important}
+#modal .bf-faq-bubble.bf-typing{color:#718096!important;font-style:italic!important;opacity:.82!important}
+#modal .bf-faq-form{display:flex!important;align-items:center!important;gap:8px!important;position:sticky!important;bottom:0!important;background:#fff!important;padding:8px 0 2px!important}
+#modal .bf-faq-form input{flex:1 1 auto!important;min-width:0!important;min-height:48px!important;border-radius:14px!important;padding:11px 14px!important}
+#modal .bf-faq-form button:disabled{opacity:.5!important;cursor:wait!important}
+#modal .bf-chat-disclaimer{font-size:11px!important;line-height:1.4!important;text-align:center!important;color:#748397!important}

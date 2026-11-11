@@ -312,32 +312,48 @@ async function updateSupportTicket(id){
 function openFaqChat(){
  modal('<div class="bf-support-hub"><div class="bf-support-hub-brand"><div class="bf-support-hub-icon">✦</div><div><span class="eyebrow">BATTLEFORGE ASSISTANT</span><h2>BLAZE</h2><p>Choose how you want to get help.</p></div></div><button type="button" id="bfStartFaqChat" class="join full">Chat with BLAZE →</button><div class="bf-support-hub-divider"><span>SUPPORT OPTIONS</span></div><button type="button" id="bfCreateSupportTicket" class="outline full">Create a support ticket</button><button type="button" id="bfViewMyTickets" class="outline full">My support tickets</button><a class="support-cta" href="https://t.me/battleforgeff" target="_blank" rel="noopener noreferrer">Talk to a human · Telegram support ↗</a></div>');
 }
+let blazeConversation = [];
+let blazeRequestInFlight = false;
 function startFaqChat(){
+ blazeConversation = [];
+ blazeRequestInFlight = false;
  const robot='<svg class="bf-bot-avatar" viewBox="0 0 80 80" role="img" aria-label="BLAZE robot assistant"><defs><linearGradient id="bfBotShell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#284b70"/><stop offset="1" stop-color="#101c2c"/></linearGradient><linearGradient id="bfBotGlow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8ff5e7"/><stop offset="1" stop-color="#42b7a5"/></linearGradient></defs><path d="M40 8v8" stroke="#8ff5e7" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="7" r="4" fill="#42b7a5"/><rect x="13" y="19" width="54" height="43" rx="15" fill="url(#bfBotShell)" stroke="#6ed8ca" stroke-width="2"/><rect x="20" y="27" width="40" height="25" rx="9" fill="#0a1420" stroke="#355d7a"/><ellipse cx="30" cy="39" rx="4" ry="5" fill="url(#bfBotGlow)"/><ellipse cx="50" cy="39" rx="4" ry="5" fill="url(#bfBotGlow)"/><path d="M33 47q7 5 14 0" fill="none" stroke="#8ff5e7" stroke-width="2.5" stroke-linecap="round"/><path d="M13 34H7v13h7M67 34h6v13h-7" fill="none" stroke="#42b7a5" stroke-width="3" stroke-linecap="round"/><path d="M27 63v7m26-7v7" stroke="#9bb4c8" stroke-width="4" stroke-linecap="round"/><rect x="24" y="69" width="12" height="5" rx="2.5" fill="#42b7a5"/><rect x="44" y="69" width="12" height="5" rx="2.5" fill="#42b7a5"/></svg>';
- modal('<div class="bf-faq-chat"><header class="bf-chat-header">'+robot+'<div class="bf-chat-identity"><span class="eyebrow">BATTLEFORGE ASSISTANT</span><h2>BLAZE</h2><span class="bf-chat-online"><i></i> Online · Instant FAQ help</span></div>'+chatSoundSwitchMarkup()+'</header><p class="bf-chat-intro">Your quick guide to BattleForge. Ask about matches, coins, payments, results, ranks or account rules.</p><div id="bfFaqMessages" class="bf-faq-messages"><div class="bf-faq-bubble bot"><b>Hey, I’m BLAZE.</b><br>What can I help you with today?</div></div><form id="bfFaqForm" class="bf-faq-form"><input id="bfFaqInput" maxlength="240" placeholder="Message BLAZE…" aria-label="Message BLAZE" autocomplete="off" required><button class="bf-chat-send" type="submit" aria-label="Send message"><span aria-hidden="true">➤</span></button></form><p class="bf-chat-disclaimer">Automated FAQ assistant · No access to your account or payment controls</p></div>');
-}
-function battleForgeFaqAnswer(question){
- const q=String(question||'').toLowerCase();
- const faqs=[
-  {keys:['streak','daily reward','daily matches'],answer:'Daily streak: join at least 3 different matches each day for 7 consecutive days. Complete the 7th day and receive 20 coins. Cancelled/disabled tournaments do not count.'},
-  {keys:['rank','badge','kills','rookie','legend','master','veteran','contender','elite'],answer:'Lifetime kill ranks are based on kills from published match results: Rookie 10+, Contender 50+, Veteran 100+, Elite 500+, Master 1,000+, and Legend 10,000+. Ranks update automatically after verified results are published.'},
-  {keys:['withdraw','payout','2%','fee'],answer:'Minimum withdrawal is 100 coins. Only eligible match earnings are withdrawable. Deposited credits follow the wallet rules. BattleForge deducts a 2% processing fee, and manual processing can take up to 24 hours.'},
-  {keys:['deposit','upi','payment','add money'],answer:'Minimum deposit is 30 coins. Pay the exact amount to the UPI ID shown in the Deposit screen, submit your UTR and payment confirmation, then wait for manual verification. Verification may take up to 24 hours. Never share your UPI PIN or OTP.'},
-  {keys:['wallet','balance','coins','entry fee'],answer:'Your wallet shows your available coin balance and recent activity. Match earnings can be withdrawn or used for entry fees. Tournament entry fees are shown on each match card.'},
-  {keys:['room id','password','room','lobby'],answer:'The match Room ID and password appear in the match details after the organiser publishes them. Only players registered for that match can see the room details in the app.'},
-  {keys:['dispute','wrong result','incorrect result'],answer:'If you have a published result for a past match, open that match and tap “Dispute this result”. Explain the issue clearly. A moderator can review and update the dispute status.'},
-  {keys:['result','ranking','pending','kills result'],answer:'Match results remain Pending Results until an admin publishes the final rankings. Once published, open Past Matches to see ranks, player IDs, kills and rewards.'},
-  {keys:['tournament','solo','duo','squad','join','register'],answer:'BattleForge currently supports Free Fire Solo, Duo and Squad tournaments. Open a match card to check its entry fee, schedule, slots and rules, then register while entries are open. You need enough wallet coins to cover the entry fee.'},
-  {keys:['referral','refer','invite'],answer:'Your BattleForge Player ID is also your referral code. A referred player can enter it during registration or in Profile if eligible. The referral reward is 5 coins after the referred player completes their first withdrawal.'},
-  {keys:['username','name change','ign'],answer:'Your BattleForge username must be 3–24 characters using letters, numbers or underscores. Your first username change is free; later changes cost 5 entry-fee-only coins. Use your exact Free Fire IGN when joining a match.'},
-  {keys:['support','human','contact','help'],answer:'For account-specific help, payment checks or disputes, contact the BattleForge support team on Telegram: https://t.me/battleforgeff. This FAQ bot cannot inspect accounts or change balances.'}
- ];
- const match=faqs.find(f=>f.keys.some(k=>q.includes(k)));
- return match?.answer||'I don’t have a verified answer for that yet. For account-specific help or an unanswered question, contact BattleForge support on Telegram: https://t.me/battleforgeff.';
+ modal('<div class="bf-faq-chat"><header class="bf-chat-header">'+robot+'<div class="bf-chat-identity"><span class="eyebrow">BATTLEFORGE ASSISTANT</span><h2>BLAZE</h2><span class="bf-chat-online"><i></i> Online · AI assistant</span></div>'+chatSoundSwitchMarkup()+'</header><p class="bf-chat-intro">Talk to me normally, or ask me anything about BattleForge. I’m here to help.</p><div id="bfFaqMessages" class="bf-faq-messages" aria-live="polite"><div class="bf-faq-bubble bot"><b>Hey, I’m BLAZE.</b><br>We can talk about anything — and I know my way around BattleForge too. What’s up?</div></div><form id="bfFaqForm" class="bf-faq-form"><input id="bfFaqInput" maxlength="1200" placeholder="Message BLAZE…" aria-label="Message BLAZE" autocomplete="off" required><button class="bf-chat-send" type="submit" aria-label="Send message"><span aria-hidden="true">➤</span></button></form><p class="bf-chat-disclaimer">AI assistant · Never share passwords, OTPs or UPI PINs.</p></div>');
 }
 function appendFaqMessage(textValue,kind){
- const box=$('#bfFaqMessages');if(!box)return;
- const bubble=document.createElement('div');bubble.className='bf-faq-bubble '+kind;bubble.textContent=textValue;box.appendChild(bubble);box.scrollTop=box.scrollHeight;
+ const box=$('#bfFaqMessages');if(!box)return null;
+ const bubble=document.createElement('div');bubble.className='bf-faq-bubble '+kind;bubble.textContent=String(textValue??'');box.appendChild(bubble);box.scrollTop=box.scrollHeight;return bubble;
+}
+async function sendBlazeMessage(question){
+ if(blazeRequestInFlight)return;
+ const input=$('#bfFaqInput'),form=$('#bfFaqForm'),send=form?.querySelector('button[type="submit"]');
+ if(!currentUser){
+  appendFaqMessage('Please sign in to chat with BLAZE. Your chat is available to BattleForge players.','bot');
+  return;
+ }
+ const nextMessages=[...blazeConversation,{role:'user',content:question}].slice(-12);
+ blazeRequestInFlight=true;
+ if(input)input.disabled=true;
+ if(send)send.disabled=true;
+ const typing=appendFaqMessage('BLAZE is thinking…','bot bf-typing');
+ try{
+  const {data,error}=await supabase.functions.invoke('blaze-chat',{body:{messages:nextMessages}});
+  if(error)throw error;
+  const reply=String(data?.reply||'').trim();
+  if(!reply)throw new Error('BLAZE returned an empty reply.');
+  typing?.remove();
+  blazeConversation=[...nextMessages,{role:'assistant',content:reply}].slice(-12);
+  appendFaqMessage(reply,'bot');
+  playChatSound('receive');
+ }catch(error){
+  console.warn('BLAZE request failed:',error);
+  typing?.remove();
+  appendFaqMessage('I couldn’t reach my AI service just now. Please try again in a moment. If this keeps happening, contact BattleForge support on Telegram: https://t.me/battleforgeff.','bot');
+ }finally{
+  blazeRequestInFlight=false;
+  if(input){input.disabled=false;input.focus();}
+  if(send)send.disabled=false;
+ }
 }
 
 function toast(message) {
@@ -1789,8 +1805,8 @@ document.addEventListener('change',event=>{
 });
 document.addEventListener('submit',async event=>{
  if(event.target.id==='bfFaqForm'){
-  event.preventDefault();const input=$('#bfFaqInput');const question=input?.value.trim();if(!question)return;
-  appendFaqMessage(question,'user');playChatSound('send');appendFaqMessage(battleForgeFaqAnswer(question),'bot');playChatSound('receive');input.value='';input.focus();
+  event.preventDefault();const input=$('#bfFaqInput');const question=input?.value.trim();if(!question||blazeRequestInFlight)return;
+  appendFaqMessage(question,'user');playChatSound('send');input.value='';await sendBlazeMessage(question);
  }
  if(event.target.id==='bfTicketForm'){event.preventDefault();await createSupportTicket();}
  if(event.target.id==='bfMatchDisputeForm'){event.preventDefault();await submitMatchDispute(event.target);}
