@@ -397,8 +397,7 @@ function toast(message) {
 }
 function modal(html) {
   // Keep dialogs anchored to the visible viewport even when the Arena page was scrolled far down.
-  window.scrollTo(0, 0);  const overlay = $('#modal');
-  // Settings are moved out of modalContent; remove the previous dialog's copy before rendering.
+  window.scrollTo(0, 0);  const overlay = $('#modal');  // Settings are moved out of modalContent; remove the previous dialog's copy before rendering.
   $('#modal .modal-card > .bf-chat-settings-wrap')?.remove();
   $('#modalContent').innerHTML = html;
   overlay.classList.toggle('profile-modal', html.includes('profile-sheet'));
@@ -604,7 +603,7 @@ async function loadAdminPaymentRequests() {
   const {data:playerAccounts,error:playerAccountsError}=playerIds.length?await supabase.from('player_accounts').select('user_id,player_number,username').in('user_id',playerIds):{data:[],error:null};
   if(playerAccountsError) console.warn('Could not load player IDs for admin payment requests',playerAccountsError);
   const playerMap=new Map((playerAccounts||[]).map(p=>[p.user_id,p]));
-  target.innerHTML = rows.length ? rows.map(x => { const player=playerMap.get(x.user_id)||{}; return `<article class="panel" style="margin:12px 0;padding:14px"><div class="admin-section-title"><div><h3>${x.kind==='deposit'?'Deposit':'Withdrawal'} · ₹${Number(x.amount).toFixed(2)}</h3><p>${esc(x.status.toUpperCase())} · ${esc(new Date(x.created_at).toLocaleString())}</p></div></div><p><b>Payment ID:</b> PAY-${esc(String(x.id).replace(/-/g,'').slice(0,10).toUpperCase())}</p><p><b>Request UUID:</b> ${esc(x.id)}</p><p><b>Player ID:</b> ${esc(player.player_number||'Not assigned')} · <b>Username:</b> ${esc(player.username||'Not set')}</p><p><b>Auth User ID:</b> ${esc(x.user_id)}</p>${x.kind==='deposit'?`<p><b>Player UPI:</b> ${esc(x.payer_upi)}<br><b>Receiving UPI:</b> ${esc(x.receiver_upi||'kjaman@fam')}<br><b>Expires:</b> ${esc(new Date(x.expires_at).toLocaleString())}<br><b>Payment reference:</b> ${esc(x.payment_reference||'Not supplied')}</p>`:`<p><b>Account holder:</b> ${esc(x.account_name)}<br><b>Withdrawal UPI:</b> ${esc(x.payout_upi)}<br><b>Fee (2%):</b> ₹${Number(x.fee_amount).toFixed(2)}<br><b>Send to player:</b> ₹${Number(x.net_amount).toFixed(2)}<br><b>Payout reference:</b> ${esc(x.payout_reference||'Not sent')}</p>`}<p><b>Admin note:</b> ${esc(x.admin_note||'—')}</p>${(['pending','reported_paid'].includes(x.status)&&x.kind==='deposit')?`<label class="field">UPI transaction reference<input id="depRef-${esc(x.id)}" placeholder="Reference / UTR (optional)"></label><label class="field">Admin note<input id="depNote-${esc(x.id)}" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="verify-deposit" data-request-id="${esc(x.id)}">Verify & credit wallet</button><button class="outline" data-payment-action="reject-deposit" data-request-id="${esc(x.id)}">Reject</button></div>`:''}${x.kind==='withdrawal'&&['pending','approved'].includes(x.status)?`<label class="field">Payout UPI reference / UTR<input id="wdRef-${esc(x.id)}" placeholder="Required after you send payment"></label><label class="field">Admin note<input id="wdNote-${esc(x.id)}" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="paid-withdrawal" data-request-id="${esc(x.id)}">Mark paid</button><button class="outline" data-payment-action="reject-withdrawal" data-request-id="${esc(x.id)}">Reject (no refund)</button></div>`:''}<div class="wallet-actions"><button class="outline danger-button" data-delete-payment-kind="${x.kind}" data-request-id="${esc(x.id)}">Delete transaction</button></div></article>`; }).join('') : '<div class="empty-state"><b>No payment requests</b><p>New requests will appear here.</p></div>';
+  target.innerHTML = rows.length ? rows.map(x => { const player=playerMap.get(x.user_id)||{}; return `<article class="panel" style="margin:12px 0;padding:14px"><div class="admin-section-title"><div><h3>${x.kind==='deposit'?'Deposit':'Withdrawal'} · ₹${Number(x.amount).toFixed(2)}</h3><p>${bfPaymentStatus(x.status)} · ${esc(new Date(x.created_at).toLocaleString())}</p></div></div><p><b>Payment ID:</b> PAY-${esc(String(x.id).replace(/-/g,'').slice(0,10).toUpperCase())}</p><p><b>Request UUID:</b> ${esc(x.id)}</p><p><b>Player ID:</b> ${esc(player.player_number||'Not assigned')} · <b>Username:</b> ${esc(player.username||'Not set')}</p><p><b>Auth User ID:</b> ${esc(x.user_id)}</p>${x.kind==='deposit'?`<p><b>Player UPI:</b> ${esc(x.payer_upi)}<br><b>Receiving UPI:</b> ${esc(x.receiver_upi||'kjaman@fam')}<br><b>Expires:</b> ${esc(new Date(x.expires_at).toLocaleString())}<br><b>Payment reference:</b> ${esc(x.payment_reference||'Not supplied')}</p>`:`<p><b>Account holder:</b> ${esc(x.account_name)}<br><b>Withdrawal UPI:</b> ${esc(x.payout_upi)}<br><b>Fee (2%):</b> ₹${Number(x.fee_amount).toFixed(2)}<br><b>Send to player:</b> ₹${Number(x.net_amount).toFixed(2)}<br><b>Payout reference:</b> ${esc(x.payout_reference||'Not sent')}</p>`}<p><b>Admin note:</b> ${esc(x.admin_note||'—')}</p>${(['pending','reported_paid'].includes(x.status)&&x.kind==='deposit')?`<label class="field">UPI transaction reference<input id="depRef-${esc(x.id)}" placeholder="Reference / UTR (optional)"></label><label class="field">Admin note<input id="depNote-${esc(x.id)}" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="verify-deposit" data-request-id="${esc(x.id)}">Verify & credit wallet</button><button class="outline" data-payment-action="reject-deposit" data-request-id="${esc(x.id)}">Reject</button></div>`:''}${x.kind==='withdrawal'&&['pending','approved'].includes(x.status)?`<label class="field">Payout UPI reference / UTR<input id="wdRef-${esc(x.id)}" placeholder="Required after you send payment"></label><label class="field">Admin note<input id="wdNote-${esc(x.id)}" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="paid-withdrawal" data-request-id="${esc(x.id)}">Mark paid</button><button class="outline" data-payment-action="reject-withdrawal" data-request-id="${esc(x.id)}">Reject (no refund)</button></div>`:''}<div class="wallet-actions"><button class="outline danger-button" data-delete-payment-kind="${x.kind}" data-request-id="${esc(x.id)}">Delete transaction</button></div></article>`; }).join('') : '<div class="empty-state"><b>No payment requests</b><p>New requests will appear here.</p></div>';
 }
 async function handleAdminPaymentAction(button) {
   if (!isAdmin) return toast('Admin access required.');
@@ -797,8 +796,7 @@ async function setupBattleForgePush(requestPermission = false) {
       pushRegisteredUserId = currentUser.id;
       if (requestPermission) toast('Phone notifications enabled.');
     } else if (requestPermission) {
-      toast(permission.receive === 'denied'
-        ? 'Notifications are blocked. Enable them in Android Settings → Apps → BattleForge → Notifications.'
+      toast(permission.receive === 'denied'        ? 'Notifications are blocked. Enable them in Android Settings → Apps → BattleForge → Notifications.'
         : 'Notification permission was not granted.');
     }
   } catch (error) {
@@ -1197,8 +1195,7 @@ async function openPastMatchDetails(id) {
 }
 async function loadAdminSchedule() {
   if (!isAdmin) return;
-  const id = Number($('#adminTournament')?.value); const input = $('#adminEditStarts');
-  if (!id || !input) return;
+  const id = Number($('#adminTournament')?.value); const input = $('#adminEditStarts');  if (!id || !input) return;
   const { data, error } = await supabase.from('tournaments').select('starts_at').eq('id', id).maybeSingle();
   if (error) { console.warn('Could not load match schedule', error); return; }
   const d = data?.starts_at ? new Date(data.starts_at) : null;
@@ -1597,8 +1594,7 @@ async function sendMatchChatMessage(form) {
 async function showTournamentDetails(t) {
   if (!t) return;
   const id = String(t.id);
-  const has = joined.some(e => String(e.tournament_id) === id);
-  const mode = t.game_mode || t.type || 'SOLO';
+  const has = joined.some(e => String(e.tournament_id) === id);  const mode = t.game_mode || t.type || 'SOLO';
   const entry = Number(t.entry_points ?? t.entry ?? 0);
   const prize = Number(t.prize_pool_points ?? t.prize ?? 0);
   const perKill = Number(t.per_kill_points ?? 0);
@@ -1997,8 +1993,7 @@ async function checkRequiredAppUpdate(){
     gate.className='bf-force-update-gate';
     gate.setAttribute('role','dialog');
     gate.setAttribute('aria-modal','true');
-    gate.setAttribute('aria-label','BattleForge update required');
-    const msg=String(data.update_message||'Please install the latest BattleForge update to continue.').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    gate.setAttribute('aria-label','BattleForge update required');    const msg=String(data.update_message||'Please install the latest BattleForge update to continue.').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
     gate.innerHTML='<div class="bf-force-update-card"><div class="bf-update-logo">BF</div><span class="eyebrow">UPDATE REQUIRED</span><h2>BattleForge needs an update</h2><p>'+msg+'</p><div class="bf-version-pair"><span>Installed <b>'+esc(installed)+'</b></span><span>Latest <b>'+esc(latest)+'</b></span></div><a class="join full bf-update-download" href="'+parsedUrl.href.replace(/&/g,'&amp;').replace(/"/g,'%22')+'" rel="noopener noreferrer">Download update ↗</a><small>Install the APK, then reopen BattleForge.</small></div>';
     gate.addEventListener('click',event=>{
       const link=event.target.closest('.bf-update-download');
