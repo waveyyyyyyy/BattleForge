@@ -1,0 +1,110 @@
+/* BattleForge wallet and profile finishing pass — 2026-11-16 */
+.bf-wallet-progress-card{
+  position:relative;isolation:isolate;overflow:hidden;
+  margin:18px 0 20px;padding:20px 18px 18px;
+  border:1px solid rgba(91,126,208,.34);border-radius:22px;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(66,183,165,.18),transparent 42%),
+    linear-gradient(145deg,#172b46 0%,#101c2c 58%,#0b1421 100%);
+  box-shadow:0 16px 34px rgba(16,28,44,.18),inset 0 1px 0 rgba(255,255,255,.06);
+  color:#f1f5f7;
+}
+.bf-wallet-progress-card:after{
+  content:"";position:absolute;z-index:-1;inset:auto -12% -65% 36%;height:150%;
+  border:1px solid rgba(112,231,223,.09);border-radius:50%;transform:rotate(-18deg);
+  box-shadow:0 0 0 18px rgba(112,231,223,.025),0 0 0 38px rgba(112,231,223,.02);
+  pointer-events:none;
+}
+.bf-wallet-progress-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:15px}
+.bf-wallet-progress-head>div{min-width:0;flex:1}
+.bf-wallet-progress-head .eyebrow{display:inline-flex;max-width:100%;padding:8px 12px;border:1px solid rgba(112,231,223,.24);border-radius:999px;background:rgba(66,183,165,.09);color:#8fe2d5;font-size:9px;letter-spacing:1.5px}
+.bf-wallet-progress-head h3{margin:12px 0 5px;color:#f3f7fb;font-size:clamp(17px,4.3vw,21px);letter-spacing:-.35px}
+.bf-wallet-progress-head p{margin:0;color:#aebdca;font-size:12px;line-height:1.55}
+.bf-wallet-progress-head>strong{flex:0 0 auto;padding-top:7px;color:#a8dcd4;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bf-wallet-progress-card .bf-progress-track,
+.bf-withdraw-eligibility .bf-progress-track{
+  position:relative;height:11px;margin:0 0 10px;overflow:hidden;border:1px solid rgba(177,199,222,.18);
+  border-radius:999px;background:rgba(5,13,24,.72);box-shadow:inset 0 2px 5px rgba(0,0,0,.28);
+}
+.bf-wallet-progress-card .bf-progress-track>i,
+.bf-withdraw-eligibility .bf-progress-track>i{
+  display:block;width:0;height:100%;border-radius:inherit;
+  background:linear-gradient(90deg,#315cf4 0%,#42b7a5 58%,#8fe2d5 100%);
+  box-shadow:0 0 13px rgba(66,183,165,.42);transition:width .65s cubic-bezier(.2,.75,.25,1);
+}
+.bf-wallet-progress-card>small{display:block;color:#8fa5b7;font-size:10px;letter-spacing:.25px}
+.bf-wallet-history-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px}
+.bf-wallet-history-actions .text-button{padding:6px 8px;border:1px solid rgba(49,92,244,.16);border-radius:9px;background:rgba(49,92,244,.055);color:#315cf4;font-size:10px;font-weight:800;white-space:nowrap}
+.bf-payment-status{display:inline-flex;align-items:center;gap:6px;max-width:100%;width:max-content;padding:5px 9px;border:1px solid transparent;border-radius:999px;font-size:10px;font-weight:800;line-height:1.2;white-space:normal}
+.bf-payment-status-emoji{display:inline-grid;place-items:center;flex:0 0 21px;width:21px;height:21px;border-radius:50%;background:rgba(255,255,255,.13);font-size:13px;line-height:1}
+.bf-payment-status-pending{border-color:rgba(207,155,55,.28);background:rgba(207,155,55,.1);color:#9b6a16}
+.bf-payment-status-approved{border-color:rgba(66,183,165,.27);background:rgba(66,183,165,.1);color:#187e70}
+.bf-payment-status-rejected{border-color:rgba(210,82,82,.25);background:rgba(210,82,82,.09);color:#bd4141}
+.bf-payment-request-row .bf-payment-status{margin-top:5px}
+.bf-payment-history-row{display:grid;gap:7px;min-width:0;padding:14px 0;border-bottom:1px solid rgba(132,147,163,.2)}
+.bf-payment-history-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0;flex-wrap:wrap}
+.bf-payment-history-top>b{min-width:0;overflow-wrap:anywhere;color:#263442;font-size:13px}
+.bf-payment-history-row>small{color:#71808d;font-size:11px;overflow-wrap:anywhere;word-break:break-word}
+.bf-payment-history-screen{width:100%;min-width:0;box-sizing:border-box}
+.bf-payment-history-screen h2{margin:8px 0;font-size:clamp(24px,6vw,32px);color:#263442}
+.bf-payment-history-screen>p{color:#71808d;font-size:12px}
+.bf-payment-history-list{display:grid;gap:0;width:100%;min-width:0}
+.bf-history-back{margin:0 0 18px}
+#modal.profile-modal,#modal.bf-payment-history-modal{
+  position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;
+  max-width:none!important;min-width:0!important;margin:0!important;padding:0!important;
+  display:flex!important;align-items:stretch!important;justify-content:stretch!important;
+  overflow:hidden!important;overscroll-behavior:none!important;background:#eaf0f4!important;
+}
+#modal.profile-modal>.modal-card,#modal.bf-payment-history-modal>.modal-card{
+  position:relative!important;display:flex!important;flex:1 1 100%!important;flex-direction:column!important;
+  width:100vw!important;max-width:none!important;min-width:0!important;height:100vh!important;height:100dvh!important;
+  max-height:none!important;min-height:0!important;align-self:stretch!important;margin:0!important;
+  padding:calc(58px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom))!important;
+  border:0!important;border-radius:0!important;box-sizing:border-box!important;overflow-x:hidden!important;overflow-y:auto!important;
+  background:#eaf0f4!important;color:#263442!important;box-shadow:none!important;
+}
+#modal.profile-modal>.modal-card>#closeModal,#modal.bf-payment-history-modal>.modal-card>#closeModal{
+  position:fixed!important;top:calc(9px + env(safe-area-inset-top))!important;right:12px!important;z-index:100020!important;
+  float:none!important;margin:0!important;width:40px!important;height:40px!important;
+  border:1px solid #dce4ea!important;border-radius:50%!important;background:#fff!important;color:#263442!important;
+  box-shadow:0 4px 14px rgba(32,52,69,.12)!important;font-size:25px!important;line-height:1!important;
+}
+#modal.profile-modal #modalContent,#modal.bf-payment-history-modal #modalContent{
+  display:block!important;flex:1 1 auto!important;width:100%!important;min-width:0!important;min-height:0!important;
+  padding:0!important;margin:0!important;overflow:visible!important;box-sizing:border-box!important;
+}
+#modal.profile-modal .profile-sheet{display:flex!important;flex-direction:column!important;gap:14px!important;width:100%!important;max-width:760px!important;min-width:0!important;margin:0 auto!important;padding:0 0 20px!important;box-sizing:border-box!important;overflow:visible!important}
+#modal.profile-modal .profile-sheet>*{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+#modal.profile-modal .profile-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#modal.profile-modal .profile-block{width:100%!important;overflow-wrap:anywhere!important}
+#modal.profile-modal .profile-history-row{min-width:0!important;gap:10px!important}
+#modal.profile-modal .profile-history-row>div{min-width:0!important;flex:1 1 auto!important}
+#modal.profile-modal .profile-history-row small{overflow-wrap:anywhere!important;word-break:break-word!important}
+#modal.bf-payment-history-modal .bf-payment-history-screen{width:100%!important;max-width:760px!important;margin:0 auto!important}
+.bf-payment-success{display:flex;flex-direction:column;align-items:center;gap:13px;padding:16px 2px 10px;text-align:center;color:#263442}
+.bf-payment-success h2{margin:0;font-size:clamp(23px,6vw,31px);line-height:1.12;color:#263442}
+.bf-payment-success>p{max-width:380px;margin:0;color:#71808d;font-size:13px;line-height:1.55}
+.bf-success-orbit{position:relative;display:grid;place-items:center;width:132px;height:132px;margin:5px auto 4px;border-radius:50%;background:radial-gradient(circle,rgba(66,183,165,.18),rgba(49,92,244,.06) 62%,transparent 70%)}
+.bf-success-ring{position:absolute;inset:12px;border:2px solid rgba(66,183,165,.35);border-radius:50%;animation:bf-success-ring 1.1s cubic-bezier(.2,.75,.25,1) both}
+.bf-success-check{display:grid;place-items:center;width:72px;height:72px;border:2px solid #42b7a5;border-radius:50%;background:linear-gradient(145deg,#42b7a5,#315cf4);color:#fff;font-size:42px;font-weight:900;box-shadow:0 9px 28px rgba(49,92,244,.23);animation:bf-success-pop .55s cubic-bezier(.2,.8,.2,1) both}
+.bf-success-spark{position:absolute;color:#315cf4;font-size:20px;animation:bf-success-spark 1.2s ease-out both}
+.bf-spark-one{top:15px;right:8px}.bf-spark-two{bottom:13px;left:7px;animation-delay:.12s}
+.bf-payment-success-ref{display:grid;gap:5px;width:100%;max-width:340px;margin:4px 0;padding:12px;border:1px solid #dce4ea;border-radius:14px;background:#fff}
+.bf-payment-success-ref small{color:#71808d;font-size:9px;font-weight:800;letter-spacing:1.2px}
+.bf-payment-success-ref b{color:#263442;font-size:14px;letter-spacing:1px}
+@keyframes bf-success-ring{0%{opacity:0;transform:scale(.65)}70%{opacity:1;transform:scale(1.08)}100%{opacity:.75;transform:scale(1)}}
+@keyframes bf-success-pop{0%{opacity:0;transform:scale(.35) rotate(-24deg)}70%{opacity:1;transform:scale(1.13) rotate(5deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes bf-success-spark{0%{opacity:0;transform:translateY(8px) scale(.4) rotate(-20deg)}45%{opacity:1}100%{opacity:.65;transform:translateY(-5px) scale(1.1) rotate(15deg)}}
+@media(max-width:420px){
+ .bf-wallet-progress-card{padding:17px 15px 15px;border-radius:19px}
+ .bf-wallet-progress-head{gap:8px}
+ .bf-wallet-progress-head>strong{font-size:10px}
+ .bf-wallet-history-actions{width:100%;justify-content:flex-start}
+ .bf-wallet-history-actions .text-button{font-size:9px;padding:6px 7px}
+ #modal.profile-modal>.modal-card,#modal.bf-payment-history-modal>.modal-card{padding-left:12px!important;padding-right:12px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .bf-wallet-progress-card .bf-progress-track>i,.bf-withdraw-eligibility .bf-progress-track>i{transition:none!important}
+ .bf-success-ring,.bf-success-check,.bf-success-spark{animation:none!important}
+}
