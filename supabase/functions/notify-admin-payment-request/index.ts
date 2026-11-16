@@ -15,7 +15,7 @@ function b64url(input: Uint8Array | string) {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 function pemBytes(pem: string) {
-  const raw = pem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\\s/g, "");
+  const raw = pem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, "");
   const binary = atob(raw);
   return Uint8Array.from(binary, c => c.charCodeAt(0));
 }
