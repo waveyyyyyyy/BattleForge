@@ -37,3 +37,8 @@
 @keyframes bfIntroProgress{0%{width:0}100%{width:100%}}
 @media(prefers-reduced-motion:reduce){#bfIntroScreen *,#bfIntroScreen:before{animation:none!important;transition:none!important}#bfIntroScreen .bf-intro-logo,#bfIntroScreen .bf-intro-tagline,#bfIntroScreen .bf-intro-overline,#bfIntroScreen .bf-intro-bottom{opacity:1!important;transform:none!important}}
 @media(max-width:380px){.bf-intro-overline{font-size:8px;letter-spacing:3px}.bf-intro-bottom{letter-spacing:2px}}
+
+.bf-custom-ui-icon{display:inline-block;width:1.45em;height:1.45em;vertical-align:middle;overflow:visible;filter:drop-shadow(0 2px 3px rgba(49,92,244,.13))}
+.admin-quick .bf-custom-ui-icon,.admin-section-title .bf-custom-ui-icon,.empty-state .bf-custom-ui-icon{width:32px;height:32px}
+.detail-info .bf-custom-ui-icon{width:24px;height:24px}
+.navitem .bf-custom-ui-icon{width:23px;height:23px}
