@@ -539,6 +539,7 @@ async function createPaymentRequest(kind) {
   const row=Array.isArray(data)?data[0]:data;
   if(!row?.id){
     loading.remove();modalCard?.removeAttribute('aria-busy');
+    if(button){button.disabled=false;button.removeAttribute('aria-busy');button.textContent=isDeposit?'Submit payment for verification':'Submit withdrawal request';}
     return toast('Request response was empty. Check Recent requests before retrying.');
   }
   // Remove the blocking layer before replacing the form with the success animation.
