@@ -42,3 +42,24 @@
 .admin-quick .bf-custom-ui-icon,.admin-section-title .bf-custom-ui-icon,.empty-state .bf-custom-ui-icon{width:32px;height:32px}
 .detail-info .bf-custom-ui-icon{width:24px;height:24px}
 .navitem .bf-custom-ui-icon{width:23px;height:23px}
+
+
+/* Enhanced launch sequence: a layered energy portal and a final logo ignition. */
+.bf-intro-orbit{position:absolute;left:50%;top:46%;width:min(94vw,500px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;z-index:1}
+.bf-intro-orbit:before,.bf-intro-orbit:after{content:"";position:absolute;inset:7%;border:1px solid rgba(65,112,255,.16);border-radius:50%;box-shadow:inset 0 0 34px rgba(75,120,255,.05),0 0 32px rgba(75,120,255,.06);animation:bfIntroPortal 2.8s cubic-bezier(.15,.7,.2,1) .35s both}
+.bf-intro-orbit:after{inset:17%;border-style:dashed;border-color:rgba(62,160,220,.25);animation:bfIntroPortal 3.2s cubic-bezier(.15,.7,.2,1) .55s both, bfIntroSpin 24s linear infinite}
+.bf-intro-orbit i{position:absolute;left:50%;top:0;width:7px;height:7px;border-radius:50%;background:#4b7bff;box-shadow:0 0 18px 5px rgba(75,123,255,.38);transform:translateX(-50%);opacity:0;animation:bfIntroOrbitalSpark 2.2s ease .75s both}
+.bf-intro-orbit i:nth-child(2){top:auto;bottom:8%;left:17%;background:#53c9e9;animation-delay:1s}
+.bf-intro-orbit i:nth-child(3){top:32%;left:auto;right:5%;background:#9aabff;animation-delay:1.2s}
+.bf-intro-flare{position:absolute;z-index:3;left:50%;top:46%;width:min(74vw,390px);aspect-ratio:1;border-radius:50%;border:1px solid rgba(74,125,255,.0);box-shadow:0 0 0 0 rgba(72,123,255,0);transform:translate(-50%,-50%) scale(.2);opacity:0;pointer-events:none;animation:bfIntroFlare 1.2s cubic-bezier(.1,.7,.2,1) .95s both}
+.bf-intro-scan{position:absolute;z-index:4;left:0;right:0;top:46%;height:22vh;transform:translateY(-50%);background:linear-gradient(180deg,transparent,rgba(91,139,255,.045),rgba(87,177,255,.13),rgba(91,139,255,.035),transparent);opacity:0;pointer-events:none;animation:bfIntroScan 1.1s ease 1.35s both}
+#bfIntroScreen .bf-intro-logo{animation:bfIntroLogo 1.35s cubic-bezier(.16,.8,.22,1) .72s both!important}
+#bfIntroScreen .bf-intro-tagline{animation-delay:2s}
+#bfIntroScreen .bf-intro-overline{animation-delay:.28s}
+#bfIntroScreen .bf-intro-bottom{animation-delay:2.5s}
+#bfIntroScreen .bf-intro-loader i{animation-duration:2.8s;animation-delay:.55s}
+@keyframes bfIntroPortal{0%{opacity:0;transform:scale(.48) rotate(-24deg)}35%{opacity:1}100%{opacity:.65;transform:scale(1) rotate(0)}}
+@keyframes bfIntroOrbitalSpark{0%{opacity:0;transform:translate(-50%,0) scale(.2)}35%{opacity:1}100%{opacity:.55;transform:translate(-50%,0) scale(1.35)}}
+@keyframes bfIntroFlare{0%{opacity:0;transform:translate(-50%,-50%) scale(.2);box-shadow:0 0 0 0 rgba(72,123,255,0)}30%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(1.45);box-shadow:0 0 0 32px rgba(72,123,255,0)}}
+@keyframes bfIntroScan{0%{opacity:0;transform:translateY(-50%) scaleY(.1)}35%{opacity:1}100%{opacity:0;transform:translateY(90vh) scaleY(1.4)}}
+@media(prefers-reduced-motion:reduce){.bf-intro-orbit,.bf-intro-flare,.bf-intro-scan{animation:none!important}.bf-intro-orbit:before,.bf-intro-orbit:after,.bf-intro-orbit i{animation:none!important;opacity:.4!important}}
