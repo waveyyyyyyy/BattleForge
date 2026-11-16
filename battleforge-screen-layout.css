@@ -128,3 +128,43 @@
  #modal.bf-safe-dialog .bf-blaze-feature-grid article{display:grid!important;grid-template-columns:34px minmax(0,1fr)!important;align-items:center!important;column-gap:10px!important}
  #modal.bf-safe-dialog .bf-blaze-feature-grid article small{grid-column:2!important}
 }
+
+
+/* Global modal close-button rail: one consistent top-right position on every screen. */
+#modal:not(.hidden)>.modal-card{position:relative!important}
+#modal:not(.hidden)>.modal-card>#closeModal{
+  position:absolute!important;
+  top:calc(12px + env(safe-area-inset-top,0px))!important;
+  right:14px!important;
+  left:auto!important;
+  inset-inline-start:auto!important;
+  inset-inline-end:14px!important;
+  float:none!important;
+  clear:none!important;
+  transform:none!important;
+  margin:0!important;
+  z-index:100020!important;
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border:1px solid #d7e2f0!important;
+  border-radius:50%!important;
+  background:#fff!important;
+  color:#315cf4!important;
+  font-size:27px!important;
+  line-height:1!important;
+  box-shadow:0 4px 16px rgba(32,66,130,.14)!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+#modal:not(.hidden)>.modal-card{padding-top:max(64px,calc(54px + env(safe-area-inset-top,0px)))!important}
+#modal.bf-safe-dialog:not(.hidden)>.modal-card{padding-top:calc(66px + env(safe-area-inset-top,0px))!important}
+#modal:not(.hidden)>.modal-card>#closeModal:before,
+#modal:not(.hidden)>.modal-card>#closeModal:after{content:none!important;display:none!important}
+@media(max-width:520px){
+  #modal:not(.hidden)>.modal-card>#closeModal{top:calc(10px + env(safe-area-inset-top,0px))!important;right:12px!important}
+}
