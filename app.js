@@ -397,8 +397,7 @@ function toast(message) {
 }
 function modal(html) {
   // Keep dialogs anchored to the visible viewport even when the Arena page was scrolled far down.
-  window.scrollTo(0, 0);
-  const overlay = $('#modal');
+  window.scrollTo(0, 0);  const overlay = $('#modal');
   // Settings are moved out of modalContent; remove the previous dialog's copy before rendering.
   $('#modal .modal-card > .bf-chat-settings-wrap')?.remove();
   $('#modalContent').innerHTML = html;
@@ -534,9 +533,9 @@ async function createPaymentRequest(kind) {
 }
 
 function bfPaymentStatus(status){
- const map={pending:['🕒','Pending review','pending'],reported_paid:['⏳','Payment reported · verifying','pending'],verified:['✅','Verified · credited','approved'],approved:['🟢','Approved · awaiting payout','approved'],paid:['💸','Paid','approved'],rejected:['❌','Rejected','rejected'],expired:['⌛','Expired','rejected']};
+ const map={pending:['⏳','Pending review','pending'],reported_paid:['🔎','Payment reported · verifying','pending'],verified:['🏅','Verified · credited','approved'],approved:['🛡️','Approved · awaiting payout','approved'],paid:['💸','Paid','approved'],rejected:['🚫','Rejected','rejected'],expired:['⌛','Expired','rejected']};
  const [emoji,label,tone]=map[String(status||'pending').toLowerCase()]||['📄',String(status||'Unknown'),'pending'];
- return '<span class="bf-payment-status bf-payment-status-'+tone+'"><span aria-hidden="true">'+emoji+'</span>'+esc(label)+'</span>';
+ return '<span class="bf-payment-status bf-payment-status-'+tone+'"><span class="bf-payment-status-emoji" aria-hidden="true">'+emoji+'</span><span>'+esc(label)+'</span></span>';
 }
 function bfPaymentSuccess(kind,row){
  const deposit=kind==='deposit';
@@ -549,26 +548,38 @@ async function openPaymentHistory(kind){
  modal('<section class="bf-payment-history-screen"><div class="eyebrow">YOUR ACCOUNT</div><h2>'+esc(title)+'</h2>'+bfLoadingScreen('Loading transaction history','Fetching all records securely','bars')+'</section>');
  let rows=[];
  if(kind==='all'){
-  const {data,error}=await supabase.from('wallet_ledger').select('id,entry_type,amount,note,created_at,reference_type,reference_id,bucket').eq('user_id',currentUser.id).order('created_at',{ascending:false});
-  if(error){toast('Could not load full activity: '+error.message);return;} rows=(data||[]).map(x=>({...x,kind:'activity'}));
+  const [ledger,dep,wd]=await Promise.all([
+   supabase.from('wallet_ledger').select('id,entry_type,amount,note,created_at,reference_type,reference_id,bucket').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+   supabase.from('deposit_requests').select('id,amount,status,created_at,payment_reference,admin_note').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+   supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at,payout_reference,admin_note').eq('user_id',currentUser.id).order('created_at',{ascending:false})
+  ]);
+  const failure=ledger.error||dep.error||wd.error;
+  if(failure){toast('Could not load full activity: '+failure.message);return;}
+  rows=[
+   ...(ledger.data||[]).map(x=>({...x,kind:'activity'})),
+   ...(dep.data||[]).map(x=>({...x,kind:'deposit'})),
+   ...(wd.data||[]).map(x=>({...x,kind:'withdrawal'}))
+  ].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
  }else{
   const table=kind==='deposit'?'deposit_requests':'withdrawal_requests';
   const fields=kind==='deposit'?'id,amount,status,created_at,payment_reference,admin_note':'id,amount,fee_amount,net_amount,status,created_at,payout_reference,admin_note';
   const {data,error}=await supabase.from(table).select(fields).eq('user_id',currentUser.id).order('created_at',{ascending:false});
-  if(error){toast('Could not load '+title.toLowerCase()+': '+error.message);return;} rows=(data||[]).map(x=>({...x,kind}));
+  if(error){toast('Could not load '+title.toLowerCase()+': '+error.message);return;}
+  rows=(data||[]).map(x=>({...x,kind}));
  }
  const cards=rows.length?rows.map(x=>{
-  const label=x.kind==='activity'?(x.entry_type||'Wallet activity'):x.kind==='deposit'?'Deposit request':'Withdrawal request',amount=Number(x.amount||0);
-  const status=x.kind==='activity'?'<span class="bf-payment-status bf-payment-status-approved">📘 Ledger entry</span>':bfPaymentStatus(x.status);
-  const ref=x.kind==='activity'?(x.reference_id||''):x.id;
+  const label=x.kind==='activity'?(x.entry_type||'Wallet activity'):x.kind==='deposit'?'Deposit request':'Withdrawal request';
+  const amount=Number(x.amount||0);
+  const status=x.kind==='activity'?'<span class="bf-payment-status bf-payment-status-approved"><span class="bf-payment-status-emoji" aria-hidden="true">⚒️</span><span>Ledger entry</span></span>':bfPaymentStatus(x.status);
+  const ref=x.kind==='activity'?(x.reference_id||''):('PAY-'+String(x.id||'').replace(/-/g,'').slice(0,10).toUpperCase());
   const extra=x.kind==='withdrawal'?'Fee ₹'+Number(x.fee_amount||0).toFixed(2)+' · Net ₹'+Number(x.net_amount??amount).toFixed(2):x.kind==='deposit'?(x.payment_reference?'UTR '+esc(x.payment_reference):''):(x.note||'');
-  return '<article class="bf-payment-history-row"><div class="bf-payment-history-top"><b>'+esc(label)+' · ₹'+amount.toFixed(2)+'</b>'+status+'</div><small>'+esc(new Date(x.created_at).toLocaleString())+'</small>'+(extra?'<small>'+extra+'</small>':'')+(ref?'<small>Reference: '+esc(ref)+'</small>':'')+(x.admin_note?'<small>Admin note: '+esc(x.admin_note)+'</small>':'')+'</article>';
+  const unit=x.kind==='activity'?'COINS':'₹';
+  return '<article class="bf-payment-history-row"><div class="bf-payment-history-top"><b>'+esc(label)+' · '+unit+amount.toFixed(2)+'</b>'+status+'</div><small>'+esc(new Date(x.created_at).toLocaleString())+'</small>'+(extra?'<small>'+extra+'</small>':'')+(ref?'<small>Reference: '+esc(ref)+'</small>':'')+(x.admin_note?'<small>Admin note: '+esc(x.admin_note)+'</small>':'')+'</article>';
  }).join(''):'<div class="empty-state"><span>📭</span><b>No transactions yet</b><p>Your records will appear here when you make a request or earn coins.</p></div>';
  const screen=$('#modalContent .bf-payment-history-screen');
  if(screen)screen.innerHTML='<button type="button" class="outline bf-history-back" id="bfPaymentHistoryBack">← Back</button><div class="eyebrow">YOUR ACCOUNT</div><h2>'+esc(title)+'</h2><p>'+rows.length+' transaction'+(rows.length===1?'':'s')+' · newest first</p><div class="bf-payment-history-list">'+cards+'</div>';
  $('#bfPaymentHistoryBack')?.addEventListener('click',close);
 }
-
 async function loadPaymentRequests() {
   const target=$('#paymentRequests'); if(!target) return;
   if(!currentUser) { target.innerHTML='<p class="notice">Sign in to view payment requests.</p>'; return; }
@@ -797,8 +808,7 @@ async function setupBattleForgePush(requestPermission = false) {
 }
 
 // Short-lived in-memory cache for read-only arena data. Mutations and wallet/payment
-// actions still refresh their own data; this only deduplicates repeated screen refreshes.
-const bfReadCache = new Map();
+// actions still refresh their own data; this only deduplicates repeated screen refreshes.const bfReadCache = new Map();
 async function bfCachedRead(key, ttlMs, loader) {
   const now = Date.now();
   const cached = bfReadCache.get(key);
@@ -1197,8 +1207,7 @@ async function loadAdminSchedule() {
 
 async function loadAdminRoom() {
   if (!isAdmin) return;
-  const id = Number($('#adminRoomTournament')?.value || $('#adminTournament')?.value);
-  const selectedTournament = tournaments.find(t => Number(t.id) === id);
+  const id = Number($('#adminRoomTournament')?.value || $('#adminTournament')?.value);  const selectedTournament = tournaments.find(t => Number(t.id) === id);
   const descriptionEditor = $('#adminEditDescription');
   if (descriptionEditor) descriptionEditor.value = selectedTournament?.description ?? '';
   const roomId = $('#adminRoomId');
@@ -1597,8 +1606,7 @@ async function showTournamentDetails(t) {
   const starts = t.starts_at ? new Date(t.starts_at).toLocaleString() : 'To be announced';
   let roomHtml = '';
   let publishedRoom = null;
-  {
-    const [{ data: roster }, { data: room }] = await Promise.all([
+  {    const [{ data: roster }, { data: room }] = await Promise.all([
       (has || isAdmin) ? supabase.rpc('get_tournament_roster', { p_tournament_id: Number(id) }) : Promise.resolve({data:null}),
       has && currentUser ? supabase.from('tournament_rooms').select('room_id,room_password,published').eq('tournament_id', Number(id)).eq('published', true).maybeSingle() : Promise.resolve({data:null})
     ]);
@@ -1907,6 +1915,9 @@ document.addEventListener('click',event=>{
  }
 });
 document.addEventListener('click',async event=>{
+ if(event.target.closest('#bfWalletFullActivity')){await openPaymentHistory('all');return;}
+ if(event.target.closest('#bfWalletDepositHistory')){await openPaymentHistory('deposit');return;}
+ if(event.target.closest('#bfWalletWithdrawalHistory')){await openPaymentHistory('withdrawal');return;}
  if(event.target.closest('#bfViewMyTickets')){await openMySupportTickets();return;}
  if(event.target.closest('#bfBackToFaq')){openFaqChat();return;}
 });
@@ -1997,8 +2008,7 @@ async function checkRequiredAppUpdate(){
         Browser.open({url:parsedUrl.href}).catch(error=>{console.warn('Could not open APK download:',error);window.open(parsedUrl.href,'_blank','noopener');});
       }
     });
-    document.body.style.overflow='hidden';
-    document.body.appendChild(gate);
+    document.body.style.overflow='hidden';    document.body.appendChild(gate);
   } catch(e) { console.warn('App update check failed',e); }
 }
 document.addEventListener('click',e=>{
