@@ -122,6 +122,11 @@ function killRankFor(kills) {
   for (let i = KILL_RANKS.length - 1; i >= 0; i--) if (total >= KILL_RANKS[i].minimum) return KILL_RANKS[i];
   return null;
 }
+function bfReactionGlyph(emoji){
+ const names={'😂':'laugh','😭':'cry','😘':'kiss','👽':'alien','🥀':'wilt','🤑':'money','😡':'angry','☠️':'skull','🤕':'sick','😱':'shock','❤️':'heart','🎉':'party','💔':'broken','💦':'splash'};
+ const name=names[emoji]||'laugh';
+ return '<svg class="bf-custom-reaction" viewBox="0 0 64 64" aria-hidden="true"><use href="./battleforge-icons.svg#reaction-'+name+'"></use></svg>';
+}
 function rankBadgeHtml(kills, size = 'sm') {
   const rank = killRankFor(kills);
   if (!rank) return '';
@@ -1588,7 +1593,7 @@ function matchChatMessageHtml(row, username) {
   const saved=read('bf_chat_reactions_'+String(row.id),null);
   const selected=Array.isArray(saved)?(saved[0]||''):String(saved||'');
   const emojis=['😂','😭','😘','👽','🥀','🤑','😡','☠️','🤕','😱','❤️','🎉','💔','💦'];
-  return '<article class="bf-match-chat-message '+(own?'is-own':'')+'" data-chat-message="'+esc(row.id)+'"><div class="bf-match-chat-meta"><b>'+esc(username)+(own?' · YOU':'')+'</b><time>'+esc(new Date(row.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</time></div><p>'+esc(row.message)+'</p><div class="bf-chat-reaction-result" aria-label="Selected reaction">'+(selected?'<span class="bf-chat-reaction-selected">'+selected+'</span>':'')+'</div><div class="bf-chat-reactions" aria-label="Choose a reaction">'+emojis.map(emoji=>'<button type="button" class="bf-chat-reaction-option '+(selected===emoji?'active':'')+'" data-chat-reaction="'+emoji+'" data-message-id="'+esc(row.id)+'" aria-label="React '+emoji+'">'+emoji+'</button>').join('')+'</div>'+(isAdmin?'<button type="button" class="bf-chat-delete" data-chat-delete="'+esc(row.id)+'">Remove</button>':'')+'</article>';
+  return '<article class="bf-match-chat-message '+(own?'is-own':'')+'" data-chat-message="'+esc(row.id)+'"><div class="bf-match-chat-meta"><b>'+esc(username)+(own?' · YOU':'')+'</b><time>'+esc(new Date(row.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))+'</time></div><p>'+esc(row.message)+'</p><div class="bf-chat-reaction-result" aria-label="Selected reaction">'+(selected?'<span class="bf-chat-reaction-selected">'+bfReactionGlyph(selected)+'</span>':'')+'</div><div class="bf-chat-reactions" aria-label="Choose a reaction">'+emojis.map(emoji=>'<button type="button" class="bf-chat-reaction-option '+(selected===emoji?'active':'')+'" data-chat-reaction="'+emoji+'" data-message-id="'+esc(row.id)+'" aria-label="React '+emoji+'">'+bfReactionGlyph(emoji)+'</button>').join('')+'</div>'+(isAdmin?'<button type="button" class="bf-chat-delete" data-chat-delete="'+esc(row.id)+'">Remove</button>':'')+'</article>';
 }
 async function loadMatchChat(tournamentId) {
   const target=$('#bfMatchChatMessages');if(!target)return;
