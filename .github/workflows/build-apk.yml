@@ -32,6 +32,7 @@ jobs:
           cp battleforge-ux-polish.css public/battleforge-ux-polish.css
           cp battleforge-premium-theme.css public/battleforge-premium-theme.css
           cp battleforge-neumorphic-theme.css public/battleforge-neumorphic-theme.css
+          cp battleforge-wallet-fix.css public/battleforge-wallet-fix.css
       - name: Assign a unique version to every APK build
         env:
           BUILD_NUMBER: ${{ github.run_number }}
