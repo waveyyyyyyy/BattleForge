@@ -361,7 +361,7 @@ function modal(html) {
   overlay.classList.toggle('bf-payment-history-modal', html.includes('bf-payment-history-screen'));
   overlay.classList.toggle('bf-fullscreen-chat', html.includes('bf-chat-header') || html.includes('bf-match-chat'));
   overlay.classList.remove('bf-edge-screen');
-  overlay.classList.toggle('bf-safe-dialog', html.includes('bf-auth-sheet') || html.includes('notification-sheet') || html.includes('profile-sheet'));
+  overlay.classList.toggle('bf-safe-dialog', html.includes('bf-auth-sheet') || html.includes('notification-sheet') || html.includes('profile-sheet') || html.includes('bf-support-hub') || html.includes('bf-faq-chat'));
   overlay.classList.remove('hidden');
   overlay.scrollTop = 0;
   // Reset both scroll containers; Android WebViews can otherwise retain the prior dialog's position.
