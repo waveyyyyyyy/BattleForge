@@ -168,3 +168,107 @@
 @media(max-width:520px){
   #modal:not(.hidden)>.modal-card>#closeModal{top:calc(10px + env(safe-area-inset-top,0px))!important;right:12px!important}
 }
+
+
+
+/* Floating BattleForge navigation — white/blue glass dock with a sliding active rail. */
+.bottom{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
+  transform:translateX(-50%)!important;
+  width:calc(100% - 28px)!important;
+  max-width:540px!important;
+  min-height:70px!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  align-items:center!important;
+  gap:5px!important;
+  padding:8px!important;
+  border:1px solid #d7e2f0!important;
+  border-radius:23px!important;
+  background:rgba(255,255,255,.94)!important;
+  box-shadow:0 12px 34px rgba(35,65,105,.18),inset 0 1px 0 rgba(255,255,255,.95)!important;
+  backdrop-filter:blur(18px)!important;
+  -webkit-backdrop-filter:blur(18px)!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.bottom:before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:7px;
+  bottom:7px;
+  left:7px;
+  width:calc((100% - 14px - 15px)/4);
+  border:1px solid #cbdcff;
+  border-radius:17px;
+  background:linear-gradient(145deg,#edf3ff 0%,#dce8ff 100%);
+  box-shadow:0 5px 15px rgba(49,92,244,.13),inset 0 1px 0 rgba(255,255,255,.9);
+  transform:translateX(0);
+  transition:transform .42s cubic-bezier(.2,.85,.25,1),width .3s ease;
+  pointer-events:none;
+}
+.bottom:has(.navitem:nth-child(2).active):before{transform:translateX(calc(100% + 5px))}
+.bottom:has(.navitem:nth-child(3).active):before{transform:translateX(calc((100% + 5px)*2))}
+.bottom:has(.navitem:nth-child(4).active):before{transform:translateX(calc((100% + 5px)*3))}
+.navitem{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:54px!important;
+  padding:6px 2px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:transparent!important;
+  color:#7b8999!important;
+  transition:color .25s ease,transform .3s cubic-bezier(.2,.8,.2,1),filter .25s ease!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+.navitem.active{
+  color:#315cf4!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  transform:translateY(-1px)!important;
+}
+.navitem .nav-icon{
+  display:grid!important;
+  place-items:center!important;
+  width:25px!important;
+  height:25px!important;
+  font-size:22px!important;
+  line-height:1!important;
+  color:currentColor!important;
+  transition:transform .38s cubic-bezier(.2,.8,.2,1),filter .25s ease!important;
+}
+.navitem.active .nav-icon{
+  transform:translateY(-2px) scale(1.13)!important;
+  filter:drop-shadow(0 3px 5px rgba(49,92,244,.2))!important;
+}
+.navitem small{
+  color:inherit!important;
+  font-size:9px!important;
+  font-weight:850!important;
+  letter-spacing:.15px!important;
+  white-space:nowrap!important;
+}
+.bf-nav-trophy{display:block!important;width:23px!important;height:23px!important;overflow:visible!important}
+.navitem:active{transform:scale(.94)!important}
+@media(max-width:360px){
+ .bottom{width:calc(100% - 20px)!important;gap:2px!important;padding:6px!important}
+ .navitem small{font-size:8px!important}
+ .bottom:before{left:6px;width:calc((100% - 12px - 6px)/4)}
+ .bottom:has(.navitem:nth-child(2).active):before{transform:translateX(calc(100% + 2px))}
+ .bottom:has(.navitem:nth-child(3).active):before{transform:translateX(calc((100% + 2px)*2))}
+ .bottom:has(.navitem:nth-child(4).active):before{transform:translateX(calc((100% + 2px)*3))}
+}
+@media(prefers-reduced-motion:reduce){
+ .bottom:before,.navitem,.navitem .nav-icon{transition:none!important}
+}
