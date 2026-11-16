@@ -1,0 +1,120 @@
+/* BattleForge wallet request polish — presentation only; form fields and actions remain unchanged */
+#modal:has(#depositRequestForm) .modal-card,
+#modal:has(#withdrawalRequestForm) .modal-card{
+  width:min(100% - 22px,560px);max-height:min(88dvh,860px);overflow:auto;
+  border:1px solid #dce7fa;border-radius:25px;
+  background:linear-gradient(180deg,#f7faff 0%,#fff 190px);
+  box-shadow:0 24px 70px rgba(33,65,125,.20),0 3px 12px rgba(33,65,125,.07);
+}
+#modal:has(#depositRequestForm) #modalContent,
+#modal:has(#withdrawalRequestForm) #modalContent{padding:28px 21px 22px}
+#modal:has(#depositRequestForm) #modalContent>h2,
+#modal:has(#withdrawalRequestForm) #modalContent>h2{
+  position:relative;margin:0 42px 8px 0;padding:0;color:#203653;
+  font-size:clamp(25px,6vw,31px);font-weight:850;letter-spacing:-1.1px;line-height:1.1
+}
+#modal:has(#depositRequestForm) #modalContent>h2:after,
+#modal:has(#withdrawalRequestForm) #modalContent>h2:after{
+  content:"";display:block;width:43px;height:4px;margin-top:12px;border-radius:8px;
+  background:linear-gradient(90deg,#315cf4,#80a5ff)
+}
+#modal:has(#depositRequestForm) #modalContent>p,
+#modal:has(#withdrawalRequestForm) #modalContent>p{
+  color:#718198;font-size:12px;line-height:1.6
+}
+#modal:has(#depositRequestForm) #modalContent>p:first-of-type,
+#modal:has(#withdrawalRequestForm) #modalContent>p:first-of-type{margin:0 0 12px}
+#modal:has(#depositRequestForm) #modalContent .notice,
+#modal:has(#withdrawalRequestForm) #modalContent .notice{
+  padding:11px 13px;border:1px solid #dce7fb;border-radius:13px;
+  background:#f3f7ff;color:#536987;font-size:11px;line-height:1.55
+}
+#modal:has(#depositRequestForm) form,
+#modal:has(#withdrawalRequestForm) form{display:flex;flex-direction:column;gap:13px;margin-top:15px}
+#modal:has(#depositRequestForm) .field,
+#modal:has(#withdrawalRequestForm) .field{
+  display:flex;flex-direction:column;gap:7px;margin:0!important;
+  color:#526782;font-size:10px;font-weight:800;letter-spacing:.65px
+}
+#modal:has(#depositRequestForm) .field input,
+#modal:has(#withdrawalRequestForm) .field input{
+  width:100%;min-height:49px;padding:12px 14px;box-sizing:border-box;
+  border:1px solid #dce5f1;border-radius:13px;background:#fbfcff;
+  color:#203653;font-size:14px;letter-spacing:0;
+  box-shadow:inset 0 1px 2px rgba(34,60,100,.025)
+}
+#modal:has(#depositRequestForm) .field input:focus,
+#modal:has(#withdrawalRequestForm) .field input:focus{
+  outline:0;border-color:#83a0ff;background:#fff;box-shadow:0 0 0 3px rgba(49,92,244,.10)
+}
+#modal:has(#depositRequestForm) .deposit-qr-wrap{
+  margin:2px 0!important;padding:16px 12px;border:1px solid #dce7fa;border-radius:18px;
+  background:linear-gradient(145deg,#f4f8ff,#fff)
+}
+#modal:has(#depositRequestForm) .deposit-qr-wrap img{
+  width:min(210px,100%)!important;border:1px solid #e3eaf5;border-radius:15px!important;
+  box-shadow:0 8px 22px rgba(31,63,125,.09)
+}
+#modal:has(#depositRequestForm) .deposit-qr-wrap p{margin:10px 0 0;color:#718198;font-size:11px}
+#modal:has(#depositRequestForm) .room-card,
+#modal:has(#withdrawalRequestForm) .room-card{
+  padding:15px;border:1px solid #dce7fa;border-radius:16px;
+  background:linear-gradient(135deg,#f5f8ff,#fff);box-shadow:0 5px 15px rgba(42,75,135,.045)
+}
+#modal:has(#depositRequestForm) .room-label{color:#7b8eaa;font-size:9px;font-weight:800;letter-spacing:1px}
+#modal:has(#depositRequestForm) .room-value,
+#modal:has(#withdrawalRequestForm) .room-value{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#526782;font-size:12px}
+#modal:has(#depositRequestForm) .room-value b,
+#modal:has(#withdrawalRequestForm) .room-value b{color:#24466f;font-size:15px;overflow-wrap:anywhere}
+#modal:has(#depositRequestForm) .room-card p{margin:9px 0 0;color:#8190a4;font-size:10px;line-height:1.5}
+#modal:has(#depositRequestForm) #copyDepositUpi{
+  min-height:36px;padding:7px 12px;border:1px solid #cfdbff;border-radius:10px;
+  background:#edf2ff;color:#315cf4;font-size:10px;font-weight:800
+}
+#modal:has(#depositRequestForm) .wallet-total{
+  display:flex;justify-content:center;align-items:center;margin:0;padding:12px;
+  border:1px solid #dce7fa;border-radius:14px;background:#f4f7ff
+}
+#modal:has(#depositRequestForm) #depositCountdown{
+  color:#315cf4;font-size:26px;font-weight:850;font-variant-numeric:tabular-nums;letter-spacing:1px
+}
+#modal:has(#depositRequestForm) .admin-check{
+  padding:13px;border:1px solid #dce7fa;border-radius:14px;background:#f6f8ff
+}
+#modal:has(#depositRequestForm) .admin-check input{accent-color:#315cf4}
+#modal:has(#depositRequestForm) .admin-check b{display:block;color:#304968;font-size:12px}
+#modal:has(#depositRequestForm) .admin-check small{display:block;margin-top:4px;color:#7b8da5;font-size:10px;line-height:1.5}
+#modal:has(#withdrawalRequestForm) .bf-withdraw-eligibility{
+  margin:14px 0;padding:16px;border:1px solid #dce7fa;border-radius:17px;
+  background:linear-gradient(135deg,#f1f6ff,#fff)
+}
+#modal:has(#withdrawalRequestForm) .bf-withdraw-eligibility>b{
+  display:block;color:#617895;font-size:10px;font-weight:800;letter-spacing:.6px
+}
+#modal:has(#withdrawalRequestForm) #withdrawEarnedBalance{
+  display:block;margin:7px 0 11px;color:#315cf4;font-size:25px;font-weight:850;font-variant-numeric:tabular-nums
+}
+#modal:has(#withdrawalRequestForm) .bf-progress-track{height:8px;margin:0 0 8px;overflow:hidden;border:0;border-radius:99px;background:#e5ecf7}
+#modal:has(#withdrawalRequestForm) #withdrawProgressBar{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#82a4ff,#315cf4);transition:width .35s ease}
+#modal:has(#withdrawalRequestForm) #withdrawProgressLabel{color:#8190a4;font-size:10px}
+#modal:has(#withdrawalRequestForm) #withdrawEligibilityMessage{margin:0 0 12px}
+#modal:has(#withdrawalRequestForm) .room-card .room-value+ .room-value{margin-top:10px;padding-top:10px;border-top:1px solid #e4ebf6}
+#modal:has(#withdrawalRequestForm) #withdrawNet{color:#315cf4;font-size:18px}
+#modal:has(#depositRequestForm) .join.full,
+#modal:has(#withdrawalRequestForm) .join.full{
+  min-height:52px;margin-top:2px;border:0;border-radius:14px;
+  background:linear-gradient(110deg,#315cf4,#527cff);color:#fff;
+  font-size:13px;font-weight:850;letter-spacing:.15px;
+  box-shadow:0 9px 20px rgba(49,92,244,.20)
+}
+#modal:has(#depositRequestForm) .join.full:active,
+#modal:has(#withdrawalRequestForm) .join.full:active{transform:translateY(1px)}
+#modal:has(#depositRequestForm) .close,
+#modal:has(#withdrawalRequestForm) .close{z-index:5}
+@media(max-width:390px){
+ #modal:has(#depositRequestForm) #modalContent,#modal:has(#withdrawalRequestForm) #modalContent{padding:25px 15px 18px}
+ #modal:has(#depositRequestForm) .deposit-qr-wrap img{width:min(190px,100%)!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #modal:has(#withdrawalRequestForm) #withdrawProgressBar{transition:none}
+}
