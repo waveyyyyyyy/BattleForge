@@ -517,7 +517,7 @@ async function createPaymentRequest(kind) {
   const modalCard=$('#modal .modal-card');
   const loading=document.createElement('div');
   loading.className='bf-payment-submission-overlay';
-  loading.innerHTML=bfLoadingScreen(isDeposit?'Securing your deposit request':'Submitting your withdrawal request',isDeposit?'Saving your UTR and creating your verification record':'Reserving eligible match earnings and creating your payout record','orbit')+'<div class="bf-submit-progress"><i></i></div><small class="bf-submit-safe">Please keep BattleForge open for a moment. Do not submit again.</small>';
+  loading.innerHTML=bfLoadingScreen(isDeposit?'Securing your deposit request':'Submitting your withdrawal request',isDeposit?'Saving your UTR and creating your verification record':'Checking your match earnings and creating your payout request','orbit')+'<div class="bf-submit-progress"><i></i></div><small class="bf-submit-safe">Please keep BattleForge open for a moment. Do not submit again.</small>';
   if(modalCard){modalCard.appendChild(loading);modalCard.setAttribute('aria-busy','true');}
   if(button){button.disabled=true;button.setAttribute('aria-busy','true');button.innerHTML='<span class="bf-button-spinner" aria-hidden="true"></span> Submitting…';}
   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
@@ -614,8 +614,8 @@ async function loadAdminPaymentRequests() {
  const target=$('#adminPaymentRequests');if(!target||!isAdmin)return;
  target.innerHTML=bfLoadingScreen('Loading payment centre','Separating live requests from completed transactions','bars');
  const [dep,wd]=await Promise.all([
-  supabase.from('deposit_requests').select('id,user_id,amount,payer_upi,receiver_upi,status,created_at,expires_at,payment_reference,admin_note').order('created_at',{ascending:false}).limit(250),
-  supabase.from('withdrawal_requests').select('id,user_id,amount,fee_amount,net_amount,account_name,payout_upi,status,created_at,reviewed_at,payout_reference,admin_note').order('created_at',{ascending:false}).limit(250)
+  supabase.from('deposit_requests').select('id,user_id,amount,payer_upi,receiver_upi,status,created_at,expires_at,payment_reference,admin_note').order('created_at',{ascending:false}),
+  supabase.from('withdrawal_requests').select('id,user_id,amount,fee_amount,net_amount,account_name,payout_upi,status,created_at,reviewed_at,payout_reference,admin_note').order('created_at',{ascending:false})
  ]);
  if(dep.error||wd.error){target.innerHTML='<p class="notice">Could not load payment requests: '+esc((dep.error||wd.error).message)+'</p>';return;}
  const rows=[...(dep.data||[]).map(x=>({...x,kind:'deposit'})),...(wd.data||[]).map(x=>({...x,kind:'withdrawal'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
@@ -1355,7 +1355,7 @@ async function showAdmin() {
   $('#adminCopyRoomPassword')?.addEventListener('click',()=>copyBattleForgeText($('#adminRoomPassword')?.value,'Room password copied'));
   const adminPages={home:null,create:'Create match',manage:'Manage matches',players:'Search players',directory:'All registered players',analytics:'Platform analytics',results:'Match rankings',payments:'Payments & withdrawals',room:'Room & lobby',notifications:'Announcements',social:'Social links',updates:'App updates',controls:'Security & emergency controls'};
   const pagePermission={create:'tournament_manage',manage:'tournament_manage',players:'player_lookup',directory:'player_lookup',analytics:'analytics',results:'results_manage',payments:'payments',room:'room_manage',notifications:'announcements_manage',social:'owner',updates:'owner',controls:'admin_console'};
-  const openAdminPage=(page)=>{if(page!=='home'&&!adminIsOwner&&!adminPermissions.has(pagePermission[page])){toast('Your admin role cannot access this section.');return;}document.querySelectorAll('[data-admin-page]').forEach(el=>el.classList.toggle('hidden',el.dataset.adminPage!==page));document.querySelectorAll('.admin-home-menu').forEach(el=>el.classList.toggle('hidden',page!=='home'));$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=adminPages[page]||'Admin section';};
+  const openAdminPage=(page)=>{if(page!=='home'&&!adminIsOwner&&!adminPermissions.has(pagePermission[page])){toast('Your admin role cannot access this section.');return;}document.querySelectorAll('[data-admin-page]').forEach(el=>el.classList.toggle('hidden',el.dataset.adminPage!==page));document.querySelectorAll('.admin-home-menu').forEach(el=>el.classList.toggle('hidden',page!=='home'));$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=adminPages[page]||'Admin section';if(page==='payments')loadAdminPaymentRequests();};
   document.querySelectorAll('[data-admin-page-open]').forEach(button=>{const page=button.dataset.adminPageOpen;const permission=pagePermission[page];button.classList.toggle('hidden',!!permission&&!adminIsOwner&&!adminPermissions.has(permission));button.addEventListener('click',()=>openAdminPage(page));});
   $('#adminBackHome')?.addEventListener('click',()=>openAdminPage('home'));
   document.querySelectorAll('[data-admin-jump]').forEach(button=>button.addEventListener('click',()=>{const map={adminCreateSection:'create',adminManageSection:'manage',adminPlayersSection:'players'};openAdminPage(map[button.dataset.adminJump]||'home');document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'});}));
