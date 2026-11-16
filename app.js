@@ -888,7 +888,9 @@ async function refreshDataInternal() {
   const countsPromise=supabase.rpc('get_tournament_counts');
   const walletPromise=currentUser?loadWalletSummary():Promise.resolve();
   const paymentsPromise=currentUser&&$('#paymentRequests')?loadPaymentRequests():Promise.resolve();
-  const [noticeResult,entryResult,countResult]=await Promise.all([noticesPromise,entriesPromise,countsPromise,walletPromise,paymentsPromise]).then(v=>[v[0],v[1],v[2]]);
+  const [noticeResult,entryResult,countResult]=await Promise.all([noticesPromise,entriesPromise,countsPromise]);
+  walletPromise.catch(error=>console.warn('Wallet summary refresh failed:',error));
+  paymentsPromise.catch(error=>console.warn('Payment request refresh failed:',error));
   if(!entryResult.error)joined=entryResult.data||[];
   if(!countResult.error&&Array.isArray(countResult.data))for(const row of countResult.data)counts[String(row.tournament_id)]=Number(row.player_count);
   if(!noticeResult.error&&Array.isArray(noticeResult.data)){
