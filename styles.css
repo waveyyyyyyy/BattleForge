@@ -348,3 +348,22 @@ button:active,.join:active,.outline:active{transform:scale(.975)}
   .header-coin-icon{display:none}
   .top-actions{gap:3px}
 }
+
+
+/* Payment submission: fixed viewport layer, independent of the modal's scroll position. */
+.bf-payment-submission-overlay{position:fixed!important;inset:0!important;z-index:100000!important;display:grid!important;place-items:center!important;padding:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom))!important;background:rgba(3,7,12,.84)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;overflow:auto!important;box-sizing:border-box!important}
+.bf-payment-submission-card{width:min(100%,420px)!important;padding:26px 20px!important;border:1px solid rgba(213,255,79,.24)!important;border-radius:22px!important;background:linear-gradient(150deg,#192631,#0d151d 78%)!important;box-shadow:0 28px 90px rgba(0,0,0,.58),inset 0 1px rgba(255,255,255,.06)!important;text-align:center!important}
+.bf-payment-submission-card .bf-loading-screen{margin:0 auto!important}
+.bf-submit-progress{height:4px;margin:18px 0 12px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}
+.bf-submit-progress i{display:block;width:38%;height:100%;border-radius:99px;background:linear-gradient(90deg,#a7d932,#e4ff7b);animation:bfSubmitSweep 1.15s ease-in-out infinite alternate}
+.bf-submit-safe{display:block;color:#a9b6c2;font-size:11px;line-height:1.5}
+@keyframes bfSubmitSweep{from{transform:translateX(-8%);width:28%}to{transform:translateX(245%);width:42%}}
+
+/* The profile should read as one clean sheet, not a card trapped inside another outlined card. */
+#modal.profile-modal .modal-card{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important}
+#modal.profile-modal .profile-sheet{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important}
+
+/* Match IDs are visible on arena cards and archives, not only inside the admin modal. */
+.bf-match-number{display:inline-flex!important;align-items:center;gap:4px;margin-right:6px;padding:5px 9px;border:1px solid rgba(213,255,79,.38);border-radius:8px;background:linear-gradient(135deg,rgba(213,255,79,.16),rgba(24,43,34,.72));color:#e0ff8a!important;font-size:11px!important;font-weight:900!important;letter-spacing:.08em!important;line-height:1.2;white-space:nowrap;box-shadow:inset 0 1px rgba(255,255,255,.07),0 4px 14px rgba(0,0,0,.18)}
+.bf-match-history-number{display:inline-flex!important;align-items:center;padding:6px 10px;border:1px solid rgba(213,255,79,.34);border-radius:9px;background:rgba(213,255,79,.09);color:#e0ff8a!important;font-size:11px!important;font-weight:900!important;letter-spacing:.08em!important}
+@media(prefers-reduced-motion:reduce){.bf-submit-progress i{animation:none!important;width:100%!important}}
