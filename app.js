@@ -519,7 +519,8 @@ async function createPaymentRequest(kind) {
   loading.className='bf-payment-submission-overlay';
   loading.innerHTML=bfLoadingScreen(isDeposit?'Securing your deposit request':'Submitting your withdrawal request',isDeposit?'Saving your UTR and creating your verification record':'Reserving eligible match earnings and creating your payout record','orbit')+'<div class="bf-submit-progress"><i></i></div><small class="bf-submit-safe">Please keep BattleForge open for a moment. Do not submit again.</small>';
   if(modalCard){modalCard.appendChild(loading);modalCard.setAttribute('aria-busy','true');}
-  if(button){button.disabled=true;button.textContent='Submitting securely…';}
+  if(button){button.disabled=true;button.setAttribute('aria-busy','true');button.innerHTML='<span class="bf-button-spinner" aria-hidden="true"></span> Submitting…';}
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   let data,error;
   try{
     ({data,error}=await supabase.rpc(isDeposit?'submit_deposit_request':'create_withdrawal_request',
@@ -528,7 +529,7 @@ async function createPaymentRequest(kind) {
   if(error){
     console.error('Payment request submission failed:',error);
     loading.remove();modalCard?.removeAttribute('aria-busy');
-    if(button){button.disabled=false;button.textContent=isDeposit?'Submit payment for verification':'Submit withdrawal request';}
+    if(button){button.disabled=false;button.removeAttribute('aria-busy');button.textContent=isDeposit?'Submit payment for verification':'Submit withdrawal request';}
     return toast(error.message||'Could not submit the request. Please try again.');
   }
   const row=Array.isArray(data)?data[0]:data;
@@ -546,13 +547,13 @@ async function createPaymentRequest(kind) {
 }
 
 function bfPaymentStatus(status){
- const map={pending:['⏳','Pending review','pending'],reported_paid:['🕒','Pending verification','pending'],verified:['🏅','Verified · credited','approved'],approved:['🛡️','Approved · awaiting payout','approved'],paid:['💸','Paid','approved'],rejected:['🚫','Rejected','rejected'],expired:['⌛','Expired','rejected']};
- const [emoji,label,tone]=map[String(status||'pending').toLowerCase()]||['📄',String(status||'Unknown'),'pending'];
- return '<span class="bf-payment-status bf-payment-status-'+tone+'"><span class="bf-payment-status-emoji" aria-hidden="true">'+emoji+'</span><span>'+esc(label)+'</span></span>';
+ const map={pending:['◷','Pending review','pending'],reported_paid:['◷','Pending verification','pending'],verified:['✓','Verified','approved'],approved:['✓','Approved · awaiting payout','approved'],paid:['✓','Paid','approved'],rejected:['×','Rejected','rejected'],expired:['—','Expired','rejected']};
+ const [glyph,label,tone]=map[String(status||'pending').toLowerCase()]||['•',String(status||'Unknown'),'pending'];
+ return '<span class="bf-payment-status bf-payment-status-'+tone+'"><span class="bf-payment-status-glyph" aria-hidden="true">'+glyph+'</span><span>'+esc(label)+'</span></span>';
 }
 function bfLedgerPresentation(entryType){
- const map={deposit_credit:{label:'Deposit credit',emoji:'🏅',status:'Approved',tone:'approved'},entry_fee:{label:'Match entry fee',emoji:'🎮',status:'Completed',tone:'approved'},admin_adjustment:{label:'Wallet adjustment',emoji:'⚒️',status:'Completed',tone:'approved'},withdrawal_refund:{label:'Withdrawal refund',emoji:'↩️',status:'Refunded',tone:'approved'},withdrawal_reserve:{label:'Withdrawal reserve',emoji:'🔒',status:'Reserved',tone:'pending'}};
- return map[String(entryType||'').toLowerCase()]||{label:'Wallet activity',emoji:'💠',status:'Completed',tone:'approved'};
+ const map={deposit_credit:{label:'Deposit',glyph:'＋',status:'Approved',tone:'approved'},entry_fee:{label:'Match entry',glyph:'−',status:'Completed',tone:'approved'},admin_adjustment:{label:'Balance adjustment',glyph:'↔',status:'Completed',tone:'approved'},withdrawal_refund:{label:'Withdrawal adjustment',glyph:'↺',status:'Adjusted',tone:'approved'}};
+ return map[String(entryType||'').toLowerCase()]||{label:'Wallet activity',glyph:'•',status:'Completed',tone:'approved'};
 }
 function bfPaymentSuccess(kind,row){
  const deposit=kind==='deposit';
@@ -566,7 +567,7 @@ async function openPaymentHistory(kind){
  let rows=[];
  if(kind==='all'){
   const [ledger,dep,wd]=await Promise.all([
-   supabase.from('wallet_ledger').select('id,entry_type,amount,note,created_at,reference_type,reference_id,bucket').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+   supabase.from('wallet_ledger').select('id,entry_type,amount,note,created_at,reference_type,reference_id,bucket').eq('user_id',currentUser.id).neq('entry_type','withdrawal_reserve').order('created_at',{ascending:false}),
    supabase.from('deposit_requests').select('id,amount,status,created_at,payment_reference,admin_note').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
    supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at,payout_reference,admin_note').eq('user_id',currentUser.id).order('created_at',{ascending:false})
   ]);
@@ -584,18 +585,19 @@ async function openPaymentHistory(kind){
   if(error){toast('Could not load '+title.toLowerCase()+': '+error.message);return;}
   rows=(data||[]).map(x=>({...x,kind}));
  }
- const cards=rows.length?rows.map(x=>{
+ const visibleRows=rows.filter(x=>!(x.kind==='activity'&&String(x.entry_type).toLowerCase()==='withdrawal_reserve'));
+ const cards=visibleRows.length?visibleRows.map(x=>{
   const ledgerView=x.kind==='activity'?bfLedgerPresentation(x.entry_type):null;
   const label=x.kind==='activity'?ledgerView.label:x.kind==='deposit'?'Deposit request':'Withdrawal request';
   const amount=Number(x.amount||0);
-  const status=x.kind==='activity'?'<span class="bf-payment-status bf-payment-status-'+ledgerView.tone+'"><span class="bf-payment-status-emoji" aria-hidden="true">'+ledgerView.emoji+'</span><span>'+ledgerView.status+'</span></span>':bfPaymentStatus(x.status);
+  const status=x.kind==='activity'?'<span class="bf-payment-status bf-payment-status-'+ledgerView.tone+'"><span class="bf-payment-status-glyph" aria-hidden="true">'+ledgerView.glyph+'</span><span>'+ledgerView.status+'</span></span>':bfPaymentStatus(x.status);
   const ref=x.kind==='activity'?(x.reference_id||''):('PAY-'+String(x.id||'').replace(/-/g,'').slice(0,10).toUpperCase());
   const extra=x.kind==='withdrawal'?'Fee ₹'+Number(x.fee_amount||0).toFixed(2)+' · Net ₹'+Number(x.net_amount??amount).toFixed(2):x.kind==='deposit'?(x.payment_reference?'UTR '+esc(x.payment_reference):''):(x.note||'');
   const unit=x.kind==='activity'?'COINS':'₹';
   return '<article class="bf-payment-history-row"><div class="bf-payment-history-top"><b>'+esc(label)+' · '+unit+amount.toFixed(2)+'</b>'+status+'</div><small>'+esc(new Date(x.created_at).toLocaleString())+'</small>'+(extra?'<small>'+extra+'</small>':'')+(ref?'<small>Reference: '+esc(ref)+'</small>':'')+(x.admin_note?'<small>Admin note: '+esc(x.admin_note)+'</small>':'')+'</article>';
  }).join(''):'<div class="empty-state"><span>📭</span><b>No transactions yet</b><p>Your records will appear here when you make a request or earn coins.</p></div>';
  const screen=$('#modalContent .bf-payment-history-screen');
- if(screen)screen.innerHTML='<button type="button" class="outline bf-history-back" id="bfPaymentHistoryBack">← Back</button><div class="eyebrow">YOUR ACCOUNT</div><h2>'+esc(title)+'</h2><p>'+rows.length+' transaction'+(rows.length===1?'':'s')+' · newest first</p><div class="bf-payment-history-list">'+cards+'</div>';
+ if(screen)screen.innerHTML='<button type="button" class="outline bf-history-back" id="bfPaymentHistoryBack">← Back</button><div class="eyebrow">YOUR ACCOUNT</div><h2>'+esc(title)+'</h2><p>'+visibleRows.length+' transaction'+(visibleRows.length===1?'':'s')+' · newest first</p><div class="bf-payment-history-list">'+cards+'</div>';
  $('#bfPaymentHistoryBack')?.addEventListener('click',close);
 }
 async function loadPaymentRequests() {
@@ -609,19 +611,50 @@ async function loadPaymentRequests() {
 
 
 async function loadAdminPaymentRequests() {
-  const target = $('#adminPaymentRequests'); if (!target || !isAdmin) return;
-  target.innerHTML = bfLoadingScreen('Loading payment requests','Checking deposits and withdrawals','bars');
-  const [dep, wd] = await Promise.all([
-    supabase.from('deposit_requests').select('id,user_id,amount,payer_upi,receiver_upi,status,created_at,expires_at,payment_reference,admin_note').order('created_at',{ascending:false}).limit(100),
-    supabase.from('withdrawal_requests').select('id,user_id,amount,fee_amount,net_amount,account_name,payout_upi,status,created_at,reviewed_at,payout_reference,admin_note').order('created_at',{ascending:false}).limit(100)
-  ]);
-  if (dep.error || wd.error) { target.innerHTML = '<p class="notice">Could not load requests. Apply Supabase migrations 006, 008 and 009, then reload.</p>'; console.error(dep.error || wd.error); return; }
-  const rows = [...(dep.data||[]).map(x=>({...x,kind:'deposit'})), ...(wd.data||[]).map(x=>({...x,kind:'withdrawal'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-  const playerIds=[...new Set(rows.map(x=>x.user_id).filter(Boolean))];
-  const {data:playerAccounts,error:playerAccountsError}=playerIds.length?await supabase.from('player_accounts').select('user_id,player_number,username').in('user_id',playerIds):{data:[],error:null};
-  if(playerAccountsError) console.warn('Could not load player IDs for admin payment requests',playerAccountsError);
-  const playerMap=new Map((playerAccounts||[]).map(p=>[p.user_id,p]));
-  target.innerHTML = rows.length ? rows.map(x => { const player=playerMap.get(x.user_id)||{}; return `<article class="panel" style="margin:12px 0;padding:14px"><div class="admin-section-title"><div><h3>${x.kind==='deposit'?'Deposit':'Withdrawal'} · ₹${Number(x.amount).toFixed(2)}</h3><p>${bfPaymentStatus(x.status)} · ${esc(new Date(x.created_at).toLocaleString())}</p></div></div><p><b>Payment ID:</b> PAY-${esc(String(x.id).replace(/-/g,'').slice(0,10).toUpperCase())}</p><p><b>Request UUID:</b> ${esc(x.id)}</p><p><b>Player ID:</b> ${esc(player.player_number||'Not assigned')} · <b>Username:</b> ${esc(player.username||'Not set')}</p><p><b>Auth User ID:</b> ${esc(x.user_id)}</p>${x.kind==='deposit'?`<p><b>Player UPI:</b> ${esc(x.payer_upi)}<br><b>Receiving UPI:</b> ${esc(x.receiver_upi||'kjaman@fam')}<br><b>Expires:</b> ${esc(new Date(x.expires_at).toLocaleString())}<br><b>Payment reference:</b> ${esc(x.payment_reference||'Not supplied')}</p>`:`<p><b>Account holder:</b> ${esc(x.account_name)}<br><b>Withdrawal UPI:</b> ${esc(x.payout_upi)}<br><b>Fee (2%):</b> ₹${Number(x.fee_amount).toFixed(2)}<br><b>Send to player:</b> ₹${Number(x.net_amount).toFixed(2)}<br><b>Payout reference:</b> ${esc(x.payout_reference||'Not sent')}</p>`}<p><b>Admin note:</b> ${esc(x.admin_note||'—')}</p>${(['pending','reported_paid'].includes(x.status)&&x.kind==='deposit')?`<label class="field">UPI transaction reference<input id="depRef-${esc(x.id)}" placeholder="Reference / UTR (optional)"></label><label class="field">Admin note<input id="depNote-${esc(x.id)}" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="verify-deposit" data-request-id="${esc(x.id)}">Verify & credit wallet</button><button class="outline" data-payment-action="reject-deposit" data-request-id="${esc(x.id)}">Reject</button></div>`:''}${x.kind==='withdrawal'&&['pending','approved'].includes(x.status)?`<label class="field">Payout UPI reference / UTR<input id="wdRef-${esc(x.id)}" placeholder="Required after you send payment"></label><label class="field">Admin note<input id="wdNote-${esc(x.id)}" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="paid-withdrawal" data-request-id="${esc(x.id)}">Mark paid</button><button class="outline" data-payment-action="reject-withdrawal" data-request-id="${esc(x.id)}">Reject (no refund)</button></div>`:''}<div class="wallet-actions"><button class="outline danger-button" data-delete-payment-kind="${x.kind}" data-request-id="${esc(x.id)}">Delete transaction</button></div></article>`; }).join('') : '<div class="empty-state"><b>No payment requests</b><p>New requests will appear here.</p></div>';
+ const target=$('#adminPaymentRequests');if(!target||!isAdmin)return;
+ target.innerHTML=bfLoadingScreen('Loading payment centre','Separating live requests from completed transactions','bars');
+ const [dep,wd]=await Promise.all([
+  supabase.from('deposit_requests').select('id,user_id,amount,payer_upi,receiver_upi,status,created_at,expires_at,payment_reference,admin_note').order('created_at',{ascending:false}).limit(250),
+  supabase.from('withdrawal_requests').select('id,user_id,amount,fee_amount,net_amount,account_name,payout_upi,status,created_at,reviewed_at,payout_reference,admin_note').order('created_at',{ascending:false}).limit(250)
+ ]);
+ if(dep.error||wd.error){target.innerHTML='<p class="notice">Could not load payment requests: '+esc((dep.error||wd.error).message)+'</p>';return;}
+ const rows=[...(dep.data||[]).map(x=>({...x,kind:'deposit'})),...(wd.data||[]).map(x=>({...x,kind:'withdrawal'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+ const playerIds=[...new Set(rows.map(x=>x.user_id).filter(Boolean))];
+ const {data:players}=playerIds.length?await supabase.from('player_accounts').select('user_id,player_number,username').in('user_id',playerIds):{data:[]};
+ const playerMap=new Map((players||[]).map(p=>[p.user_id,p]));
+ const live=rows.filter(x=>['pending','reported_paid','approved'].includes(String(x.status).toLowerCase()));
+ const past=rows.filter(x=>!['pending','reported_paid','approved'].includes(String(x.status).toLowerCase()));
+ const card=x=>{
+  const p=playerMap.get(x.user_id)||{},id=String(x.id),payId='PAY-'+id.replace(/-/g,'').slice(0,10).toUpperCase();
+  const details=x.kind==='deposit'?'<p><b>Player UPI:</b> '+esc(x.payer_upi||'—')+' · <b>Receiving UPI:</b> '+esc(x.receiver_upi||'—')+'</p><p><b>UTR:</b> '+esc(x.payment_reference||'Not supplied')+'</p>':'<p><b>Account holder:</b> '+esc(x.account_name||'—')+' · <b>UPI:</b> '+esc(x.payout_upi||'—')+'</p><p><b>Fee:</b> ₹'+Number(x.fee_amount||0).toFixed(2)+' · <b>Net payout:</b> ₹'+Number(x.net_amount||0).toFixed(2)+' · <b>Payout ref:</b> '+esc(x.payout_reference||'Not sent')+'</p>';
+  const actions=(x.kind==='deposit'&&['pending','reported_paid'].includes(x.status))?'<label class="field">UPI transaction reference<input id="depRef-'+id+'" placeholder="Reference / UTR"></label><label class="field">Admin note<input id="depNote-'+id+'" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="verify-deposit" data-request-id="'+id+'">Verify & credit</button><button class="outline" data-payment-action="reject-deposit" data-request-id="'+id+'">Reject</button></div>':(x.kind==='withdrawal'&&['pending','approved'].includes(x.status))?'<label class="field">Payout UTR<input id="wdRef-'+id+'" placeholder="Required after payout"></label><label class="field">Admin note<input id="wdNote-'+id+'" placeholder="Optional note"></label><div class="wallet-actions"><button class="join" data-payment-action="paid-withdrawal" data-request-id="'+id+'">Mark paid</button><button class="outline" data-payment-action="reject-withdrawal" data-request-id="'+id+'">Reject</button></div>':'';
+  return '<article class="bf-admin-payment-card"><div class="bf-admin-payment-head"><div><small>'+(x.kind==='deposit'?'DEPOSIT':'WITHDRAWAL')+'</small><h4>₹'+Number(x.amount).toFixed(2)+'</h4></div>'+bfPaymentStatus(x.status)+'</div><div class="bf-admin-payment-meta"><span><b>Payment ID</b>'+payId+'</span><span><b>Player</b>#'+esc(p.player_number||'—')+' · '+esc(p.username||'Unknown')+'</span><span><b>Submitted</b>'+esc(new Date(x.created_at).toLocaleString())+'</span></div>'+details+'<details class="bf-admin-payment-more"><summary>Full request details</summary><p><b>Request UUID:</b> '+id+'</p><p><b>Auth user:</b> '+esc(x.user_id)+'</p><p><b>Admin note:</b> '+esc(x.admin_note||'—')+'</p></details>'+actions+'<div class="wallet-actions"><button class="outline danger-button" data-delete-payment-kind="'+x.kind+'" data-request-id="'+id+'">Delete record</button></div></article>';
+ };
+ const search='<section class="bf-admin-search-panel"><div class="admin-section-title"><div><h3>Transaction lookup</h3><p>Search by payment ID or exact request UUID.</p></div></div><div class="bf-admin-search-row"><input id="bfAdminPaymentSearch" type="search" maxlength="50" placeholder="PAY-XXXXXXXXXX"><button id="bfAdminPaymentSearchBtn" class="join">Search</button></div><div id="bfAdminPaymentSearchResult"></div><div class="admin-section-title"><div><h3>Match lookup</h3><p>Enter the match number to inspect its settings and roster.</p></div></div><div class="bf-admin-search-row"><input id="bfAdminMatchSearch" type="number" min="1" step="1" placeholder="Match number"><button id="bfAdminMatchSearchBtn" class="join">Search</button></div><div id="bfAdminMatchSearchResult"></div></section>';
+ target.innerHTML=search+'<section class="bf-admin-payment-group"><header><h3>Live pending requests</h3><span>'+live.length+'</span></header>'+(live.length?live.map(card).join(''):'<p class="admin-helper">No live pending requests.</p>')+'</section><section class="bf-admin-payment-group"><header><h3>Past transactions</h3><span>'+past.length+'</span></header>'+(past.length?past.map(card).join(''):'<p class="admin-helper">No past transactions yet.</p>')+'</section>';
+}
+async function searchAdminPayment(){
+ if(!isAdmin)return toast('Admin access required.');
+ const input=$('#bfAdminPaymentSearch'),target=$('#bfAdminPaymentSearchResult'),query=input?.value.trim();
+ if(!query)return toast('Enter a payment ID first.');
+ target.innerHTML=bfLoadingScreen('Searching payment','Checking deposits and withdrawals','ring');
+ const {data,error}=await supabase.rpc('admin_search_payment_request',{p_payment_id:query});
+ if(error){target.innerHTML='<p class="notice">Payment search failed: '+esc(error.message)+'</p>';return;}
+ if(!data?.request){target.innerHTML='<p class="notice">No payment found for that ID.</p>';return;}
+ const x=data.request,p=data.player||{};
+ const ref='PAY-'+String(x.id).replace(/-/g,'').slice(0,10).toUpperCase();
+ target.innerHTML='<article class="bf-admin-payment-card"><div class="bf-admin-payment-head"><div><small>'+String(data.kind).toUpperCase()+' · '+ref+'</small><h4>₹'+Number(x.amount||0).toFixed(2)+'</h4></div>'+bfPaymentStatus(x.status)+'</div><p><b>Player:</b> #'+esc(p.player_number||'—')+' · '+esc(p.username||'Unknown')+'</p><p><b>Request UUID:</b> '+esc(x.id)+'</p><p><b>Created:</b> '+esc(new Date(x.created_at).toLocaleString())+'</p><p><b>Account:</b> '+esc(x.account_name||x.payer_upi||'—')+' · '+esc(x.payout_upi||x.receiver_upi||'—')+'</p><p><b>UTR / payout reference:</b> '+esc(x.payment_reference||x.payout_reference||'—')+'</p><p><b>Admin note:</b> '+esc(x.admin_note||'—')+'</p></article>';
+}
+async function searchAdminMatch(){
+ if(!isAdmin)return toast('Admin access required.');
+ const n=Number($('#bfAdminMatchSearch')?.value),target=$('#bfAdminMatchSearchResult');
+ if(!Number.isSafeInteger(n)||n<1)return toast('Enter a valid match number.');
+ target.innerHTML=bfLoadingScreen('Finding match','Loading match configuration, players and results','ring');
+ const {data,error}=await supabase.rpc('admin_search_match_details',{p_match_number:n});
+ if(error){target.innerHTML='<p class="notice">Match search failed: '+esc(error.message)+'</p>';return;}
+ if(!data?.tournament){target.innerHTML='<p class="notice">No match found for #'+n+'.</p>';return;}
+ const t=data.tournament,entries=data.entries||[],room=data.room||{};
+ target.innerHTML='<article class="bf-admin-match-card"><div class="bf-admin-payment-head"><div><small>MATCH #'+n+'</small><h4>'+esc(t.title)+'</h4></div><span class="status-chip">'+esc(String(t.status||'').toUpperCase())+'</span></div><div class="bf-admin-match-grid"><span><b>Mode</b>'+esc(t.game_mode||'—')+'</span><span><b>Entry fee</b>'+Number(t.entry_points||0)+' coins</span><span><b>Per kill</b>'+Number(t.per_kill_points||0)+' coins</span><span><b>Prize pool</b>'+Number(t.prize_pool_points||0)+' coins</span><span><b>Players</b>'+entries.length+'/'+Number(t.max_players||0)+'</span><span><b>Starts</b>'+esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Not set')+'</span></div><p><b>Description:</b> '+esc(t.description||'—')+'</p><p><b>Room:</b> '+esc(room.room_id||'Not set')+' · <b>Password:</b> '+esc(room.room_password||'Not set')+' · <b>Published:</b> '+(room.published?'Yes':'No')+'</p><h4>Registered players & results</h4>'+(entries.length?entries.map(e=>'<div class="bf-admin-match-player"><b>'+esc(e.in_game_name||'Unknown')+'</b><small>Player #'+esc(e.player_number||'—')+' · '+(e.placement?'Rank '+e.placement+' · ':'')+Number(e.kills||0)+' kills · '+Number(e.earned_points||0)+' coins · '+(e.published?'Published':'Pending')+'</small></div>').join(''):'<p>No registrations.</p>')+'</article>';
 }
 async function handleAdminPaymentAction(button) {
   if (!isAdmin) return toast('Admin access required.');
@@ -645,7 +678,7 @@ async function handleAdminPaymentAction(button) {
       toast('Could not process request: '+(error.message||error.details||'Supabase error')+(error.code?' ('+error.code+')':''));
       return;
     }
-    toast(action==='verify-deposit'?'Deposit verified; coins credited to deposited balance.':action==='reject-deposit'?'Deposit request rejected.':action==='paid-withdrawal'?'Withdrawal marked paid.':'Withdrawal rejected. Reserved coins were not refunded.');
+    toast(action==='verify-deposit'?'Deposit verified; coins credited to deposited balance.':action==='reject-deposit'?'Deposit request rejected.':action==='paid-withdrawal'?'Withdrawal marked paid.':'Withdrawal rejected.');
     await loadAdminPaymentRequests(); await loadPaymentRequests(); await loadWalletSummary();
   } catch (error) {
     console.error('BattleForge payment action threw an exception', error);
@@ -1734,6 +1767,8 @@ $('#modalContent').addEventListener('click', async e => {
   if (button.id === 'bfAdminPlayersNext') { await loadAdminPlayerDirectory((window.battleForgeAdminDirectoryOffset||0)+100); return; }
   if (button.dataset.openAdminPlayer) { const n=Number(button.dataset.openAdminPlayer); const field=$('#adminPlayerNumber'); if(field)field.value=String(n); document.querySelector('[data-admin-page-open="players"]')?.click(); $('#adminFindPlayer')?.click(); return; }
   if (button.id === 'adminLoadPayments') { await loadAdminPaymentRequests(); return; }
+  if (button.id === 'bfAdminPaymentSearchBtn') { await searchAdminPayment(); return; }
+  if (button.id === 'bfAdminMatchSearchBtn') { await searchAdminMatch(); return; }
   if (button.dataset.paymentAction) { await handleAdminPaymentAction(button); return; }
   if (button.id === 'adminFindPlayer') { if(!isAdmin)return toast('Admin access required.'); const n=Number($('#adminPlayerNumber')?.value); if(!Number.isSafeInteger(n)||n<1)return toast('Enter a valid numeric Player ID.'); button.disabled=true; const box=$('#adminPlayerDetails'); box.innerHTML=bfLoadingScreen('Loading player profile','Fetching wallet, match and account history','ring'); const {data,error}=await supabase.rpc('admin_get_player_details',{p_player_number:n}); button.disabled=false; if(error){box.textContent=error.message;return;} window.battleForgeAdminPlayer=data; const financeVisible=!!data.wallet; const hist=financeVisible?(data.wallet_history||[]).map(x=>`<div class="activity-row"><div><b>${esc(x.entry_type)} · ${esc(x.bucket)}</b><small>${esc(x.created_at)} · ${esc(x.note||'')}</small></div><strong>${Number(x.amount||0)>0?'+':''}${Number(x.amount||0).toFixed(2)}</strong></div>`).join(''):'<p>Financial details restricted by your admin role.</p>'; const deps=financeVisible?(data.deposits||[]).map(x=>`<div class="activity-row"><div><b>Deposit ₹${Number(x.amount).toFixed(2)}</b><small>${esc(x.status)} · ${esc(x.created_at)} · ${esc(x.id)}</small></div></div>`).join(''):'<p>Financial details restricted by your admin role.</p>'; const wds=financeVisible?(data.withdrawals||[]).map(x=>`<div class="activity-row"><div><b>Withdrawal ₹${Number(x.amount).toFixed(2)}</b><small>${esc(x.status)} · ${esc(x.created_at)} · ${esc(x.id)}</small></div><strong>Net ₹${Number(x.net_amount||0).toFixed(2)}</strong></div>`).join(''):'<p>Financial details restricted by your admin role.</p>'; box.innerHTML=`<div class=\"room-card\"><h3>${esc(data.username||'Player')} · #${esc(data.player_number)}</h3><p>${esc(data.email||'No email')} · Joined ${esc(data.created_at)}</p><p>Auth UID: ${esc(data.user_id)}</p><p>Referrer Player ID: ${esc(data.referred_by_player_number||'None')}</p><p>Entries: ${Number(data.stats?.entries||0)}${data.stats?.deposits!==undefined?' · Deposits: '+Number(data.stats.deposits||0)+' · Withdrawals: '+Number(data.stats.withdrawals||0)+' · Paid withdrawals: '+Number(data.stats.paid_withdrawals||0):''}</p><p>${data.wallet?'Entry-only balance: ₹'+Number(data.wallet.deposited_balance||0).toFixed(2)+' · Earned balance: ₹'+Number(data.wallet.earned_balance||0).toFixed(2)+' · Total: ₹'+Number(data.wallet.total_balance||0).toFixed(2):'Wallet details restricted by your admin role.'}</p></div><h3>Wallet ledger</h3>${hist||'<p>No ledger entries.</p>'}<h3>Deposit history</h3>${deps||'<p>No deposits.</p>'}<h3>Withdrawal history</h3>${wds||'<p>No withdrawals.</p>'}`; const {data:warnings}=await supabase.rpc('admin_list_player_warnings',{p_player_number:n}); box.insertAdjacentHTML('beforeend','<h3>Account warnings</h3>'+((warnings||[]).map(w=>'<div class="profile-history-row"><b>'+esc(w.reason)+'</b><small>'+esc(new Date(w.created_at).toLocaleString())+'</small></div>').join('')||'<p>No warnings.</p>')); const {data:matchHistory,error:matchHistoryError}=await supabase.rpc('admin_get_player_match_history',{p_player_number:n}); box.insertAdjacentHTML('beforeend','<h3>Match history</h3>'+(matchHistoryError?'<p class="notice">'+esc(matchHistoryError.message)+'</p>':(matchHistory||[]).map(m=>'<div class="activity-row"><div><b>'+esc(m.tournament_title)+' · '+esc(m.game_mode||'Match')+'</b><small>'+esc(m.in_game_name)+' · '+(m.result_published?'Rank #'+esc(m.placement??'—')+' · '+Number(m.kills||0)+' kills · '+Number(m.earned_points||0)+' coins':'Pending results')+' · '+esc(new Date(m.starts_at||m.joined_at).toLocaleString())+'</small></div></div>').join('')||'<p>No match history.</p>')); return; }
   if (button.id === 'adminWarnPlayer') { if(!isAdmin)return toast('Moderator permission required.'); const n=Number($('#adminPlayerNumber')?.value),reason=$('#adminWarningReason')?.value.trim(); if(!Number.isSafeInteger(n)||n<1||!reason||reason.length<3)return toast('Enter a Player ID and warning reason.'); const {error}=await supabase.rpc('admin_warn_player',{p_player_number:n,p_reason:reason}); if(error)return toast(error.message); toast('Player warning issued.'); $('#adminWarningReason').value=''; const find=$('#adminFindPlayer'); if(find)find.click(); return; }
@@ -1742,7 +1777,7 @@ $('#modalContent').addEventListener('click', async e => {
   if (button.id === 'adminKickFromMatch') { if(!isAdmin)return toast('Admin access required.'); const n=Number($('#adminPlayerNumber')?.value), matchId=Number($('#adminKickMatchId')?.value); if(!Number.isSafeInteger(n)||n<1)return toast('Enter a valid numeric Player ID and find the player first.'); if(!Number.isSafeInteger(matchId)||matchId<1)return toast('Select the match to kick them from.'); if(!window.confirm(`Kick Player #${n} from the selected match? They can rejoin only by paying the entry fee again.`))return; button.disabled=true; const {error}=await supabase.rpc('admin_kick_tournament_player_by_number',{p_tournament_id:matchId,p_player_number:n,p_reason:'Removed by admin'}); button.disabled=false; if(error)return toast(error.message); toast('Player kicked from selected match.'); const find=$('#adminFindPlayer'); if(find) find.click(); await refreshData(); return; }
   if (button.id === 'adminClearKick') { if(!isAdmin)return toast('Admin access required.'); const player=window.battleForgeAdminPlayer; const matchId=Number($('#adminKickMatchId')?.value); if(!player?.user_id)return toast('Find the player first.'); if(!Number.isSafeInteger(matchId)||matchId<1)return toast('Enter the match ID.'); if(!window.confirm('Confirm the player has paid a fresh entry fee and allow them to rejoin?'))return; button.disabled=true; const {error}=await supabase.rpc('admin_clear_match_kick',{p_tournament_id:matchId,p_user_id:player.user_id}); button.disabled=false; if(error)return toast(error.message); toast('Rejoin enabled after payment confirmation.'); await loadAdminEntries(); return; }
   if (button.id === 'adminAdjustBalance') { if(!isAdmin)return toast('Admin access required.'); const n=Number($('#adminPlayerNumber')?.value),amount=Number($('#adminBalanceAmount')?.value),bucket=$('#adminBalanceBucket')?.value,note=$('#adminBalanceNote')?.value.trim(); if(!Number.isSafeInteger(n)||n<1||!Number.isFinite(amount)||amount===0||!note||note.length<3)return toast('Enter Player ID, non-zero amount, and reason.'); if(!window.confirm(`Apply ${amount>0?'credit':'deduction'} of ₹${Math.abs(amount).toFixed(2)} to Player #${n} (${bucket})?`))return; button.disabled=true; const {data,error}=await supabase.rpc('admin_adjust_player_balance',{p_player_number:n,p_bucket:bucket,p_amount:amount,p_note:note}); button.disabled=false; if(error)return toast(error.message); toast('Balance adjusted and audit logged.'); $('#adminBalanceAmount').value=''; const find=$('#adminFindPlayer'); if(find) find.click(); return; }
-  if (button.dataset.deletePaymentKind) { if(!isAdmin)return toast('Admin access required.'); if(!window.confirm('Delete this '+button.dataset.deletePaymentKind+' transaction record? Pending or approved withdrawals will be refunded. Paid withdrawals will NOT be refunded again because the payout was already sent. Wallet ledger history is retained.'))return; button.disabled=true; const {error}=await supabase.rpc('admin_delete_payment_request',{p_kind:button.dataset.deletePaymentKind,p_request_id:button.dataset.requestId,p_note:null}); button.disabled=false; if(error)return toast(error.message); toast('Transaction record deleted. Financial ledger history is retained.'); await loadAdminPaymentRequests(); await loadPaymentRequests(); await loadWalletSummary(); return; }
+  if (button.dataset.deletePaymentKind) { if(!isAdmin)return toast('Admin access required.'); if(!window.confirm('Delete this '+button.dataset.deletePaymentKind+' request record? This only removes the request record. No coins will be refunded or credited. Wallet ledger history remains unchanged.'))return; button.disabled=true; const {error}=await supabase.rpc('admin_delete_payment_request',{p_kind:button.dataset.deletePaymentKind,p_request_id:button.dataset.requestId,p_note:null}); button.disabled=false; if(error)return toast(error.message); toast('Transaction record deleted. Financial ledger history is retained.'); await loadAdminPaymentRequests(); await loadPaymentRequests(); await loadWalletSummary(); return; }
   if (button.id === 'adminSaveTitle') {
     if (!isAdmin) return toast('Admin access required.');
     const id = Number($('#adminTournament')?.value);
