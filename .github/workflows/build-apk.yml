@@ -2,8 +2,6 @@ name: Build BattleForge Android APK
 run-name: BattleForge APK build - ${{ github.ref_name }}
 on:
   workflow_dispatch:
-  push:
-    branches: [main, "feature/payment-minimums-earned-withdrawal-policy", "feature/wallet-profile-payment-ids"]
 permissions:
   contents: write
 jobs:
