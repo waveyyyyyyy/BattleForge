@@ -536,6 +536,8 @@ async function createPaymentRequest(kind) {
     loading.remove();modalCard?.removeAttribute('aria-busy');
     return toast('Request response was empty. Check Recent requests before retrying.');
   }
+  // Remove the blocking layer before replacing the form with the success animation.
+  loading.remove();modalCard?.removeAttribute('aria-busy');
   // Do not wait for push notification delivery or list refresh before showing success.
   notifyAdminOfPaymentRequest(kind,row.id).catch(err=>console.warn('Admin request notification skipped:',err));
   bfPaymentSuccess(kind,row);
@@ -856,7 +858,7 @@ async function refreshDataInternal() {
   isAdmin = false; adminIsOwner = false; adminPermissions = new Set(); dailyStreakStatus = null;
   const profileButton=$('#profileBtn');
   if(profileButton){profileButton.textContent=currentUser?'Profile':'Sign in';profileButton.setAttribute('aria-label',currentUser?'Player profile':'Sign in');}
-  if(!tournaments.length && $('#tournaments')) $('#tournaments').innerHTML=bfLoadingScreen('Entering the arena','Finding live tournaments and open lobbies','orbit');
+  if(!tournaments.length && $('#tournaments')) $('#tournaments').innerHTML='<div class="bf-arena-loading" role="status" aria-live="polite"><div class="bf-arena-loading-card"></div><div class="bf-arena-loading-card"></div></div>';
   if(currentUser) setupBattleForgePush().catch(error=>console.warn('Push setup skipped:',error));
 
   // These reads do not depend on one another. Run them together so sign-in and
