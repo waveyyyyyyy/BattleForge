@@ -1765,6 +1765,12 @@ $('#openDeposit')?.addEventListener('click', showDepositForm);
 $('#openWithdrawal')?.addEventListener('click', showWithdrawalForm);
 $('#refreshPaymentRequests')?.addEventListener('click', loadPaymentRequests);
 $('#adminBtn').onclick = showAdmin;
+$('#modalContent').addEventListener('change', e => {
+  if(e.target.matches('.bf-payment-bulk-check')) {
+    const count=$('#bfPaymentSelectionCount');
+    if(count)count.textContent=document.querySelectorAll('#adminPaymentRequests .bf-payment-bulk-check:checked').length+' selected';
+  }
+});
 $('#modalContent').addEventListener('submit', async e => {
   if(e.target.id==='bfMatchChatForm'){e.preventDefault();await sendMatchChatMessage(e.target);return;}
   if (e.target.id === 'depositRequestForm' || e.target.id === 'withdrawalRequestForm') {
