@@ -35,6 +35,8 @@ jobs:
           cp battleforge-wallet-fix.css public/battleforge-wallet-fix.css
           cp battleforge-command-center.css public/battleforge-command-center.css
           cp battleforge-screen-layout.css public/battleforge-screen-layout.css
+          cp battleforge-cinematic-intro.css public/battleforge-cinematic-intro.css
+          cp battleforge-icons.svg public/battleforge-icons.svg
       - name: Assign a unique version to every APK build
         env:
           BUILD_NUMBER: ${{ github.run_number }}
