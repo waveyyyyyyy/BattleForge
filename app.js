@@ -360,7 +360,8 @@ function modal(html) {
   overlay.classList.toggle('profile-modal', html.includes('profile-sheet'));
   overlay.classList.toggle('bf-payment-history-modal', html.includes('bf-payment-history-screen'));
   overlay.classList.toggle('bf-fullscreen-chat', html.includes('bf-chat-header') || html.includes('bf-match-chat'));
-  overlay.classList.toggle('bf-edge-screen', html.includes('bf-auth-sheet') || html.includes('notification-sheet') || html.includes('bf-chat-header') || html.includes('profile-sheet'));
+  overlay.classList.remove('bf-edge-screen');
+  overlay.classList.toggle('bf-safe-dialog', html.includes('bf-auth-sheet') || html.includes('notification-sheet') || html.includes('profile-sheet'));
   overlay.classList.remove('hidden');
   overlay.scrollTop = 0;
   // Reset both scroll containers; Android WebViews can otherwise retain the prior dialog's position.
@@ -418,7 +419,7 @@ function updateChatSoundToggle(){
     const state=$('#bfChatSoundState');if(state)state.textContent=toggle.checked?'On':'Off';
   }
 }
-function close() { if(activeMatchChatChannel){supabase.removeChannel(activeMatchChatChannel).catch(()=>{});activeMatchChatChannel=null;} const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-payment-history-modal','bf-fullscreen-chat'); }
+function close() { if(activeMatchChatChannel){supabase.removeChannel(activeMatchChatChannel).catch(()=>{});activeMatchChatChannel=null;} const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-payment-history-modal','bf-fullscreen-chat','bf-safe-dialog','bf-edge-screen'); }
 function setPage(tab) {
   const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules','leaderboard'].includes(tab) ? tab : 'arena');
   document.querySelectorAll('.page-view').forEach(page => page.classList.toggle('active', page.dataset.page === target));
@@ -926,7 +927,7 @@ function showAuth(mode = 'signin') {
   const fields = isSignup
     ? '<label class="field">USERNAME (REQUIRED)<input id="signupUsername" type="text" minlength="3" maxlength="24" pattern="[A-Za-z0-9_ ]{3,24}" autocomplete="nickname" placeholder="player855"></label><p class="profile-help">3–24 characters. Letters, numbers, spaces, and underscores only. Must be unique.</p>'
     : '';
-  modal('<div class="bf-auth-sheet"><div class="eyebrow">BATTLEFORGE ACCOUNT</div><h2>'+(isSignup?'Create your account':'Welcome back')+'</h2><p>'+(isSignup?'Choose your player username, then register with Google or email.':'Sign in using either Google or your email and password.')+'</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div>'+fields+'<label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="Email address"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="'+(isSignup?'new-password':'current-password')+'" minlength="8" placeholder="Password (8+ characters)"></label><button id="'+(isSignup?'signUpBtn':'signInBtn')+'" class="join full">'+(isSignup?'Create account':'Sign in with email')+'</button><button id="'+(isSignup?'backToSignIn':'goToSignUp')+'" class="outline full">'+(isSignup?'Back to sign in':'New to BattleForge? Create account')+'</button><p class="notice">Never share your password or OTP.'+(isSignup?' Email confirmation may be required.':'')+'</p></div>');
+  modal('<div class="bf-auth-sheet"><img class="bf-auth-logo" src="./assets/battleforge-logo.svg" alt="BattleForge"><div class="eyebrow">BATTLEFORGE ACCOUNT</div><h2>'+(isSignup?'Create your account':'Welcome back')+'</h2><p>'+(isSignup?'Choose your player username, then register with Google or email.':'Sign in using either Google or your email and password.')+'</p><button id="googleSignInBtn" class="join full google-sign-in"><span aria-hidden="true">G</span> Continue with Google</button><div class="auth-divider"><span>OR USE EMAIL</span></div>'+fields+'<label class="field">EMAIL<input id="authEmail" type="email" autocomplete="email" placeholder="Email address"></label><label class="field">PASSWORD<input id="authPassword" type="password" autocomplete="'+(isSignup?'new-password':'current-password')+'" minlength="8" placeholder="Password (8+ characters)"></label><button id="'+(isSignup?'signUpBtn':'signInBtn')+'" class="join full">'+(isSignup?'Create account':'Sign in with email')+'</button><button id="'+(isSignup?'backToSignIn':'goToSignUp')+'" class="outline full">'+(isSignup?'Back to sign in':'New to BattleForge? Create account')+'</button><p class="notice">Never share your password or OTP.'+(isSignup?' Email confirmation may be required.':'')+'</p></div>');
 }
 
 // Google OAuth uses Supabase's authorization-code (PKCE) flow. The web callback
