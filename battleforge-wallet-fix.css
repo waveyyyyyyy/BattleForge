@@ -108,3 +108,57 @@
  .bf-wallet-progress-card .bf-progress-track>i,.bf-withdraw-eligibility .bf-progress-track>i{transition:none!important}
  .bf-success-ring,.bf-success-check,.bf-success-spark{animation:none!important}
 }
+
+/* BattleForge hotfix: auth-safe loading, reliable profile close and payment UX. */
+#modal.profile-modal>.modal-card{
+  position:relative!important;align-self:stretch!important;margin:0!important;
+  width:100vw!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;
+  padding:calc(64px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom))!important;
+  overflow-x:hidden!important;overflow-y:auto!important;border:0!important;border-radius:0!important;
+}
+#modal.profile-modal>.modal-card>#closeModal{
+  position:fixed!important;display:grid!important;place-items:center!important;
+  top:calc(10px + env(safe-area-inset-top))!important;right:12px!important;left:auto!important;
+  float:none!important;margin:0!important;padding:0!important;width:44px!important;height:44px!important;
+  z-index:100050!important;border:1px solid #d5dfeb!important;border-radius:50%!important;
+  background:#fff!important;color:#263442!important;font-family:Arial,sans-serif!important;
+  font-size:30px!important;font-weight:400!important;line-height:1!important;text-align:center!important;
+  box-shadow:0 5px 18px rgba(24,45,65,.15)!important;transform:none!important;
+}
+#modal.profile-modal>.modal-card>#closeModal:before,
+#modal.profile-modal>.modal-card>#closeModal:after{content:none!important;display:none!important}
+#modal.profile-modal #modalContent{width:100%!important;max-width:760px!important;margin:0 auto!important;min-width:0!important}
+#modal.profile-modal .profile-sheet{width:100%!important;max-width:760px!important;margin:0 auto!important;min-width:0!important}
+.bf-payment-status{display:inline-flex!important;align-items:center!important;gap:7px!important;padding:6px 10px!important;border-radius:999px!important;font-size:11px!important;font-weight:850!important;line-height:1.2!important;white-space:normal!important}
+.bf-payment-status-emoji{display:grid!important;place-items:center!important;width:23px!important;height:23px!important;flex:0 0 23px!important;border-radius:50%!important;background:rgba(255,255,255,.55)!important;font-size:15px!important}
+.bf-payment-status-pending{background:#fff4d8!important;color:#8a5a08!important;border:1px solid #f2d28b!important}
+.bf-payment-status-approved{background:#def6ed!important;color:#08795d!important;border:1px solid #a7e3cf!important}
+.bf-payment-status-rejected{background:#ffebeb!important;color:#b52d3a!important;border:1px solid #f2b9bd!important}
+.bf-payment-submission-overlay{
+  position:fixed!important;inset:0!important;z-index:100040!important;display:flex!important;
+  flex-direction:column!important;align-items:center!important;justify-content:center!important;
+  gap:16px!important;padding:28px 22px!important;box-sizing:border-box!important;
+  background:rgba(9,20,34,.94)!important;backdrop-filter:blur(16px)!important;
+  color:#f4f8fc!important;text-align:center!important;
+}
+.bf-payment-submission-overlay .bf-loading-screen{width:min(100%,360px)!important;margin:0!important}
+.bf-payment-submission-overlay .bf-loading-screen>b{color:#f4f8fc!important;font-size:20px!important}
+.bf-payment-submission-overlay .bf-loading-screen>small{color:#b7c6d5!important}
+.bf-submit-progress{width:min(100%,300px)!important;height:5px!important;overflow:hidden!important;border-radius:99px!important;background:#ffffff20!important}
+.bf-submit-progress>i{display:block;width:42%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#315cf4,#42b7a5,#8fe2d5);animation:bf-submit-progress 1.15s ease-in-out infinite}
+.bf-submit-safe{color:#9eb2c5!important;font-size:11px!important}
+@keyframes bf-submit-progress{0%{transform:translateX(-115%)}100%{transform:translateX(255%)}}
+#tournaments:empty:before{content:"Preparing the arena…";display:block;padding:20px;color:#687887;text-align:center}
+#tournaments .tour{animation:bf-match-card-in .38s cubic-bezier(.2,.75,.25,1) both}
+#tournaments .tour:nth-child(2){animation-delay:.04s}
+#tournaments .tour:nth-child(3){animation-delay:.08s}
+#tournaments .tour:nth-child(4){animation-delay:.12s}
+#tournaments .tour:nth-child(n+5){animation-delay:.16s}
+@keyframes bf-match-card-in{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+.bf-arena-loading{display:grid;gap:12px;padding:14px 0}
+.bf-arena-loading-card{height:156px;border:1px solid #dce4eb;border-radius:18px;background:linear-gradient(100deg,#f5f7fa 15%,#e5ebf1 35%,#f5f7fa 55%);background-size:220% 100%;animation:bf-arena-shimmer 1.25s linear infinite}
+@keyframes bf-arena-shimmer{to{background-position-x:-220%}}
+@media(prefers-reduced-motion:reduce){
+ .bf-submit-progress>i,.bf-arena-loading-card{animation:none!important}
+ #tournaments .tour{animation:none!important}
+}
