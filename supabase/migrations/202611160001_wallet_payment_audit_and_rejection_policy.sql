@@ -1,10 +1,6 @@
 -- BattleForge wallet and payment audit improvements.
--- Apply after the existing payment and wallet migrations.
-alter table public.withdrawal_requests alter column fee_amount set default 0;
-update public.withdrawal_requests set fee_amount = coalesce(fee_amount, 0) where fee_amount is null;
-alter table public.withdrawal_requests alter column fee_amount set not null;
-alter table public.withdrawal_requests alter column net_amount set default 0;
-update public.withdrawal_requests set net_amount = coalesce(net_amount, amount) where net_amount is null;
+-- fee_amount and net_amount are GENERATED ALWAYS columns on the deployed schema.
+-- Never set defaults or write values into those generated columns; PostgreSQL calculates them from amount.
 
 -- Rejected withdrawals remain rejected and reserved coins are NOT automatically refunded.
 create or replace function public.admin_process_withdrawal(
