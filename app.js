@@ -267,7 +267,7 @@ async function loadAdminAnalytics(){
 }
 
 function openFaqChat(){
- modal('<div class="bf-support-hub"><div class="bf-support-hub-brand"><div class="bf-support-hub-icon">✦</div><div><span class="eyebrow">BATTLEFORGE ASSISTANT</span><h2>BLAZE</h2><p>Choose how you want to get help.</p></div></div><button type="button" id="bfStartFaqChat" class="join full">Chat with BLAZE →</button><div class="bf-support-hub-divider"><span>NEED A HUMAN?</span></div><a class="support-cta" href="https://t.me/battleforgeff" target="_blank" rel="noopener noreferrer">Talk to a human · Telegram support ↗</a><a class="support-cta" href="https://battleforge-website.vercel.app" target="_blank" rel="noopener noreferrer">Official BattleForge website ↗</a></div>');
+ modal('<section class="bf-support-hub bf-blaze-home"><div class="bf-blaze-hero"><div class="bf-blaze-orbit" aria-hidden="true"><span>✦</span><i></i><b></b></div><div class="bf-blaze-hero-copy"><span class="eyebrow">YOUR BATTLEFORGE COMPANION</span><h2>BLAZE</h2><p>Quick answers. Match guidance. Wallet help. Your arena companion is ready.</p><span class="bf-blaze-online"><i></i> ONLINE · READY TO HELP</span></div></div><div class="bf-blaze-feature-grid"><article><span>⚡</span><b>Instant guidance</b><small>Get help finding your way around the app.</small></article><article><span>◈</span><b>Wallet support</b><small>Understand deposits, withdrawals and coins.</small></article><article><span>🏆</span><b>Match assistant</b><small>Learn about tournaments, rooms and results.</small></article></div><div class="bf-blaze-quick-title"><b>WHAT CAN I HELP WITH?</b><small>Choose a quick topic or start chatting</small></div><div class="bf-blaze-quick-actions"><button type="button" data-blaze-prompt="How do tournaments work?">Tournament guide <span>↗</span></button><button type="button" data-blaze-prompt="How do deposits and withdrawals work?">Wallet help <span>↗</span></button><button type="button" data-blaze-prompt="How do I find my match room details?">Match room help <span>↗</span></button></div><button type="button" id="bfStartFaqChat" class="join full bf-blaze-start">Start chatting with BLAZE <span>→</span></button><div class="bf-support-hub-divider"><span>NEED A HUMAN?</span></div><a class="support-cta" href="https://t.me/battleforgeff" target="_blank" rel="noopener noreferrer">Talk to BattleForge support on Telegram ↗</a></section>');
 }
 let blazeLastIntent = '';
 let blazeClearTimer = null;
@@ -353,24 +353,21 @@ function toast(message) {
   setTimeout(() => el.classList.remove('show'), 2600);
 }
 function modal(html) {
-  // Keep dialogs anchored to the visible viewport even when the Arena page was scrolled far down.
-  window.scrollTo(0, 0);  const overlay = $('#modal');  // Settings are moved out of modalContent; remove the previous dialog's copy before rendering.
+  window.scrollTo(0, 0);
+  const overlay = $('#modal');
   $('#modal .modal-card > .bf-chat-settings-wrap')?.remove();
   $('#modalContent').innerHTML = html;
-  overlay.classList.toggle('profile-modal', html.includes('profile-sheet'));
+  overlay.classList.toggle('profile-modal', html.includes('profile-sheet') || html.includes('bf-profile-loading'));
   overlay.classList.toggle('bf-payment-history-modal', html.includes('bf-payment-history-screen'));
   overlay.classList.toggle('bf-fullscreen-chat', html.includes('bf-chat-header') || html.includes('bf-match-chat'));
-  overlay.classList.remove('bf-edge-screen');
-  overlay.classList.toggle('bf-safe-dialog', html.includes('bf-auth-sheet') || html.includes('notification-sheet') || html.includes('profile-sheet') || html.includes('bf-support-hub') || html.includes('bf-faq-chat'));
+  overlay.classList.toggle('bf-safe-dialog', html.includes('bf-auth-sheet') || html.includes('notification-sheet') || html.includes('profile-sheet') || html.includes('bf-profile-loading') || html.includes('bf-support-hub') || html.includes('bf-faq-chat'));
   overlay.classList.remove('hidden');
   overlay.scrollTop = 0;
-  // Reset both scroll containers; Android WebViews can otherwise retain the prior dialog's position.
   const card = $('#modal .modal-card');
   if (card) {
     card.scrollTop = 0;
     card.style.marginTop = '0';
     card.style.alignSelf = 'stretch';
-    // Move settings outside the clipped message viewport, beside the close button.
     const settings = $('#modalContent .bf-chat-settings-wrap');
     if (settings) card.appendChild(settings);
   }
@@ -420,8 +417,27 @@ function updateChatSoundToggle(){
   }
 }
 function close() { if(activeMatchChatChannel){supabase.removeChannel(activeMatchChatChannel).catch(()=>{});activeMatchChatChannel=null;} const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-payment-history-modal','bf-fullscreen-chat','bf-safe-dialog','bf-edge-screen'); }
-function setPage(tab) {
+let bfPageHistory=['arena'];
+function navigateBack() {
+  const overlay=$('#modal');
+  if(overlay && !overlay.classList.contains('hidden')) { close(); return true; }
+  const active=document.querySelector('.page-view.active')?.dataset.page || 'arena';
+  if(bfPageHistory.length>1) {
+    bfPageHistory.pop();
+    const previous=bfPageHistory[bfPageHistory.length-1] || 'arena';
+    setPage(previous,{fromBack:true});
+    return true;
+  }
+  if(active!=='arena') { setPage('arena',{fromBack:true}); return true; }
+  return false;
+}
+function setPage(tab, options={}) {
   const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules','leaderboard'].includes(tab) ? tab : 'arena');
+  const current=document.querySelector('.page-view.active')?.dataset.page || 'arena';
+  if(!options.fromBack && current!==target) {
+    bfPageHistory.push(target);
+    if(bfPageHistory.length>20)bfPageHistory.shift();
+  }
   document.querySelectorAll('.page-view').forEach(page => page.classList.toggle('active', page.dataset.page === target));
   document.querySelectorAll('[data-tab]').forEach(button => button.classList.toggle('active', button.dataset.tab === target));
   document.body.dataset.page = target;
@@ -1014,6 +1030,11 @@ async function handleNativeAuthCallback(rawUrl) {
 if (Capacitor.isNativePlatform()) {
   App.addListener('appUrlOpen', ({ url }) => { void handleNativeAuthCallback(url); });
   App.getLaunchUrl().then(({ url }) => { if (url) void handleNativeAuthCallback(url); }).catch(() => {});
+  App.addListener('backButton', ({ canGoBack }) => {
+    const handled=navigateBack();
+    if(!handled && !canGoBack) App.exitApp();
+    else if(!handled) App.exitApp();
+  });
 }
 
 async function authAction(kind) {
@@ -1891,6 +1912,12 @@ document.addEventListener('click', e => { if (e.target.closest('button')) playUi
 document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => setPage(button.dataset.go)));
 document.querySelector('[data-home]')?.addEventListener('click', event => { event.preventDefault(); setPage('arena'); });
 $('#historySignIn')?.addEventListener('click', showAuth);
+document.addEventListener('click', event => {
+ const quick=event.target.closest('[data-blaze-prompt]');
+ if(!quick)return;
+ startFaqChat();
+ setTimeout(()=>{const input=$('#bfFaqInput');if(input){input.value=quick.dataset.blazePrompt;$('#bfFaqForm')?.requestSubmit();}},0);
+});
 document.addEventListener('click', async event => { const button=event.target.closest('#adminMarkPastMatch'); if(!button)return; if(!isAdmin)return toast('Admin access required.'); const id=Number($('#adminTournament')?.value); if(!id)return toast('Choose a match first.'); button.disabled=true; const {error}=await supabase.rpc('admin_mark_match_past',{p_tournament_id:id}); button.disabled=false; if(error)return toast(error.message); toast('Moved out of Arena. Now load players below to rank them.'); await refreshData(); await showHistory(); const pageButton=document.querySelector('[data-admin-page-open="players"]'); pageButton?.click(); const selector=$('#adminResultsTournament'); if(selector) selector.value=String(id); openAdminPage('results'); await loadAdminEntries(); });
 $('#historyContent')?.addEventListener('click', event => { const match=event.target.closest('[data-past-match]'); if(match){openPastMatchDetails(match.dataset.pastMatch);return;} const button=event.target.closest('[data-go]'); if(button)setPage(button.dataset.go); if(event.target.closest('#historySignIn'))showAuth(); });
 $('#modalContent').addEventListener('click', async event => {
