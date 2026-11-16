@@ -1,0 +1,74 @@
+/* Premium white-and-blue deposit / withdrawal experience */
+#modal.bf-safe-dialog .bf-wallet-flow{width:100%;max-width:620px;margin:0 auto;padding:0 0 28px;color:var(--bf-text,#263442);box-sizing:border-box}
+#modal.bf-safe-dialog .bf-wallet-flow-hero{position:relative;isolation:isolate;overflow:hidden;margin:0 0 17px;padding:23px 20px 21px;border:1px solid #dce6ff;border-radius:24px;background:linear-gradient(135deg,#f8fbff 0%,#eaf1ff 58%,#f6f9ff 100%);box-shadow:0 12px 30px rgba(50,91,180,.09)}
+#modal.bf-safe-dialog .bf-wallet-flow-hero:after{content:"";position:absolute;z-index:-1;width:210px;height:210px;right:-72px;top:-112px;border:1px solid rgba(49,92,244,.17);border-radius:50%;box-shadow:0 0 0 17px rgba(49,92,244,.035),0 0 0 36px rgba(49,92,244,.025)}
+#modal.bf-safe-dialog .bf-wallet-flow-orb{display:grid;place-items:center;width:48px;height:48px;margin-bottom:14px;border:1px solid #cbd9ff;border-radius:16px;background:linear-gradient(145deg,#fff,#e5edff);color:#315cf4;font-size:26px;font-weight:800;box-shadow:0 7px 17px rgba(49,92,244,.13)}
+#modal.bf-safe-dialog .bf-wallet-flow-hero .eyebrow,#modal.bf-safe-dialog .bf-wallet-section-head .eyebrow{color:#5270b6;font-size:9px;font-weight:800;letter-spacing:1.4px}
+#modal.bf-safe-dialog .bf-wallet-flow-hero h2{margin:7px 0 6px;color:#263442;font-size:clamp(27px,7vw,35px);line-height:1.08;letter-spacing:-1.1px}
+#modal.bf-safe-dialog .bf-wallet-flow-hero h2 span{color:#315cf4}
+#modal.bf-safe-dialog .bf-wallet-flow-hero p{margin:0;color:#68798d;font-size:12px;line-height:1.55}
+#modal.bf-safe-dialog .bf-wallet-flow-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+#modal.bf-safe-dialog .bf-wallet-flow-meta span{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #dce5f5;border-radius:999px;background:rgba(255,255,255,.72);color:#53677e;font-size:10px;font-weight:700}
+#modal.bf-safe-dialog .bf-wallet-flow-meta i{width:6px;height:6px;border-radius:50%;background:#24b47e;box-shadow:0 0 0 4px rgba(36,180,126,.11)}
+#modal.bf-safe-dialog .bf-wallet-flow-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 23px}
+#modal.bf-safe-dialog .bf-wallet-step{display:flex;align-items:center;gap:7px;min-width:0;padding:10px 8px;border:1px solid #e3e9f2;border-radius:13px;background:#f8fafc;color:#7b8998;font-size:9px;font-weight:700}
+#modal.bf-safe-dialog .bf-wallet-step b{display:grid;place-items:center;flex:0 0 23px;width:23px;height:23px;border-radius:8px;background:#e9eef5;color:#748297;font-size:9px}
+#modal.bf-safe-dialog .bf-wallet-step.is-current{border-color:#cbd8ff;background:#f1f5ff;color:#315cf4}
+#modal.bf-safe-dialog .bf-wallet-step.is-current b{background:#315cf4;color:#fff}
+#modal.bf-safe-dialog .bf-wallet-flow-form{display:flex;flex-direction:column;gap:13px}
+#modal.bf-safe-dialog .bf-wallet-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:3px 0 0}
+#modal.bf-safe-dialog .bf-wallet-section-head h3{margin:4px 0 0;color:#29384a;font-size:17px;letter-spacing:-.35px}
+#modal.bf-safe-dialog .bf-wallet-min-tag,#modal.bf-safe-dialog .bf-wallet-secure-tag{flex:0 0 auto;padding:7px 9px;border:1px solid #dce5f5;border-radius:999px;background:#f6f8fc;color:#65768a;font-size:9px;font-weight:800}
+#modal.bf-safe-dialog .bf-wallet-secure-tag{border-color:#d5eee5;background:#f0faf6;color:#20845f}
+#modal.bf-safe-dialog .bf-wallet-amount-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+#modal.bf-safe-dialog .bf-wallet-amount-options button{min-width:0;min-height:42px;padding:8px 3px;border:1px solid #dfe6f0;border-radius:12px;background:#fff;color:#536579;font-size:12px;font-weight:800;box-shadow:0 2px 6px rgba(31,51,77,.035);transition:background .18s,border-color .18s,color .18s,transform .18s}
+#modal.bf-safe-dialog .bf-wallet-amount-options button:active{transform:scale(.96)}
+#modal.bf-safe-dialog .bf-wallet-amount-options button.is-selected{border-color:#315cf4;background:#edf2ff;color:#315cf4;box-shadow:inset 0 0 0 1px rgba(49,92,244,.08)}
+#modal.bf-safe-dialog .bf-wallet-field{display:flex;flex-direction:column;gap:7px;margin:0!important;color:#65768a;font-size:9px;font-weight:800;letter-spacing:.7px}
+#modal.bf-safe-dialog .bf-wallet-field>span{float:right}
+#modal.bf-safe-dialog .bf-wallet-field input{width:100%;min-height:49px;padding:12px 14px;border:1px solid #dce4ef;border-radius:13px;background:#fbfcfe;color:#29384a;font-size:14px;letter-spacing:0;box-shadow:inset 0 1px 2px rgba(32,50,72,.025);box-sizing:border-box}
+#modal.bf-safe-dialog .bf-wallet-field input:focus{outline:0;border-color:#7e9bff;box-shadow:0 0 0 3px rgba(49,92,244,.10)}
+#modal.bf-safe-dialog .bf-wallet-input-wrap{display:flex;align-items:center;gap:9px;padding-left:14px;border:1px solid #dce4ef;border-radius:13px;background:#fbfcfe}
+#modal.bf-safe-dialog .bf-wallet-input-wrap:focus-within{border-color:#7e9bff;box-shadow:0 0 0 3px rgba(49,92,244,.10)}
+#modal.bf-safe-dialog .bf-wallet-input-wrap>b{color:#315cf4;font-size:18px}
+#modal.bf-safe-dialog .bf-wallet-input-wrap input{border:0;background:transparent;box-shadow:none}
+#modal.bf-safe-dialog .bf-wallet-pay-card{display:grid;grid-template-columns:118px minmax(0,1fr);align-items:center;gap:14px;padding:13px;border:1px solid #dce6f7;border-radius:18px;background:linear-gradient(120deg,#f7faff,#fff)}
+#modal.bf-safe-dialog .bf-wallet-pay-qr{display:grid;place-items:center;aspect-ratio:1;border:1px solid #e4eaf2;border-radius:13px;background:#fff;padding:7px}
+#modal.bf-safe-dialog .bf-wallet-pay-qr img{display:block;width:100%;height:100%;object-fit:contain}
+#modal.bf-safe-dialog .bf-wallet-pay-details{display:flex;flex-direction:column;align-items:flex-start;gap:9px;min-width:0}
+#modal.bf-safe-dialog .bf-wallet-pay-details small{color:#7b8998;font-size:8px;font-weight:800;letter-spacing:1px}
+#modal.bf-safe-dialog .bf-wallet-pay-details>b{max-width:100%;overflow-wrap:anywhere;color:#29384a;font-size:17px}
+#modal.bf-safe-dialog .bf-wallet-copy{padding:8px 11px;border:1px solid #cddaff;border-radius:10px;background:#edf2ff;color:#315cf4;font-size:10px;font-weight:800}
+#modal.bf-safe-dialog .bf-wallet-timer{display:flex;align-items:center;gap:10px;padding:12px 13px;border:1px solid #e2eaf8;border-radius:13px;background:#f7f9fe}
+#modal.bf-safe-dialog .bf-wallet-timer-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:#eaf0ff;color:#315cf4;font-size:20px}
+#modal.bf-safe-dialog .bf-wallet-timer>div{display:flex;flex:1;flex-direction:column;gap:3px}
+#modal.bf-safe-dialog .bf-wallet-timer>div b{color:#35465a;font-size:11px}
+#modal.bf-safe-dialog .bf-wallet-timer>div small{color:#8190a0;font-size:9px}
+#modal.bf-safe-dialog .bf-wallet-timer>strong{color:#315cf4;font-size:18px;font-variant-numeric:tabular-nums}
+#modal.bf-safe-dialog .bf-wallet-confirm{display:flex;align-items:flex-start;gap:10px;padding:13px;border:1px solid #dce6f7;border-radius:13px;background:#f7f9ff}
+#modal.bf-safe-dialog .bf-wallet-confirm input{flex:0 0 18px;width:18px;height:18px;margin:2px 0 0;accent-color:#315cf4}
+#modal.bf-safe-dialog .bf-wallet-confirm span{display:flex;flex-direction:column;gap:4px}
+#modal.bf-safe-dialog .bf-wallet-confirm b{color:#34465a;font-size:11px}
+#modal.bf-safe-dialog .bf-wallet-confirm small{color:#7b8998;font-size:10px;line-height:1.45}
+#modal.bf-safe-dialog .bf-wallet-flow-note{display:flex;align-items:flex-start;gap:9px;padding:11px 12px;border:1px solid #e6ebf2;border-radius:12px;background:#f8fafc}
+#modal.bf-safe-dialog .bf-wallet-flow-note>span{color:#315cf4;font-size:16px}
+#modal.bf-safe-dialog .bf-wallet-flow-note p{margin:0;color:#738195;font-size:10px;line-height:1.55}
+#modal.bf-safe-dialog .bf-wallet-submit{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:54px!important;margin-top:2px!important;padding:0 18px!important;border-radius:14px!important;box-shadow:0 8px 18px rgba(49,92,244,.18)!important}
+#modal.bf-safe-dialog .bf-wallet-submit b{font-size:20px}
+#modal.bf-safe-dialog .bf-withdraw-premium{margin:0 0 3px;padding:16px;border:1px solid #dce6f7;border-radius:17px;background:linear-gradient(135deg,#f6f9ff,#fff)}
+#modal.bf-safe-dialog .bf-withdraw-eligibility-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+#modal.bf-safe-dialog .bf-withdraw-eligibility-top>div{display:flex;flex-direction:column;gap:5px}
+#modal.bf-safe-dialog .bf-withdraw-eligibility-top .eyebrow{color:#7185b4;font-size:8px;font-weight:800;letter-spacing:1px}
+#modal.bf-safe-dialog .bf-withdraw-eligibility-top>div>b{color:#40516a;font-size:12px}
+#modal.bf-safe-dialog .bf-withdraw-eligibility-top>strong{color:#315cf4;font-size:19px;font-variant-numeric:tabular-nums}
+#modal.bf-safe-dialog .bf-withdraw-premium .bf-progress-track{height:9px;margin:0 0 8px;border:0;background:#e6ecf5}
+#modal.bf-safe-dialog .bf-withdraw-premium .bf-progress-track>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#7ea0ff,#315cf4);transition:width .45s ease}
+#modal.bf-safe-dialog .bf-withdraw-premium>small{color:#8290a0;font-size:9px}
+#modal.bf-safe-dialog .bf-wallet-eligibility-message{margin:0;color:#718096;font-size:10px;line-height:1.45}
+#modal.bf-safe-dialog .bf-wallet-payout-summary{display:flex;flex-direction:column;gap:9px;padding:14px;border:1px solid #e0e7f1;border-radius:15px;background:#f8faff}
+#modal.bf-safe-dialog .bf-wallet-payout-summary>div{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#77869a;font-size:11px}
+#modal.bf-safe-dialog .bf-wallet-payout-summary>div>b{color:#44556b;font-variant-numeric:tabular-nums}
+#modal.bf-safe-dialog .bf-wallet-payout-summary .bf-wallet-payout-net{padding-top:10px;border-top:1px solid #e5ebf3;color:#3c5069;font-weight:800}
+#modal.bf-safe-dialog .bf-wallet-payout-summary .bf-wallet-payout-net strong{color:#315cf4;font-size:21px;font-variant-numeric:tabular-nums}
+@media(max-width:390px){#modal.bf-safe-dialog .bf-wallet-flow-hero{padding:19px 16px}#modal.bf-safe-dialog .bf-wallet-step{gap:5px;padding:8px 5px;font-size:8px}#modal.bf-safe-dialog .bf-wallet-step b{flex-basis:21px;width:21px;height:21px}#modal.bf-safe-dialog .bf-wallet-pay-card{grid-template-columns:100px minmax(0,1fr);gap:10px}#modal.bf-safe-dialog .bf-wallet-amount-options{gap:5px}#modal.bf-safe-dialog .bf-wallet-amount-options button{font-size:11px}}
+@media(prefers-reduced-motion:reduce){#modal.bf-safe-dialog .bf-wallet-amount-options button,#modal.bf-safe-dialog .bf-withdraw-premium .bf-progress-track>i{transition:none!important}}
