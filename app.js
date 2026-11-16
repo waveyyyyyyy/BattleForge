@@ -410,7 +410,7 @@ function modal(html) {
   if (card) {
     card.scrollTop = 0;
     card.style.marginTop = '0';
-    card.style.alignSelf = 'flex-start';
+    card.style.alignSelf = 'stretch';
     // Move settings outside the clipped message viewport, beside the close button.
     const settings = $('#modalContent .bf-chat-settings-wrap');
     if (settings) card.appendChild(settings);
@@ -514,21 +514,33 @@ async function createPaymentRequest(kind) {
   if (isDeposit && (!utr || utr.length < 6 || !/^[A-Za-z0-9-]+$/.test(utr))) return toast('Enter a valid UTR / transaction reference (at least 6 letters or numbers).');
   if (isDeposit && !$('#depositPaidCheckbox')?.checked) return toast('Tick “I have paid” after sending the payment.');
   if (!isDeposit && (!name || name.length < 2 || name.length > 120)) return toast('Enter the exact account-holder name.');
-  if (button) { button.disabled = true; button.textContent = 'Submitting…'; }
-  let data, error;
-  try { ({ data, error } = await supabase.rpc(isDeposit ? 'create_deposit_request' : 'create_withdrawal_request', isDeposit ? { p_amount: amount, p_payer_upi: upi } : { p_amount: amount, p_account_name: name, p_payout_upi: upi })); }
-  catch (err) { error = err; }
-  if (button) { button.disabled = false; button.textContent = isDeposit ? 'Submit deposit request' : 'Submit withdrawal request'; }
-  if (error) { console.error(error); return toast(error.message || 'Could not save request. Check the payment SQL migrations in Supabase, then retry.'); }
-  const row = Array.isArray(data) ? data[0] : data;
-  if (isDeposit && row?.id) { const {error:utrError}=await supabase.rpc('set_deposit_payment_reference',{p_request_id:row.id,p_reference:utr}); if(utrError){console.error('UTR save failed',utrError);return toast('Request was created but the UTR could not be saved. Contact support before submitting again.');} }
-  if (!row?.id) return toast('Request response was empty. Refresh requests before retrying to avoid duplicates.');
-  if (isDeposit) {
-    const { error: reportError } = await supabase.rpc('mark_deposit_payment_reported', { p_request_id: row.id });
-    if (reportError) { console.error(reportError); modal('<h2>Deposit request saved</h2><p>Request ID: <b>'+esc(row.id)+'</b></p><p class=\"notice\">Your request is pending. Please contact support if the paid status does not appear.</p><button id=\"closeDepositTimer\" class=\"join full\">Close</button>'); $('#closeDepositTimer')?.addEventListener('click', async () => { close(); await loadPaymentRequests(); }); }
-    else { await notifyAdminOfPaymentRequest('deposit', row.id); bfPaymentSuccess('deposit',row); }
-    await loadPaymentRequests();
-  } else { await notifyAdminOfPaymentRequest('withdrawal', row.id); bfPaymentSuccess('withdrawal',row); await loadPaymentRequests(); }
+  const modalCard=$('#modal .modal-card');
+  const loading=document.createElement('div');
+  loading.className='bf-payment-submission-overlay';
+  loading.innerHTML=bfLoadingScreen(isDeposit?'Securing your deposit request':'Submitting your withdrawal request',isDeposit?'Saving your UTR and creating your verification record':'Reserving eligible match earnings and creating your payout record','orbit')+'<div class="bf-submit-progress"><i></i></div><small class="bf-submit-safe">Please keep BattleForge open for a moment. Do not submit again.</small>';
+  if(modalCard){modalCard.appendChild(loading);modalCard.setAttribute('aria-busy','true');}
+  if(button){button.disabled=true;button.textContent='Submitting securely…';}
+  let data,error;
+  try{
+    ({data,error}=await supabase.rpc(isDeposit?'submit_deposit_request':'create_withdrawal_request',
+      isDeposit?{p_amount:amount,p_payer_upi:upi,p_reference:utr}:{p_amount:amount,p_account_name:name,p_payout_upi:upi}));
+  }catch(err){error=err;}
+  if(error){
+    console.error('Payment request submission failed:',error);
+    loading.remove();modalCard?.removeAttribute('aria-busy');
+    if(button){button.disabled=false;button.textContent=isDeposit?'Submit payment for verification':'Submit withdrawal request';}
+    return toast(error.message||'Could not submit the request. Please try again.');
+  }
+  const row=Array.isArray(data)?data[0]:data;
+  if(!row?.id){
+    loading.remove();modalCard?.removeAttribute('aria-busy');
+    return toast('Request response was empty. Check Recent requests before retrying.');
+  }
+  // Do not wait for push notification delivery or list refresh before showing success.
+  notifyAdminOfPaymentRequest(kind,row.id).catch(err=>console.warn('Admin request notification skipped:',err));
+  bfPaymentSuccess(kind,row);
+  Promise.allSettled([loadPaymentRequests(),loadWalletSummary()]);
+
 }
 
 function bfPaymentStatus(status){
@@ -585,7 +597,6 @@ async function loadPaymentRequests() {
   const [dep,wd]=await Promise.all([supabase.from('deposit_requests').select('id,amount,status,created_at,expires_at,payer_upi').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(5),supabase.from('withdrawal_requests').select('id,amount,fee_amount,net_amount,status,created_at,account_name,payout_upi').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(5)]);
   if(dep.error||wd.error) { target.innerHTML='<p class="notice">Payment-request database is not ready. Apply supabase/006_payment_requests.sql in the Supabase SQL Editor.</p>'; return; }
   const rows=[...(dep.data||[]).map(x=>({...x,kind:'Deposit'})),...(wd.data||[]).map(x=>({...x,kind:'Withdrawal'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
-  const statusLabel={pending:'Pending review',reported_paid:'Payment reported · awaiting verification',verified:'Verified · wallet credited',approved:'Approved · awaiting payout',paid:'Paid',rejected:'Rejected',expired:'Expired'};
   target.innerHTML=rows.length?rows.map(x=>'<div class="activity-row bf-payment-request-row"><span class="activity-mark">'+(x.kind==='Deposit'?'＋':'↗')+'</span><div><b>'+x.kind+' · ₹'+Number(x.amount).toFixed(2)+'</b>'+bfPaymentStatus(x.status)+'<small>'+esc(new Date(x.created_at).toLocaleString())+'</small><small>Ref PAY-'+esc(String(x.id).replace(/-/g,'').slice(0,10).toUpperCase())+'</small></div><strong>'+(x.kind==='Withdrawal'?'Net ₹'+Number(x.net_amount).toFixed(2):x.status==='verified'?'Credited':'Deposit')+'</strong></div>').join(''):'<div class="empty-state"><b>No payment requests yet</b><p>Your requests will appear here.</p></div>';
 }
 
@@ -806,7 +817,8 @@ async function setupBattleForgePush(requestPermission = false) {
 }
 
 // Short-lived in-memory cache for read-only arena data. Mutations and wallet/payment
-// actions still refresh their own data; this only deduplicates repeated screen refreshes.const bfReadCache = new Map();
+// actions still refresh their own data; this only deduplicates repeated screen refreshes.
+const bfReadCache = new Map();
 async function bfCachedRead(key, ttlMs, loader) {
   const now = Date.now();
   const cached = bfReadCache.get(key);
@@ -840,63 +852,52 @@ async function refreshDataInternal() {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) console.warn(sessionError);
   currentUser = session?.user ?? null;
+  const earlyProfileButton=$('#profileBtn'); if(earlyProfileButton){earlyProfileButton.textContent=currentUser?'Profile':'Sign in';earlyProfileButton.setAttribute('aria-label',currentUser?'Player profile':'Sign in');}
   isAdmin = false; adminIsOwner = false; adminPermissions = new Set(); dailyStreakStatus = null;
-  if (currentUser) setupBattleForgePush().catch(error => console.warn('Push setup skipped:', error));
-  if (currentUser) {
-    const { data: access, error: adminError } = await bfCachedRead('admin-access:'+currentUser.id, 30000, () => supabase.rpc('get_my_admin_access'));
-    if (!adminError && access) { isAdmin = access.is_admin === true; adminIsOwner = access.is_owner === true; adminPermissions = new Set(Array.isArray(access.permissions) ? access.permissions : []); }
-  }
-  const { data: controls, error: controlsError } = await bfCachedRead('platform-controls', 15000, () => supabase.from('platform_controls').select('registrations_paused,deposits_paused,withdrawals_paused,maintenance_mode,emergency_message').eq('id',1).maybeSingle());
-  if (!controlsError && controls) platformControls = controls;
-  if (currentUser) {
-    try {
-      const streak = await loadDailyStreakStatus();
-      if (Number(streak?.rewards_credited_now||0)>0) toast('Daily streak completed! 20 coins added.');
-    } catch (streakError) { console.warn('Daily streak status unavailable:', streakError); }
-  }
-  applyPlatformGates();
-  $('#adminBtn')?.classList.toggle('hidden', !isAdmin);
-  if(currentUser){ await requireUsernameSetup(); if(usernameSetupOpen) return; }
-  const { data, error } = await bfCachedRead('arena-tournaments', 12000, () => supabase.from('tournaments')
+  const profileButton=$('#profileBtn');
+  if(profileButton){profileButton.textContent=currentUser?'Profile':'Sign in';profileButton.setAttribute('aria-label',currentUser?'Player profile':'Sign in');}
+  if(!tournaments.length && $('#tournaments')) $('#tournaments').innerHTML=bfLoadingScreen('Entering the arena','Finding live tournaments and open lobbies','orbit');
+  if(currentUser) setupBattleForgePush().catch(error=>console.warn('Push setup skipped:',error));
+
+  // These reads do not depend on one another. Run them together so sign-in and
+  // the match list are not held up by an unrelated admin, controls or streak call.
+  const accessPromise=currentUser?bfCachedRead('admin-access:'+currentUser.id,30000,()=>supabase.rpc('get_my_admin_access')):Promise.resolve({data:null,error:null});
+  const controlsPromise=bfCachedRead('platform-controls',15000,()=>supabase.from('platform_controls').select('registrations_paused,deposits_paused,withdrawals_paused,maintenance_mode,emergency_message').eq('id',1).maybeSingle());
+  const tournamentsPromise=bfCachedRead('arena-tournaments',12000,()=>supabase.from('tournaments')
     .select('id,title,description,game_mode,entry_points,per_kill_points,prize_pool_points,max_players,status,starts_at,is_past_match,is_cancelled')
-    .eq('is_past_match', false)
-    .order('starts_at', { ascending: true, nullsFirst: false }).order('id'));
-  if (error) {
-    toast('Could not load online tournaments. Check Supabase setup.');
-    console.error(error);
-    tournaments = [];
-  } else tournaments = data ?? [];
+    .eq('is_past_match',false).order('starts_at',{ascending:true,nullsFirst:false}).order('id'));
+  if(currentUser) loadDailyStreakStatus().then(streak=>{
+    if(Number(streak?.rewards_credited_now||0)>0)toast('Daily streak completed! 20 coins added.');
+  }).catch(error=>console.warn('Daily streak status unavailable:',error));
 
-  if (currentUser) {
-    try {
-      const { data: notices, error: noticeError } = await bfCachedRead('broadcasts:'+currentUser.id, 20000, () => supabase.from('notification_broadcasts').select('id,title,message,created_at').order('created_at', { ascending: false }));
-      if (!noticeError && Array.isArray(notices)) {
-        const prior = window.battleForgeBroadcasts || [];
-        const priorIds = new Set(prior.map(n=>String(n.id)));
-        window.battleForgeBroadcasts = notices;
-        const seen = await getSeenNotificationIds();
-        const newest = notices.find(n=>!priorIds.has(String(n.id)) && !seen.includes(String(n.id)));
-        // Seen IDs are persisted locally, so read announcements never retrigger the alert on refresh.
-        if (newest && prior.length) toast('📣 ' + newest.title);
-        await updateNotificationBadge();
-      }
-    } catch (noticeError) { console.warn('Could not load announcements', noticeError); }
-  }
+  const [accessResult,controlsResult,tournamentResult]=await Promise.all([accessPromise,controlsPromise,tournamentsPromise]);
+  if(!accessResult.error&&accessResult.data){const access=accessResult.data;isAdmin=access.is_admin===true;adminIsOwner=access.is_owner===true;adminPermissions=new Set(Array.isArray(access.permissions)?access.permissions:[]);}
+  if(!controlsResult.error&&controlsResult.data)platformControls=controlsResult.data;
+  applyPlatformGates();
+  $('#adminBtn')?.classList.toggle('hidden',!isAdmin);
+  if(tournamentResult.error){console.error('Tournament list load failed:',tournamentResult.error);tournaments=[];}
+  else tournaments=tournamentResult.data||[];
 
-  joined = [];
-  counts = {};
-  if (currentUser) {
-    const { data: entries, error: entriesError } = await supabase.from('tournament_entries')
-      .select('id,tournament_id,in_game_name,created_at').eq('user_id', currentUser.id);
-    if (!entriesError) joined = entries ?? [];
-  }
-  const { data: countRows, error: countError } = await supabase.rpc('get_tournament_counts');
-  if (!countError && Array.isArray(countRows)) {
-    for (const row of countRows) counts[String(row.tournament_id)] = Number(row.player_count);
+  if(currentUser){await requireUsernameSetup();if(usernameSetupOpen){render();return;}}
+
+  joined=[];counts={};
+  const noticesPromise=currentUser?bfCachedRead('broadcasts:'+currentUser.id,20000,()=>supabase.from('notification_broadcasts').select('id,title,message,created_at').order('created_at',{ascending:false})):Promise.resolve({data:null,error:null});
+  const entriesPromise=currentUser?supabase.from('tournament_entries').select('id,tournament_id,in_game_name,created_at').eq('user_id',currentUser.id):Promise.resolve({data:[],error:null});
+  const countsPromise=supabase.rpc('get_tournament_counts');
+  const walletPromise=currentUser?loadWalletSummary():Promise.resolve();
+  const paymentsPromise=currentUser&&$('#paymentRequests')?loadPaymentRequests():Promise.resolve();
+  const [noticeResult,entryResult,countResult]=await Promise.all([noticesPromise,entriesPromise,countsPromise,walletPromise,paymentsPromise]).then(v=>[v[0],v[1],v[2]]);
+  if(!entryResult.error)joined=entryResult.data||[];
+  if(!countResult.error&&Array.isArray(countResult.data))for(const row of countResult.data)counts[String(row.tournament_id)]=Number(row.player_count);
+  if(!noticeResult.error&&Array.isArray(noticeResult.data)){
+    const prior=window.battleForgeBroadcasts||[],priorIds=new Set(prior.map(n=>String(n.id)));
+    window.battleForgeBroadcasts=noticeResult.data;
+    const seen=await getSeenNotificationIds();
+    const newest=noticeResult.data.find(n=>!priorIds.has(String(n.id))&&!seen.includes(String(n.id)));
+    if(newest&&prior.length)toast('📣 '+newest.title);
+    await updateNotificationBadge();
   }
   render();
-  if ($('#paymentRequests')) await loadPaymentRequests();
-  if (currentUser) await loadWalletSummary();
 }
 function showAuth(mode = 'signin') {
   const isSignup = mode === 'signup';
@@ -1051,7 +1052,7 @@ async function showProfile() {
   <section class="profile-block bf-streak-card"><div class="eyebrow">DAILY ARENA STREAK</div><h3>${streakDays} day streak</h3><p>Join at least 3 different matches each day. Complete 7 consecutive days to earn 20 coins.</p><div class="bf-streak-progress bf-streak-progress-seven" role="img" aria-label="${streakCycleDay} of 7 qualifying days completed">${Array.from({length:7},(_,i)=>`<span class="bf-streak-day${i<streakCycleDay?' is-complete':''}" aria-hidden="true">${i+1}</span>`).join('')}</div><small>REWARD CYCLE: ${streakCycleDay} / 7 days · TODAY: ${Number(dailyStreakStatus?.today_matches||0)} / 3 matches · ${Math.max(0,3-Number(dailyStreakStatus?.today_matches||0))} more to qualify</small><small>Cancelled tournaments do not count.</small></section>
   <details class="profile-block profile-accordion" open><summary>Edit profile</summary><label class="field">USERNAME (LETTERS, NUMBERS, SPACES, UNDERSCORES)<input id="profileUsername" maxlength="24" minlength="3" pattern="[A-Za-z0-9_ ]{3,24}" value="${esc(a.username||'')}" placeholder="ChooseUniqueName" autocomplete="nickname"></label><p class="profile-help">${Number(a.username_change_count||0)===0?'Your first username change is free.':'Each additional username change costs ₹5 from entry-fee-only credits.'} Letters, numbers, spaces, and underscores only. No other special characters.</p><button id="savePlayerProfile" class="join full">Save profile</button><p id="profileSaveStatus" class="profile-help"></p>
   </details><details class="profile-block profile-accordion"><summary>Referral centre</summary><p>Your referral code: <b>${esc(a.player_number||'—')}</b></p>${a.referred_by_player_number?`<p class="notice">You were referred by Player ID <b>${esc(a.referred_by_player_number)}</b>. Referral code already used; it can never be changed.</p>`:`<label class="field">REFER CODE<input id="applyReferralCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="20" placeholder="Enter someone else's Player ID"></label><button id="applyReferralCodeBtn" class="join full">Apply refer code</button><p class="profile-help">You can apply only one referral code for your lifetime. Once applied, it cannot be changed.</p>`}<p><a class="support-cta" href="${esc(referralDownloadUrl)}" target="_blank" rel="noopener noreferrer"><b>Download BattleForge APK</b><span>↗</span></a></p><p class="profile-help">Share this APK link with friends so they can install BattleForge and use your referral code.</p><div class="profile-metrics"><div><small>INVITED PLAYERS</small><b>${totalReferrals}</b></div><div><small>REWARDS EARNED</small><b>${rewarded} · ₹${(rewarded*5).toFixed(2)}</b></div><div><small>WAITING FOR FIRST WITHDRAWAL</small><b>${Math.max(0,totalReferrals-rewarded)}</b></div></div><p class="profile-help">Earn 5 coins when a referred player completes their first withdrawal.</p></details><details class="profile-block profile-accordion"><summary>Full activity history</summary><button type="button" class="outline full bf-open-history" id="bfOpenFullActivity">Open full activity history ↗</button><div class="profile-history">${led.length?led.map(x=>`<div class="profile-history-row"><div><b>${esc(x.entry_type||'Wallet activity')}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.note?' · '+esc(x.note):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No wallet activity recorded yet.</p>'}</div></section>
-  </details><details class="profile-block profile-accordion"><summary>Deposit history</summary><button type="button" class="outline full bf-open-history" id="bfOpenDepositHistory">Open full deposit history ↗</button><div class="profile-history">${(depositHistory||[]).length?(depositHistory||[]).map(x=>`<div class="profile-history-row"><div><b>${esc(bfPaymentStatus(x.status))}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.payment_reference?' · Ref '+esc(x.payment_reference):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No deposit requests yet.</p>'}</div></section>
+  </details><details class="profile-block profile-accordion"><summary>Deposit history</summary><button type="button" class="outline full bf-open-history" id="bfOpenDepositHistory">Open full deposit history ↗</button><div class="profile-history">${(depositHistory||[]).length?(depositHistory||[]).map(x=>`<div class="profile-history-row"><div><b>${bfPaymentStatus(x.status)}</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.payment_reference?' · Ref '+esc(x.payment_reference):''}</small></div><b>₹${Number(x.amount||0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No deposit requests yet.</p>'}</div></section>
   </details><details class="profile-block profile-accordion"><summary>Withdrawal history</summary><button type="button" class="outline full bf-open-history" id="bfOpenWithdrawalHistory">Open full withdrawal history ↗</button><div class="profile-history">${withdrawals.length?withdrawals.map(x=>`<div class="profile-history-row"><div><b>${esc(bfPaymentStatus(x.status))}</b><small>${esc(new Date(x.created_at).toLocaleString())} · Fee ₹${Number(x.fee_amount||0).toFixed(2)}</small></div><b>₹${Number(x.net_amount??x.amount??0).toFixed(2)}</b></div>`).join(''):'<p class="profile-help">No withdrawal requests yet.</p>'}</div></section>
   </details><details class="profile-block profile-accordion"><summary>Account warnings</summary><div class="profile-history">${warningHistoryHtml}</div></details><details class="profile-block profile-accordion"><summary>Match disputes</summary><div class="profile-history">${disputeHistoryHtml}</div></details><details class="profile-block profile-accordion"><summary>Match results history</summary><div class="profile-history">${resultRows.length?resultRows.map(x=>`<div class="profile-history-row"><div><b>${x.placement?'Place #'+Number(x.placement):'Result published'} · ${Number(x.kills||0)} kills</b><small>${esc(new Date(x.created_at).toLocaleString())}${x.note?' · '+esc(x.note):''}</small></div></div>`).join(''):'<p class="profile-help">No published results yet. Your tournament registrations are available under History.</p>'}</div></details><details class="profile-block profile-accordion"><summary>Social links</summary><div class=\"profile-rules\"><a class=\"support-cta\" href=\"https://battleforge-website.vercel.app\" target=\"_blank\" rel=\"noopener noreferrer\"><span>↗</span><div><b>Official BattleForge website</b><small>Visit battleforge-website.vercel.app</small></div><span>↗</span></a>${social.telegram_url?`<a class=\"support-cta\" href=\"${esc(social.telegram_url)}\" target=\"_blank\" rel=\"noopener noreferrer\"><span>✈</span><div><b>Telegram</b><small>BattleForge community</small></div><span>↗</span></a>`:''}${social.instagram_url?`<a class=\"support-cta\" href=\"${esc(social.instagram_url)}\" target=\"_blank\" rel=\"noopener noreferrer\"><span>◎</span><div><b>Instagram</b><small>Follow BattleForge</small></div><span>↗</span></a>`:''}${social.youtube_url?`<a class=\"support-cta\" href=\"${esc(social.youtube_url)}\" target=\"_blank\" rel=\"noopener noreferrer\"><span>▶</span><div><b>YouTube</b><small>Watch BattleForge</small></div><span>↗</span></a>`:'<p class=\"profile-help\">YouTube channel coming soon.</p>'}</div></details><details class=\"profile-block profile-accordion\"><summary>Rules, wallet & support</summary><div class="profile-rules"><p><b>01 · Correct IGN:</b> register with the exact Free Fire in-game name you will use in the match.</p><p><b>02 · Respect timing:</b> join the published room on time and follow organiser lobby instructions.</p><p><b>03 · Fair play only:</b> no hacks, cheats, exploits, teaming outside the selected format, harassment, or deliberate match disruption.</p><p><b>04 · Protect your account:</b> never share passwords, login codes, or OTPs. BattleForge will not ask for them.</p><p><b>05 · Read match notes:</b> each tournament can have its own map, schedule, scoring, lobby, and disqualification rules.</p><p><b>06 · Results & disputes:</b> follow organiser instructions for screenshots, score reporting, and result review; organiser decisions are final.</p><p><b>Wallet & withdrawals:</b> registrations and results are managed online. Wallet funds are credited after verification; deposits and withdrawals are manually reviewed. Withdrawal fee is 2%, so check the net payout before confirming.</p><a class="support-cta" href="https://t.me/battleforgeff" target="_blank" rel="noopener noreferrer"><span>✦</span><div><b>BattleForge support</b><small>Get help on Telegram</small></div><span>↗</span></a></div></details>
   <button id="signOutBtn" class="outline full">Log out</button><button id="switchAccountBtn" class="outline full">Switch account</button></div>`);
