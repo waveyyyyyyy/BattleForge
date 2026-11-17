@@ -490,18 +490,34 @@ async function createPaymentRequest(kind) {
   const name = isDeposit ? null : $('#withdrawName')?.value.trim();
   const bankName = isDeposit ? String($('#depositBankName')?.value||'').trim() : null;
   const utr = isDeposit ? String($('#depositUtr')?.value||'').trim() : null;
-  if (!Number.isInteger(amount) || amount < (isDeposit ? 30 : 100) || amount > 50000) return toast(isDeposit ? 'Minimum deposit is ₹30. Enter a whole amount up to ₹50,000.' : 'Minimum withdrawal is ₹100. Enter a whole amount up to ₹50,000.');
-  if (!validUpi(upi)) return toast('Enter a valid UPI ID, like name@upi.');
-  if (isDeposit && (!bankName || bankName.length < 2 || bankName.length > 120)) return toast('Enter the exact bank name used to make the payment.');
-  if (isDeposit && (!utr || utr.length < 6 || !/^[A-Za-z0-9-]+$/.test(utr))) return toast('Enter a valid UTR / transaction reference (at least 6 letters or numbers).');
-  if (isDeposit && !$('#depositPaidCheckbox')?.checked) return toast('Tick “I have paid” after sending the payment.');
-  if (!isDeposit && (!name || name.length < 2 || name.length > 120)) return toast('Enter the exact account-holder name.');
+  const fieldError=(selector,message)=>{
+    const field=$(selector);if(!field)return false;
+    field.setAttribute('aria-invalid','true');
+    let note=field.closest('.field')?.querySelector('.bf-field-error');
+    if(!note){note=document.createElement('small');note.className='bf-field-error';note.setAttribute('role','alert');field.closest('.field')?.appendChild(note);}
+    if(note)note.textContent=message;
+    field.closest('.field')?.classList.add('bf-field-invalid');
+    field.focus({preventScroll:true});field.scrollIntoView({behavior:'smooth',block:'center'});
+    return true;
+  };
+  const clearFieldErrors=()=>{
+    document.querySelectorAll('#depositRequestForm .bf-field-error,#withdrawalRequestForm .bf-field-error').forEach(el=>el.remove());
+    document.querySelectorAll('#depositRequestForm [aria-invalid="true"],#withdrawalRequestForm [aria-invalid="true"]').forEach(el=>el.removeAttribute('aria-invalid'));
+    document.querySelectorAll('#depositRequestForm .bf-field-invalid,#withdrawalRequestForm .bf-field-invalid').forEach(el=>el.classList.remove('bf-field-invalid'));
+  };
+  clearFieldErrors();
+  if (!Number.isInteger(amount) || amount < (isDeposit ? 30 : 100) || amount > 50000) return fieldError(isDeposit?'#depositAmount':'#withdrawAmount',isDeposit?'Enter a whole amount from ₹30 to ₹50,000.':'Enter a whole amount from ₹100 to ₹50,000.');
+  if (!validUpi(upi)) return fieldError(isDeposit?'#depositPayerUpi':'#withdrawUpi','This UPI ID doesn’t look right. Use a format like name@upi (for example, alex@okaxis).');
+  if (isDeposit && (!bankName || bankName.length < 2 || bankName.length > 120)) return fieldError('#depositBankName','Enter the account holder’s name exactly as shown in your bank or UPI app (2–120 characters).');
+  if (isDeposit && (!utr || utr.length < 6 || !/^[A-Za-z0-9-]+$/.test(utr))) return fieldError('#depositUtr','Enter the UTR from your payment receipt. It must contain at least 6 letters or numbers, with no spaces or symbols other than hyphens.');
+  if (isDeposit && !$('#depositPaidCheckbox')?.checked) {const check=$('#depositPaidCheckbox');check?.focus({preventScroll:true});check?.scrollIntoView({behavior:'smooth',block:'center'});return toast('Tick “I have paid” only after sending the exact amount to the BattleForge UPI ID.');}
+  if (!isDeposit && (!name || name.length < 2 || name.length > 120)) return fieldError('#withdrawName','Enter the exact account holder name shown in your bank or UPI app (2–120 characters).');
   const modalCard=$('#modal .modal-card');
   const loading=document.createElement('div');
   loading.className='bf-payment-submission-overlay';
   loading.setAttribute('role','status');
   loading.setAttribute('aria-live','assertive');
-  loading.innerHTML='<div class="bf-payment-submission-card">'+bfLoadingScreen(isDeposit?'Securing your deposit request':'Submitting your withdrawal request',isDeposit?'Saving your UTR and creating your verification record':'Checking your match earnings and creating your payout request','orbit')+'<div class="bf-submit-progress"><i></i></div><small class="bf-submit-safe">Please keep BattleForge open for a moment. Do not submit again.</small></div>';
+  loading.innerHTML='<div class="bf-payment-submission-card"><div class="bf-submit-art" aria-hidden="true"><span class="bf-submit-orbit bf-submit-orbit-a"></span><span class="bf-submit-orbit bf-submit-orbit-b"></span><span class="bf-submit-glow"></span><div class="bf-submit-emblem"><svg viewBox="0 0 64 64" fill="none"><path d="M32 8 53 19v15c0 12-8 19-21 23C19 53 11 46 11 34V19L32 8Z" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/><path d="m22 32 7 7 14-15" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><i class="bf-submit-star bf-submit-star-a">✦</i><i class="bf-submit-star bf-submit-star-b">✧</i></div><span class="bf-submit-kicker">BATTLEFORGE SECURE WALLET</span><h2>'+(isDeposit?'Locking in your deposit':'Preparing your withdrawal')+'</h2><p class="bf-submit-description">'+(isDeposit?'Your payment details are being securely sent for verification.':'Your payout details are being checked and your request is being created.')+'</p><div class="bf-submit-progress"><i></i></div><div class="bf-submit-steps"><span class="bf-submit-step-active"><i>1</i> Secure</span><span class="bf-submit-step-line"></span><span><i>2</i> Submit</span><span class="bf-submit-step-line"></span><span><i>3</i> Confirm</span></div><small class="bf-submit-safe">Keep BattleForge open for a moment. Please don’t submit again.</small></div>';
   document.body.appendChild(loading);
   if(modalCard)modalCard.setAttribute('aria-busy','true');
   if(button){button.disabled=true;button.setAttribute('aria-busy','true');button.innerHTML='<span class="bf-button-spinner" aria-hidden="true"></span> Submitting…';}
@@ -543,7 +559,7 @@ function bfLedgerPresentation(entryType){
 }
 function bfPaymentSuccess(kind,row){
  const deposit=kind==='deposit';
- modal('<section class="bf-payment-success"><div class="bf-success-orbit"><div class="bf-success-ring"></div><div class="bf-success-check">✓</div><span class="bf-success-spark bf-spark-one">✦</span><span class="bf-success-spark bf-spark-two">✧</span></div><div class="eyebrow">BATTLEFORGE · REQUEST RECEIVED</div><h2>'+(deposit?'Deposit request submitted!':'Withdrawal request submitted!')+'</h2><p>'+(deposit?'Your payment is waiting for manual verification.':'Your withdrawal request is waiting for admin review. No payout has been sent yet.')+'</p><div class="bf-payment-success-ref"><small>PAYMENT REFERENCE</small><b>PAY-'+esc(String(row?.id||'').replace(/-/g,'').slice(0,10).toUpperCase())+'</b></div><button id="bfPaymentSuccessDone" class="join full">Awesome, got it</button></section>');
+ modal('<section class="bf-payment-success bf-payment-success-premium"><div class="bf-success-stage"><div class="bf-success-halo bf-halo-one"></div><div class="bf-success-halo bf-halo-two"></div><div class="bf-success-medallion"><svg viewBox="0 0 72 72" fill="none" aria-hidden="true"><path d="M36 7 59 19v17c0 14-9 23-23 29C22 59 13 50 13 36V19L36 7Z" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/><path d="m24 36 8 8 17-19" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="bf-success-star bf-success-star-a">✦</span><span class="bf-success-star bf-success-star-b">✧</span><span class="bf-success-star bf-success-star-c">✦</span></div><span class="bf-success-kicker"><i></i> BATTLEFORGE WALLET · CONFIRMED</span><h2>'+(deposit?'Deposit request received':'Withdrawal request received')+'</h2><p>'+(deposit?'Your payment details are safely submitted. Our team will verify the payment before your wallet is credited.':'Your withdrawal request is safely submitted and queued for admin review. This confirmation is not a payout receipt.')+'</p><div class="bf-success-timeline"><div class="bf-success-timeline-item bf-success-step-done"><i>✓</i><span><b>Request submitted</b><small>Your details reached BattleForge</small></span></div><div class="bf-success-timeline-item"><i>2</i><span><b>'+(deposit?'Payment verification':'Admin review')+'</b><small>'+(deposit?'We’ll verify your UTR and payment':'We’ll review your withdrawal details')+'</small></span></div><div class="bf-success-timeline-item"><i>3</i><span><b>'+(deposit?'Wallet credit':'Payout processing')+'</b><small>'+(deposit?'Coins appear after approval':'You’ll be updated when it is processed')+'</small></span></div></div><div class="bf-payment-success-ref"><small>REQUEST REFERENCE</small><b>PAY-'+esc(String(row?.id||'').replace(/-/g,'').slice(0,10).toUpperCase())+'</b></div><button id="bfPaymentSuccessDone" class="join full"><span>Back to wallet</span><b aria-hidden="true">→</b></button><small class="bf-success-footnote">You can follow the status anytime in Recent requests.</small></section>');
  $('#bfPaymentSuccessDone')?.addEventListener('click',close);
 }
 async function openPaymentHistory(kind){
