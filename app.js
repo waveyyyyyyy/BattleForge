@@ -1110,7 +1110,7 @@ async function showProfile() {
   const referralStats=referralStatsResult||{}; const totalReferrals=Number(referralStats.invited_count||0), rewarded=Number(referralStats.rewarded_count||0);
   const [{data:socialData},{data:referralDownloadSetting},rankStats]=await Promise.all([socialPromise,referralUrlPromise,rankStatsPromise]);
   const social=Array.isArray(socialData)?(socialData[0]||{}):(socialData||{});
-  const referralDownloadUrl=(Array.isArray(referralDownloadSetting)?referralDownloadSetting[0]?.download_url:referralDownloadSetting?.download_url)||'https://www.dropbox.com/scl/fi/rdkpfx9lggtvavhzntc6k/BattleForge.apk?rlkey=klsepxvg2ejzjh70tcugy3bmn&st=528fxegd&dl=0';
+  const referralDownloadUrl=(Array.isArray(referralDownloadSetting)?referralDownloadSetting[0]?.download_url:referralDownloadSetting?.download_url)||'https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-apk-463/BattleForge.apk';
   const resultRows=myResults||[], wins=resultRows.filter(x=>Number(x.placement)===1).length, kills=resultRows.reduce((n,x)=>n+Number(x.kills||0),0);
   const lifetimeKills=Number(rankStats.get(currentUser.id)?.lifetime_kills ?? kills), currentRank=killRankFor(lifetimeKills);
   await streakPromise;
