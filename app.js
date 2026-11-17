@@ -472,6 +472,20 @@ async function showWithdrawalForm() {
   const {data:walletRow}=await supabase.from('wallet_accounts').select('earned_balance').eq('user_id',currentUser.id).maybeSingle(); const earned=Number(walletRow?.earned_balance||0),pct=Math.min(100,earned); const eb=$('#withdrawEarnedBalance'),pb=$('#withdrawProgressBar'),pl=$('#withdrawProgressLabel'),em=$('#withdrawEligibilityMessage'); if(eb)eb.textContent=earned.toFixed(2)+' coins'; if(pb)pb.style.width=pct+'%'; if(pl)pl.textContent=pct>=100?'Withdrawal minimum reached':(100-earned).toFixed(2)+' more match-earning coins needed.'; if(em)em.textContent=earned<100?'You need at least 100 withdrawable match-earning coins. Deposited coins do not count.':'You have enough match earnings to request a withdrawal.'; const submit=$('#createWithdrawalRequest'); if(submit)submit.disabled=earned<100; $('#withdrawAmount')?.addEventListener('input', updateWithdrawalNet);
 }
 function updateWithdrawalNet() { const amount = Number($('#withdrawAmount')?.value || 0); const out = $('#withdrawNet'); if (out) out.textContent = '₹' + (Number.isFinite(amount) && amount > 0 ? (amount * .98).toFixed(2) : '0.00'); }
+document.addEventListener('input',event=>{
+  const field=event.target;
+  if(!field.matches('#depositRequestForm input,#withdrawalRequestForm input'))return;
+  if(field.getAttribute('aria-invalid')==='true'){
+    field.removeAttribute('aria-invalid');
+    field.closest('.field')?.classList.remove('bf-field-invalid');
+    field.closest('.field')?.querySelector('.bf-field-error')?.remove();
+  }
+});
+document.addEventListener('change',event=>{
+  const field=event.target;
+  if(field.id==='depositPaidCheckbox'&&field.checked)field.closest('.admin-check')?.classList.add('bf-check-confirmed');
+  else if(field.id==='depositPaidCheckbox')field.closest('.admin-check')?.classList.remove('bf-check-confirmed');
+});
 async function notifyAdminOfPaymentRequest(kind, requestId) {
   try {
     const { error } = await supabase.functions.invoke('notify-admin-payment-request', {
