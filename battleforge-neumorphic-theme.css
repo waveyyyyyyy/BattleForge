@@ -1459,3 +1459,18 @@ body{background-image:none!important}
   width:min(100%,148px)!important;max-width:148px!important;max-height:44px!important;
  }
 }
+
+/* BattleForge custom blue icon system */
+.admin-quick-grid .admin-quick{align-items:flex-start;gap:9px}
+.admin-quick .bf-admin-icon{display:grid!important;place-items:center;width:42px!important;height:42px!important;padding:0!important;border-radius:13px!important;background:linear-gradient(145deg,#eef5ff,#dce9ff)!important;box-shadow:0 5px 13px rgba(49,92,244,.13),inset 0 1px #fff!important;color:#315cf4!important}
+.bf-admin-icon svg{display:block;width:100%;height:100%;filter:drop-shadow(0 2px 3px rgba(35,75,160,.16))}
+.bf-social-links{display:grid;gap:12px}
+.bf-social-link{display:flex!important;align-items:center!important;gap:13px!important;min-height:76px;padding:12px 14px!important;border:1px solid #dce4ec!important;border-radius:17px!important;background:linear-gradient(145deg,#fff,#f7faff)!important;box-shadow:0 5px 16px rgba(40,70,110,.055)!important;color:#26384d!important;text-decoration:none!important}
+.bf-social-logo{display:grid!important;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#f0f6ff,#e2edff);box-shadow:0 4px 12px rgba(49,92,244,.12),inset 0 1px #fff}
+.bf-social-logo svg{display:block;width:42px;height:42px;filter:drop-shadow(0 3px 4px rgba(25,70,130,.16))}
+.bf-social-link>div{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.bf-social-link b{font-size:14px;color:#26384d}
+.bf-social-link small{font-size:11px;color:#718096}
+.bf-social-arrow{font-size:17px;color:#315cf4;font-weight:800}
+.bf-social-link:active{transform:scale(.99)}
+@media(prefers-reduced-motion:no-preference){.bf-social-link,.admin-quick{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}.bf-social-link:hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(49,92,244,.11)!important;border-color:#b9ccff!important}}
