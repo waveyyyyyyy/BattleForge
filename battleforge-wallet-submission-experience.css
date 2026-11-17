@@ -1,0 +1,84 @@
+/* BattleForge wallet submission + validation experience */
+.bf-payment-submission-overlay{
+ position:fixed;inset:0;z-index:100500;display:grid;place-items:center;
+ padding:22px;background:rgba(235,244,255,.78);
+ -webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);
+ animation:bfSubmitOverlayIn .24s ease-out both;
+}
+.bf-payment-submission-card{
+ position:relative;isolation:isolate;overflow:hidden;width:min(100%,390px);box-sizing:border-box;
+ padding:30px 24px 24px;border:1px solid rgba(255,255,255,.92);border-radius:30px;
+ background:linear-gradient(155deg,#fff 0%,#f5f9ff 56%,#eaf3ff 100%);
+ box-shadow:0 28px 90px rgba(24,75,145,.22),inset 0 1px 0 #fff;text-align:center;color:#12315a;
+}
+.bf-payment-submission-card:before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,#53b7ff,#2468e8,#8bd8ff);z-index:2}
+.bf-payment-submission-card:after{content:"";position:absolute;width:260px;height:260px;right:-145px;top:-150px;border-radius:50%;background:radial-gradient(circle,rgba(74,158,255,.17),transparent 68%);pointer-events:none;z-index:-1}
+.bf-submit-art{height:154px;position:relative;display:grid;place-items:center;margin:-4px auto 12px}
+.bf-submit-glow{position:absolute;width:108px;height:108px;border-radius:50%;background:radial-gradient(circle,rgba(48,133,245,.25),rgba(80,167,255,.08) 55%,transparent 72%);filter:blur(3px);animation:bfSubmitGlow 2.2s ease-in-out infinite}
+.bf-submit-orbit{position:absolute;border:1px solid rgba(46,123,227,.24);border-radius:50%;width:132px;height:132px}
+.bf-submit-orbit-a{transform:rotate(-28deg) scaleY(.55);animation:bfSubmitOrbit 5s linear infinite}
+.bf-submit-orbit-b{width:112px;height:112px;transform:rotate(55deg) scaleY(.56);border-style:dashed;animation:bfSubmitOrbitReverse 8s linear infinite}
+.bf-submit-emblem{position:relative;z-index:1;width:82px;height:82px;display:grid;place-items:center;border-radius:27px;color:#fff;background:linear-gradient(145deg,#67c5ff,#2678ee 58%,#174fbd);box-shadow:0 15px 30px rgba(37,111,218,.28),inset 0 1px 1px rgba(255,255,255,.55);transform:rotate(-5deg);animation:bfSubmitFloat 2.6s ease-in-out infinite}
+.bf-submit-emblem svg{width:48px;height:48px;filter:drop-shadow(0 2px 2px rgba(0,40,110,.18))}
+.bf-submit-star{position:absolute;color:#368cf1;font-style:normal;font-size:20px;animation:bfSubmitTwinkle 1.8s ease-in-out infinite}
+.bf-submit-star-a{top:25px;left:calc(50% - 82px)}
+.bf-submit-star-b{right:calc(50% - 85px);bottom:24px;animation-delay:.7s}
+.bf-submit-kicker,.bf-success-kicker{display:inline-flex;align-items:center;gap:8px;color:#347bd2;font-size:10px;font-weight:900;letter-spacing:.16em}
+.bf-submit-kicker:before,.bf-success-kicker i{content:"";width:7px;height:7px;border-radius:50%;background:#32a5ff;box-shadow:0 0 0 4px rgba(50,165,255,.12)}
+.bf-payment-submission-card h2{margin:10px 0 8px;color:#102c52;font-size:25px;line-height:1.12;font-weight:900;letter-spacing:-.035em}
+.bf-submit-description{max-width:290px;margin:0 auto 22px;color:#627895;font-size:13px;line-height:1.55}
+.bf-submit-progress{height:7px;width:100%;overflow:hidden;border-radius:20px;background:#dceaff;box-shadow:inset 0 1px 2px rgba(23,74,142,.1)}
+.bf-submit-progress i{display:block;width:38%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#58c7ff,#2475ed,#76caff);box-shadow:0 0 14px rgba(42,133,240,.38);animation:bfSubmitProgress 1.55s ease-in-out infinite}
+.bf-submit-steps{display:flex;align-items:center;justify-content:center;gap:7px;margin:17px 0 14px;color:#8a9bb2;font-size:10px;font-weight:800}
+.bf-submit-steps span:not(.bf-submit-step-line){display:flex;align-items:center;gap:5px;white-space:nowrap}
+.bf-submit-steps i{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#e7effb;color:#7890ad;font-size:9px;font-style:normal}
+.bf-submit-steps .bf-submit-step-active{color:#276dce}
+.bf-submit-steps .bf-submit-step-active i{background:#d9edff;color:#176bd4}
+.bf-submit-step-line{width:19px;height:1px;background:#cbdcf2}
+.bf-submit-safe{display:block;color:#8394aa;font-size:10px;line-height:1.45}
+@keyframes bfSubmitOverlayIn{from{opacity:0}to{opacity:1}}
+@keyframes bfSubmitFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-7px) rotate(1deg)}}
+@keyframes bfSubmitGlow{0%,100%{opacity:.65;transform:scale(.9)}50%{opacity:1;transform:scale(1.12)}}
+@keyframes bfSubmitOrbit{to{transform:rotate(332deg) scaleY(.55)}}
+@keyframes bfSubmitOrbitReverse{to{transform:rotate(-305deg) scaleY(.56)}}
+@keyframes bfSubmitTwinkle{0%,100%{opacity:.45;transform:scale(.75) rotate(0)}50%{opacity:1;transform:scale(1.18) rotate(28deg)}}
+@keyframes bfSubmitProgress{0%{transform:translateX(-115%)}100%{transform:translateX(285%)}}
+/* Success / submission tick screen */
+.bf-payment-success-premium{position:relative;overflow:hidden;box-sizing:border-box;padding:25px 22px 21px;border:1px solid rgba(255,255,255,.95);border-radius:28px;background:linear-gradient(155deg,#fff 0%,#f7faff 58%,#eaf3ff 100%);color:#15345d;text-align:center;box-shadow:0 24px 70px rgba(20,72,142,.17),inset 0 1px 0 #fff}
+.bf-payment-success-premium:before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,#55c5ff,#2877ec,#9adfff)}
+.bf-success-stage{height:160px;position:relative;display:grid;place-items:center;margin:-5px auto 3px}
+.bf-success-medallion{position:relative;z-index:2;width:88px;height:88px;display:grid;place-items:center;border-radius:29px;color:#fff;background:linear-gradient(145deg,#5bc4ff,#2679ee 58%,#174fbd);box-shadow:0 16px 35px rgba(35,111,222,.3),inset 0 1px 1px rgba(255,255,255,.55);transform:rotate(-4deg);animation:bfSuccessPop .65s cubic-bezier(.18,.85,.25,1.25) both}
+.bf-success-medallion svg{width:55px;height:55px;filter:drop-shadow(0 2px 2px rgba(0,35,100,.18))}
+.bf-success-halo{position:absolute;border:1px solid rgba(48,126,226,.23);border-radius:50%;width:132px;height:132px}
+.bf-halo-one{transform:scaleY(.58) rotate(-22deg);animation:bfSubmitOrbit 8s linear infinite}
+.bf-halo-two{width:112px;height:112px;border-style:dashed;transform:scaleY(.58) rotate(50deg);animation:bfSubmitOrbitReverse 10s linear infinite}
+.bf-success-star{position:absolute;color:#398df0;font-size:19px;animation:bfSubmitTwinkle 1.8s ease-in-out infinite}
+.bf-success-star-a{top:20px;left:calc(50% - 83px)}
+.bf-success-star-b{right:calc(50% - 86px);top:42px;animation-delay:.5s}
+.bf-success-star-c{bottom:18px;left:calc(50% - 70px);animation-delay:1s}
+.bf-success-kicker{margin:0 auto 8px}
+.bf-success-kicker i{display:inline-block}
+.bf-payment-success-premium h2{margin:7px 0 9px;color:#102c52;font-size:26px;line-height:1.12;font-weight:950;letter-spacing:-.04em}
+.bf-payment-success-premium>p{max-width:310px;margin:0 auto 18px;color:#617792;font-size:13px;line-height:1.55}
+.bf-success-timeline{display:grid;gap:0;text-align:left;margin:0 0 16px;padding:13px 14px;border:1px solid #e1ebf8;border-radius:17px;background:rgba(255,255,255,.75)}
+.bf-success-timeline-item{display:flex;align-items:center;gap:11px;min-height:42px;position:relative}
+.bf-success-timeline-item:not(:last-child):after{content:"";position:absolute;left:13px;top:31px;bottom:-10px;width:1px;background:#d6e4f6}
+.bf-success-timeline-item>i{position:relative;z-index:1;flex:0 0 27px;width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:#edf3fb;color:#8ba0ba;font-size:11px;font-style:normal;font-weight:900}
+.bf-success-timeline-item.bf-success-step-done>i{background:linear-gradient(145deg,#d9f1ff,#c5e3ff);color:#176ed0;box-shadow:0 0 0 4px rgba(51,137,228,.08)}
+.bf-success-timeline-item span{display:grid;gap:2px}
+.bf-success-timeline-item b{font-size:12px;color:#1d3c64}
+.bf-success-timeline-item small{font-size:10px;color:#8092a9}
+.bf-payment-success-premium .bf-payment-success-ref{display:grid;gap:4px;padding:11px 14px;margin:0 0 14px;border:1px dashed #b9d3f2;border-radius:13px;background:#f3f8ff}
+.bf-payment-success-premium .bf-payment-success-ref small{font-size:9px;font-weight:900;letter-spacing:.13em;color:#6d86a5}
+.bf-payment-success-premium .bf-payment-success-ref b{font-size:15px;letter-spacing:.08em;color:#1e67c4}
+.bf-payment-success-premium #bfPaymentSuccessDone{display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px;border:0;border-radius:15px;background:linear-gradient(100deg,#318ef2,#1e63d1);box-shadow:0 9px 20px rgba(39,111,216,.22);color:white;font-weight:900}
+.bf-payment-success-premium #bfPaymentSuccessDone b{font-size:19px}
+.bf-success-footnote{display:block;margin:10px auto 0;color:#899bb1;font-size:10px}
+.bf-field-invalid input,.bf-field-invalid select,.bf-field-invalid textarea{border-color:#e05266!important;box-shadow:0 0 0 3px rgba(224,82,102,.11)!important;background:#fffafb!important}
+.bf-field-error{display:flex;align-items:flex-start;gap:7px;margin:7px 0 0;padding:9px 11px;border:1px solid #f3c4ca;border-radius:11px;background:#fff2f3;color:#b52e43;font-size:11px;font-weight:650;line-height:1.45;animation:bfFieldErrorIn .18s ease-out both}
+.bf-field-error:before{content:"!";flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center;border-radius:50%;background:#f9dce0;color:#a92339;font-size:11px;font-weight:950}
+.bf-check-confirmed{border-radius:12px;background:rgba(44,139,229,.06)}
+@keyframes bfSuccessPop{0%{opacity:0;transform:translateY(10px) scale(.7) rotate(-15deg)}72%{opacity:1;transform:translateY(-3px) scale(1.07) rotate(2deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(-4deg)}}
+@keyframes bfFieldErrorIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:420px){.bf-payment-submission-card{padding:25px 19px 21px;border-radius:25px}.bf-submit-art{height:142px}.bf-payment-success-premium{padding:21px 16px 18px}.bf-success-stage{height:148px}.bf-payment-success-premium h2{font-size:23px}.bf-success-timeline{padding:11px 10px}}
+@media(prefers-reduced-motion:reduce){.bf-payment-submission-overlay,.bf-submit-art *,.bf-success-stage *,.bf-field-error{animation:none!important;transition:none!important}}
