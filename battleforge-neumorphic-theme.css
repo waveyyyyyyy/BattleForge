@@ -1459,3 +1459,9 @@ body{background-image:none!important}
   width:min(100%,148px)!important;max-width:148px!important;max-height:44px!important;
  }
 }
+
+/* Unified illustrated blue icon treatment for every admin tile and profile social link */
+.admin-quick>span:first-child{display:grid!important;place-items:center;width:48px!important;height:48px!important;min-width:48px!important;border-radius:15px!important;background:linear-gradient(145deg,#edf4ff,#dce8ff)!important;box-shadow:0 5px 14px rgba(49,92,244,.13),inset 0 1px #fff!important;color:#315cf4!important}
+.admin-quick>span:first-child .bf-custom-ui-icon{display:block!important;width:44px!important;height:44px!important;filter:drop-shadow(0 2px 3px rgba(49,92,244,.16))}
+.support-cta>span:first-child{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:14px;background:linear-gradient(145deg,#eef5ff,#dce9ff);box-shadow:0 4px 12px rgba(49,92,244,.12),inset 0 1px #fff}
+.support-cta>span:first-child .bf-custom-ui-icon{width:42px;height:42px;display:block;filter:drop-shadow(0 2px 3px rgba(49,92,244,.14))}
