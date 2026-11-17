@@ -1,0 +1,62 @@
+/* BattleForge command-feed + auth alignment polish */
+#modal .modal-card:has(.bf-auth-cinematic) .bf-auth-body .google-sign-in{
+  display:grid;grid-template-columns:24px minmax(0,1fr) 24px;align-items:center;justify-items:center;
+  gap:0;min-height:48px;height:48px;padding:0 15px;box-sizing:border-box;line-height:1;
+}
+#modal .modal-card:has(.bf-auth-cinematic) .bf-auth-body .google-sign-in>span{
+  grid-column:1;grid-row:1;width:22px;height:22px;margin:0;display:grid;place-items:center;
+  line-height:1;align-self:center;transform:none;font-family:Arial,sans-serif;
+}
+#modal .modal-card:has(.bf-auth-cinematic) .bf-auth-body .google-sign-in{
+  text-align:center;font-size:13px;white-space:nowrap;
+}
+#modal .modal-card:has(.bf-auth-cinematic) .bf-auth-body .google-sign-in>b{
+  grid-column:3;grid-row:1;margin:0;justify-self:end;align-self:center;line-height:1;
+}
+#modal .modal-card:has(.bf-notifications){width:min(100%,560px);max-width:560px;padding:0;border:1px solid rgba(91,132,220,.2);border-radius:26px;background:#f8faff;overflow:hidden;box-shadow:0 28px 90px rgba(13,37,83,.24)}
+.bf-notifications{gap:13px!important;padding:0 0 18px!important;background:#f8faff!important;color:#203657}
+.bf-notifications-hero{position:relative;isolation:isolate;padding:23px 20px 15px;overflow:hidden;background:radial-gradient(ellipse at 88% 12%,rgba(119,163,255,.35),transparent 37%),linear-gradient(135deg,#142f70,#2454bd 58%,#3979ed);color:#fff}
+.bf-notifications-hero:after{content:"";position:absolute;z-index:-1;inset:0;opacity:.14;background-image:linear-gradient(rgba(255,255,255,.3) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.3) 1px,transparent 1px);background-size:25px 25px;mask-image:linear-gradient(110deg,transparent,#000)}
+.bf-notifications-hero-art{position:absolute;right:13px;top:5px;width:125px;height:125px;display:grid;place-items:center;opacity:.8;pointer-events:none}
+.bf-notice-orbit{position:absolute;width:105px;height:105px;border:1px solid rgba(255,255,255,.32);border-radius:50%;transform:scaleY(.42) rotate(-25deg)}
+.bf-notice-orbit.two{width:83px;height:83px;transform:scaleY(.42) rotate(48deg)}
+.bf-notice-bell{display:grid;place-items:center;width:47px;height:47px;border:1px solid rgba(255,255,255,.55);border-radius:16px;background:rgba(255,255,255,.16);font-size:32px;box-shadow:0 10px 28px rgba(0,0,0,.16);backdrop-filter:blur(8px)}
+.bf-notifications-hero-art>i{position:absolute;right:13px;top:26px;color:#fff;font-style:normal;font-size:17px;text-shadow:0 0 14px #fff}
+.bf-notifications-heading{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bf-notifications-heading .eyebrow{font-size:8px;font-weight:950;letter-spacing:.18em;color:#c5d7ff}
+.bf-notifications-heading h2{margin:7px 0 5px;font-size:29px;line-height:1;letter-spacing:-.06em;color:#fff}
+.bf-notifications-heading h2 em{font-style:normal;color:#b9d0ff}
+.bf-notifications-heading .profile-help{margin:0;color:rgba(255,255,255,.72);font-size:10px}
+.bf-notification-count{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;width:57px;height:57px;border:1px solid rgba(255,255,255,.32);border-radius:18px;background:rgba(255,255,255,.14);backdrop-filter:blur(8px)}
+.bf-notification-count b{font-size:22px;line-height:1;color:#fff}.bf-notification-count small{margin-top:4px;font-size:7px;font-weight:950;letter-spacing:.12em;color:#dce7ff}
+.bf-notifications-summary{display:flex;justify-content:space-between;gap:10px;margin-top:19px;padding-top:11px;border-top:1px solid rgba(255,255,255,.2);font-size:8px;font-weight:900;letter-spacing:.1em;color:#d6e3ff}
+.bf-notifications-summary span:first-child{display:flex;align-items:center;gap:7px}.bf-notifications-summary i,.bf-notification-status i{width:6px;height:6px;border-radius:50%;background:#45e0b1;box-shadow:0 0 0 4px rgba(69,224,177,.13)}
+.bf-notification-mark{width:calc(100% - 36px);margin:0 18px!important;min-height:40px;border:1px solid #d9e4f8!important;border-radius:12px!important;background:#fff!important;color:#315cf4!important;font-size:10px;font-weight:900}
+.bf-notification-mark span{margin-right:6px}
+.bf-notification-section-label{display:flex;align-items:center;gap:10px;margin:3px 19px 0;color:#8494b0;font-size:8px;font-weight:950;letter-spacing:.15em}
+.bf-notification-section-label i{height:1px;flex:1;background:#e1e9f7}
+.bf-notification-list{display:grid;gap:9px;max-height:min(48vh,430px);overflow:auto;padding:0 14px 4px}
+.bf-notifications .bf-notification-item{position:relative;display:grid;grid-template-columns:34px minmax(0,1fr) 20px;gap:10px;align-items:start;padding:13px 12px;border:1px solid #e4eaf5;border-radius:16px;background:linear-gradient(120deg,#fff,#f9fbff);box-shadow:0 5px 16px rgba(39,74,139,.045);animation:bfNoticeIn .35s ease both}
+.bf-notifications .bf-notification-item.unread{border-color:#c4d5ff;background:linear-gradient(115deg,#fff,#f0f5ff);box-shadow:0 8px 22px rgba(49,92,244,.09)}
+.bf-notification-rail{display:flex;flex-direction:column;align-items:center;gap:7px}
+.bf-notification-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:11px;background:#edf2ff;color:#315cf4;font-size:16px;font-weight:950}
+.bf-notification-item.unread .bf-notification-icon{background:linear-gradient(145deg,#315cf4,#6591ff);color:#fff;box-shadow:0 5px 13px rgba(49,92,244,.22)}
+.bf-notification-rail>i{width:1px;height:17px;background:#e3eaf7}
+.bf-notification-copy{min-width:0}
+.bf-notifications .notification-card-top{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.bf-notifications .notification-card-top b{font-size:12px;line-height:1.35;color:#203657}
+.bf-notifications .notification-card-top small{font-size:8px;color:#91a0b8;text-align:left}
+.bf-notifications .bf-notification-copy p{margin:8px 0 7px;color:#657795;font-size:10px;line-height:1.6;overflow-wrap:anywhere}
+.bf-notification-status{display:inline-flex;align-items:center;gap:7px;font-size:7px;font-weight:950;letter-spacing:.12em;color:#91a0b8}
+.bf-notification-item.unread .bf-notification-status{color:#315cf4}
+.bf-notification-status i{width:5px;height:5px;box-shadow:none}
+.bf-notification-index{padding-top:3px;color:#b3bfd2;font-size:8px;font-weight:950;letter-spacing:.08em}
+.bf-notification-empty{position:relative;isolation:isolate;overflow:hidden;margin:4px 14px 0;padding:32px 20px;border:1px dashed #c7d5ee;border-radius:20px;background:radial-gradient(ellipse at 50% 0%,#eaf1ff,#fff 70%);text-align:center}
+.bf-notification-empty>span{display:grid;place-items:center;width:55px;height:55px;margin:0 auto 12px;border-radius:18px;background:#e8efff;color:#315cf4;font-size:27px}
+.bf-notification-empty h3{margin:0 0 6px;color:#203657;font-size:17px}
+.bf-notification-empty p{margin:0 auto;max-width:260px;color:#7b8ba5;font-size:10px;line-height:1.6}
+.bf-notification-empty-orbit{position:absolute;z-index:-1;right:-5px;bottom:-29px;width:105px;height:105px;display:grid;place-items:center;border:1px solid rgba(49,92,244,.12);border-radius:50%;color:rgba(49,92,244,.12);font-size:26px;font-weight:1000}
+.bf-notification-push{width:calc(100% - 36px);margin:0 18px!important;min-height:43px;border-radius:13px!important;border-color:#dce6f7!important;background:#fff!important;color:#315cf4!important;font-size:10px;font-weight:900}
+@keyframes bfNoticeIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:420px){.bf-notifications-hero{padding:20px 16px 14px}.bf-notifications-heading h2{font-size:26px}.bf-notification-list{padding-left:10px;padding-right:10px}.bf-notifications .bf-notification-item{grid-template-columns:30px minmax(0,1fr) 15px;gap:8px;padding:11px 9px}.bf-notification-icon{width:29px;height:29px}}
+@media(prefers-reduced-motion:reduce){.bf-notifications .bf-notification-item{animation:none}}
