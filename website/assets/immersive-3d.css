@@ -640,3 +640,27 @@ footer{
 @media(prefers-reduced-motion:reduce){
   .bf-cosmos:after,.bf-star,.bf-planet,.core-assembly{animation:none!important}
 }
+
+
+/* CINEMATIC SCROLL REVEALS — opacity + transform only for mobile-friendly rendering. */
+.bf-depth-reveal{
+  opacity:0;
+  transform:translate3d(0,26px,0) scale(.985);
+  transition:opacity .62s ease,transform .72s cubic-bezier(.2,.75,.25,1);
+  transition-delay:var(--bf-reveal-delay,0ms);
+  backface-visibility:hidden;
+}
+.bf-depth-reveal.bf-depth-visible{
+  opacity:1;
+  transform:translate3d(0,0,0) scale(1);
+}
+.hero-left>.bf-depth-reveal{transform:translate3d(0,18px,0)}
+.hero-left>.bf-depth-reveal.bf-depth-visible{transform:translate3d(0,0,0)}
+@media(max-width:700px){
+  .bf-depth-reveal{transform:translate3d(0,18px,0);transition-duration:.48s}
+}
+@media(prefers-reduced-motion:reduce){
+  .bf-depth-reveal,.bf-depth-reveal.bf-depth-visible{
+    opacity:1;transform:none;transition:none;transition-delay:0ms;
+  }
+}
