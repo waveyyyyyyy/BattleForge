@@ -114,3 +114,222 @@ body{background:radial-gradient(ellipse at 82% 12%,rgba(23,79,245,.055),transpar
 .bf-depth-reveal{opacity:0;transform:perspective(1000px) rotateX(6deg) translateY(24px);transition:opacity .75s ease,transform .85s cubic-bezier(.16,1,.3,1)}
 .bf-depth-reveal.bf-depth-visible{opacity:1;transform:perspective(1000px) rotateX(0) translateY(0)}
 @media(prefers-reduced-motion:reduce){.bf-depth-reveal,.bf-depth-reveal.bf-depth-visible{opacity:1;transform:none;transition:none}}
+
+
+/* BATTLEFORGE 3D EXPERIENCE — stronger visual pass */
+:root{
+  --bf-electric:#174ff5;
+  --bf-electric-light:#8eaeff;
+  --bf-deep:#092b9d;
+  --bf-glass:rgba(255,255,255,.72);
+}
+body{
+  background:
+    radial-gradient(ellipse at 12% 18%,rgba(23,79,245,.10),transparent 28%),
+    radial-gradient(ellipse at 88% 58%,rgba(23,79,245,.07),transparent 32%),
+    var(--paper);
+}
+.hero{
+  min-height:min(900px,calc(100svh - 76px));
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse at 48% 45%,rgba(23,79,245,.07),transparent 44%),
+    linear-gradient(135deg,#fff 0%,#f4f7ff 54%,#e9efff 100%);
+}
+.hero-grid{min-height:min(900px,calc(100svh - 76px));grid-template-columns:1.04fr .96fr}
+.hero-left{padding-top:clamp(48px,7vh,92px);padding-bottom:clamp(42px,6vh,76px)}
+.hero h1{
+  text-shadow:0 2px 0 #fff,0 5px 0 rgba(23,79,245,.08),0 16px 35px rgba(16,24,40,.09);
+  transform:perspective(1200px) rotateY(5deg);
+  transform-origin:left center;
+}
+.hero h1 span{
+  text-shadow:0 2px 0 #dbe6ff,0 7px 0 rgba(9,43,157,.12),0 20px 40px rgba(23,79,245,.16);
+}
+.hero-right{
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 42%,#7da0ff 0%,#3568ff 28%,#174ff5 57%,#0a2caa 100%);
+  box-shadow:inset 18px 0 55px rgba(255,255,255,.18),inset -28px 0 70px rgba(4,25,100,.22);
+}
+.hero-right:before{
+  background:
+    linear-gradient(90deg,#ffffff20 1px,transparent 1px),
+    linear-gradient(#ffffff20 1px,transparent 1px),
+    radial-gradient(circle at 50% 48%,transparent 0 24%,#ffffff12 24.2% 24.5%,transparent 24.8% 37%,#ffffff12 37.2% 37.5%,transparent 37.8%);
+  background-size:34px 34px,34px 34px,100% 100%;
+  opacity:.9;
+  transform:perspective(800px) rotateY(-8deg) scale(1.12);
+}
+.hero-right:after{
+  width:min(72%,650px);height:auto;aspect-ratio:1;
+  border:1px solid #ffffff65;
+  box-shadow:0 0 0 22px #ffffff12,0 0 0 48px #ffffff0c,0 0 0 82px #ffffff09,0 0 85px #b8ceff55;
+}
+.core-stage{min-height:760px;perspective:1500px}
+.core-stage:before{
+  width:min(47vw,540px);
+  border-color:#ffffff80;
+  box-shadow:0 0 0 24px #ffffff13,0 0 0 52px #ffffff10,0 0 0 88px #ffffff0b,0 0 75px #dce7ff55;
+  transform:rotateX(68deg) rotateZ(-18deg);
+}
+.core-orbit{width:min(60vw,690px);border-width:2px;box-shadow:0 0 22px #dce7ff45}
+.orbit-b{width:min(48vw,560px);border-width:2px}
+.core-assembly{
+  width:min(72%,390px);
+  filter:drop-shadow(30px 38px 0 #082a9a) drop-shadow(0 40px 48px #061d7c66);
+  animation:bfCoreHover 5.4s ease-in-out infinite;
+}
+.core-shadow{transform:translateZ(-55px) scale(1.16);filter:blur(1px)}
+.core-wing{filter:drop-shadow(0 14px 18px #061d7c55)}
+.core-face{box-shadow:inset 0 0 0 1px #fff, inset 0 0 55px #174ff533,0 20px 45px #061d7c55}
+.brand-logo-plate{
+  border:1px solid rgba(255,255,255,.9);
+  background:linear-gradient(145deg,#fff 0%,#edf3ff 52%,#d8e4ff 100%);
+  box-shadow:26px 30px 0 #092c9b,0 50px 90px #061d7c66,inset 0 2px 0 #fff;
+}
+.brand-orbit{border-width:2px}
+.poster,.feature-visual,.bounty,.loop-panel,.social-card,.manifesto-card{
+  backface-visibility:hidden;
+}
+.quick-download{
+  position:relative;
+  isolation:isolate;
+  background:linear-gradient(120deg,#fff,#edf3ff);
+}
+.quick-download:before{
+  content:"";position:absolute;inset:12px;pointer-events:none;
+  border:1px solid rgba(23,79,245,.16);transform:translateZ(4px);
+}
+.quick-download-inner{transform-style:preserve-3d}
+.quick-download-mark{
+  border:1px solid #c7d7ff;
+  background:linear-gradient(145deg,#fff,#dce7ff);
+  box-shadow:12px 14px 0 #174ff5,0 28px 48px rgba(23,79,245,.18),inset 0 1px #fff;
+}
+.section{position:relative;isolation:isolate}
+.section.white{
+  background:linear-gradient(180deg,#fff 0%,#f7f9ff 100%);
+}
+.section-title{text-shadow:0 5px 0 rgba(23,79,245,.07)}
+.manifesto{gap:18px}
+.manifesto-card{
+  border:1px solid rgba(23,79,245,.10);
+  border-radius:5px;
+  box-shadow:12px 14px 0 rgba(23,79,245,.12),0 25px 55px rgba(16,24,40,.10);
+}
+.manifesto-card:nth-child(1){background:linear-gradient(145deg,#f8faff,#dfe8ff)}
+.manifesto-card:nth-child(2){background:linear-gradient(145deg,#3d70ff,#123fc8)}
+.manifesto-card:nth-child(3){background:linear-gradient(145deg,#24324d,#0c1527)}
+.format-row{
+  border-radius:4px;
+  margin:7px 0;
+  border:1px solid transparent;
+  background:linear-gradient(100deg,rgba(255,255,255,.75),rgba(235,241,255,.58));
+}
+.format-row:hover{border-color:#c9d8ff;box-shadow:0 18px 35px rgba(23,79,245,.12)}
+.arena-display{filter:drop-shadow(0 25px 35px rgba(16,24,40,.14))}
+.arena-glyph{
+  filter:drop-shadow(16px 22px 0 rgba(9,43,157,.2)) drop-shadow(0 30px 35px rgba(16,24,40,.2));
+}
+.feature-showcase{gap:clamp(28px,5vw,72px)}
+.feature-visual{
+  border:1px solid #cbd8f3;
+  border-radius:8px;
+  background:linear-gradient(145deg,#fff,#e9efff);
+  box-shadow:24px 27px 0 #174ff5,0 45px 80px rgba(16,24,40,.18);
+}
+.feature-item{
+  border:1px solid transparent;
+  border-radius:5px;
+  padding:16px 18px;
+}
+.feature-item:hover{border-color:#cbd9ff;box-shadow:7px 8px 0 rgba(23,79,245,.12)}
+.blueprint{
+  background:
+    radial-gradient(ellipse at 80% 50%,#4776ff 0%,transparent 44%),
+    linear-gradient(125deg,#0c35bb,#174ff5 58%,#0d36c9);
+}
+.bounty{
+  border:1px solid #ffffffa0;
+  background:linear-gradient(145deg,#245aff,#0a2fae);
+}
+.loop-panel{
+  border:1px solid #c7d7ff;
+  border-radius:7px;
+  background:linear-gradient(145deg,#fff,#e8efff);
+  box-shadow:18px 20px 0 #174ff5,0 35px 70px rgba(16,24,40,.16);
+}
+.loop-symbol{
+  background:linear-gradient(145deg,#fff,#bcd0ff);
+  color:#174ff5;
+}
+.steps-grid{gap:10px;border:0}
+.step{
+  border:1px solid #dbe3f2;
+  border-radius:5px;
+  padding:25px 22px;
+  background:linear-gradient(145deg,#fff,#f0f4ff);
+  box-shadow:7px 9px 0 rgba(23,79,245,.08);
+}
+.step+.step{border-left:1px solid #dbe3f2;padding-left:22px}
+.ledger-row{
+  border-radius:4px;
+  padding:18px 14px;
+}
+.download-band{
+  background:
+    radial-gradient(ellipse at 80% 50%,#244fbd 0%,transparent 42%),
+    linear-gradient(115deg,#0a1428,#111f3c 60%,#0b2b92);
+}
+.download-inner .button{
+  border-radius:4px;
+  padding:18px 24px;
+}
+.faq-list details{
+  background:rgba(255,255,255,.68);
+  padding:0 14px;
+  margin:7px 0;
+  border:1px solid #e0e7f5;
+  border-radius:4px;
+}
+.faq-list details[open]{box-shadow:7px 8px 0 rgba(23,79,245,.08);border-color:#c9d8ff}
+.floating-download{
+  box-shadow:0 12px 34px rgba(9,43,157,.22),0 4px 0 #0b35b7;
+  transform:translateZ(30px);
+}
+@keyframes bfCoreHover{
+  0%,100%{transform:translate3d(0,0,0) rotateX(-14deg) rotateY(-27deg) rotateZ(-9deg)}
+  50%{transform:translate3d(0,-22px,35px) rotateX(-7deg) rotateY(-17deg) rotateZ(-5deg)}
+}
+@media(hover:hover) and (pointer:fine){
+  .core-assembly:hover{animation-play-state:paused;transform:translate3d(0,-12px,55px) rotateX(-4deg) rotateY(-8deg) rotateZ(-3deg) scale(1.045)}
+  .poster:hover{transform:translate3d(0,-12px,35px) rotateX(3deg) rotateY(-5deg) rotateZ(2deg);box-shadow:30px 38px 0 #092c9b,0 48px 80px #061d7c55}
+  .quick-download-mark:hover{transform:perspective(800px) rotateX(5deg) rotateY(-12deg) translate3d(0,-10px,35px)}
+}
+@media(max-width:900px){
+  .core-stage{min-height:600px}
+  .core-orbit{width:min(76vw,560px)}
+  .orbit-b{width:min(62vw,450px)}
+}
+@media(max-width:650px){
+  .hero{min-height:0}
+  .hero-grid{min-height:0}
+  .hero-right{min-height:540px}
+  .core-stage{min-height:540px}
+  .core-stage:before{width:74vw}
+  .core-orbit{width:88vw}
+  .orbit-b{width:70vw}
+  .core-assembly{width:min(68%,310px)}
+  .manifesto{gap:12px}
+  .manifesto-card{border-radius:4px}
+  .format-row{padding:20px 10px}
+  .feature-visual{box-shadow:12px 14px 0 #174ff5,0 25px 40px rgba(16,24,40,.13)}
+  .loop-panel{box-shadow:10px 12px 0 #174ff5,0 24px 42px rgba(16,24,40,.13)}
+  .steps-grid{gap:8px}
+  .step{padding:18px 14px}
+  .step+.step{padding-left:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  .core-assembly{animation:none!important}
+}
