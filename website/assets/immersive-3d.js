@@ -27,6 +27,7 @@
       if (frame) cancelAnimationFrame(frame);
       element.style.removeProperty('--bf-pointer-x');
       element.style.removeProperty('--bf-pointer-y');
+      element.classList.remove('bf-tilt-active');
     };
     element.addEventListener('pointermove', event => {
       const rect = element.getBoundingClientRect();
@@ -34,6 +35,7 @@
       const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
       if (frame) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
+        element.classList.add('bf-tilt-active');
         element.style.setProperty('--bf-pointer-x', (x * 5.5).toFixed(2) + 'deg');
         element.style.setProperty('--bf-pointer-y', (y * -5.5).toFixed(2) + 'deg');
       });
