@@ -43,3 +43,60 @@
     element.addEventListener('pointerleave', reset, { passive: true });
   });
 })();
+
+
+/* Cosmic ambience: decorative only; all existing site controls remain untouched. */
+(() => {
+  if (document.querySelector('.bf-cosmos')) return;
+  const cosmos=document.createElement('div');
+  cosmos.className='bf-cosmos';
+  cosmos.setAttribute('aria-hidden','true');
+  let seed=37;
+  const rand=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+  for(let i=0;i<96;i++){
+    const star=document.createElement('i');
+    star.className='bf-star';
+    star.style.left=(rand()*100).toFixed(2)+'%';
+    star.style.top=(rand()*100).toFixed(2)+'%';
+    const size=(rand()*2.1+.7);
+    star.style.width=size+'px';
+    star.style.height=size+'px';
+    star.style.animationDelay=(-rand()*7).toFixed(2)+'s';
+    cosmos.appendChild(star);
+  }
+  document.body.prepend(cosmos);
+
+  const placements=[
+    ['.hero-right','hero'],
+    ['#identity','identity'],
+    ['#formats','formats'],
+    ['#inside','inside'],
+    ['#community','community'],
+    ['#forge-loop','loop'],
+    ['#wallet','wallet'],
+    ['.download-band','download']
+  ];
+  placements.forEach(([selector,kind])=>{
+    const host=document.querySelector(selector);
+    if(!host)return;
+    const planet=document.createElement('div');
+    planet.className='bf-planet bf-planet--'+kind;
+    planet.setAttribute('aria-hidden','true');
+    host.prepend(planet);
+  });
+
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  let queued=false;
+  const movePlanets=()=>{
+    const y=window.scrollY||0;
+    document.querySelectorAll('.bf-planet').forEach((planet,index)=>{
+      const speed=(index%2?.018:.012);
+      planet.style.setProperty('--bf-planet-shift',Math.round(y*speed%34)+'px');
+    });
+    queued=false;
+  };
+  window.addEventListener('scroll',()=>{
+    if(!queued){queued=true;requestAnimationFrame(movePlanets);}
+  },{passive:true});
+  movePlanets();
+})();
