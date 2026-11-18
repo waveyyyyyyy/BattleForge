@@ -45,7 +45,7 @@
 })();
 
 
-/* Cosmic ambience: decorative only; all existing site controls remain untouched. */
+/* Lightweight cosmic ambience: minimal DOM, no scroll handlers, no continuous planet layout work. */
 (() => {
   if (document.querySelector('.bf-cosmos')) return;
   const cosmos=document.createElement('div');
@@ -53,15 +53,16 @@
   cosmos.setAttribute('aria-hidden','true');
   let seed=37;
   const rand=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
-  for(let i=0;i<96;i++){
+  const mobile=window.matchMedia('(max-width: 700px)').matches;
+  const count=mobile?18:34;
+  for(let i=0;i<count;i++){
     const star=document.createElement('i');
     star.className='bf-star';
-    star.style.left=(rand()*100).toFixed(2)+'%';
-    star.style.top=(rand()*100).toFixed(2)+'%';
-    const size=(rand()*2.1+.7);
+    star.style.left=(rand()*100).toFixed(1)+'%';
+    star.style.top=(rand()*100).toFixed(1)+'%';
+    const size=rand()*1.5+.6;
     star.style.width=size+'px';
     star.style.height=size+'px';
-    star.style.animationDelay=(-rand()*7).toFixed(2)+'s';
     cosmos.appendChild(star);
   }
   document.body.prepend(cosmos);
@@ -84,19 +85,4 @@
     planet.setAttribute('aria-hidden','true');
     host.prepend(planet);
   });
-
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  let queued=false;
-  const movePlanets=()=>{
-    const y=window.scrollY||0;
-    document.querySelectorAll('.bf-planet').forEach((planet,index)=>{
-      const speed=(index%2?.018:.012);
-      planet.style.setProperty('--bf-planet-shift',Math.round(y*speed%34)+'px');
-    });
-    queued=false;
-  };
-  window.addEventListener('scroll',()=>{
-    if(!queued){queued=true;requestAnimationFrame(movePlanets);}
-  },{passive:true});
-  movePlanets();
 })();
