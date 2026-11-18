@@ -103,3 +103,14 @@ body{background:radial-gradient(ellipse at 82% 12%,rgba(23,79,245,.055),transpar
  .reveal,.reveal.in{opacity:1;filter:none;transform:none;transition:none}
  .manifesto-card,.format-row,.arena-glyph,.feature-visual,.feature-item,.bounty,.step,.ledger-row,.social-card,.quick-download .button,.download-inner .button{transition:none!important}
 }
+
+/* Pointer-reactive tilt: the real-time angle is clamped by the small 5.5deg input range. */
+.brand-logo-plate.bf-tilt-active{animation-play-state:paused;transform:perspective(1200px) rotateX(calc(7deg + var(--bf-pointer-y,0deg))) rotateY(calc(-11deg + var(--bf-pointer-x,0deg))) rotateZ(-5deg) translateZ(58px)}
+.manifesto-card.bf-tilt-active{transform:perspective(1100px) rotateX(var(--bf-pointer-y,0deg)) rotateY(var(--bf-pointer-x,0deg)) translateZ(18px)}
+.feature-visual.bf-tilt-active{transform:perspective(1300px) rotateX(var(--bf-pointer-y,0deg)) rotateY(calc(-5deg + var(--bf-pointer-x,0deg))) rotateZ(-1.5deg) translateZ(28px)}
+.bounty.bf-tilt-active{transform:perspective(1100px) rotateX(calc(5deg + var(--bf-pointer-y,0deg))) rotateY(calc(-9deg + var(--bf-pointer-x,0deg))) rotateZ(-2deg) translateZ(30px)}
+.social-card.bf-tilt-active{transform:perspective(1000px) rotateX(var(--bf-pointer-y,0deg)) rotateY(var(--bf-pointer-x,0deg)) translateZ(22px)}
+.arena-glyph.bf-tilt-active{transform:translateZ(42px) rotateX(var(--bf-pointer-y,0deg)) rotateY(var(--bf-pointer-x,0deg)) rotate(-12deg)}
+.bf-depth-reveal{opacity:0;transform:perspective(1000px) rotateX(6deg) translateY(24px);transition:opacity .75s ease,transform .85s cubic-bezier(.16,1,.3,1)}
+.bf-depth-reveal.bf-depth-visible{opacity:1;transform:perspective(1000px) rotateX(0) translateY(0)}
+@media(prefers-reduced-motion:reduce){.bf-depth-reveal,.bf-depth-reveal.bf-depth-visible{opacity:1;transform:none;transition:none}}
