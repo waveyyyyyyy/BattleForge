@@ -3,7 +3,29 @@
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduce) return;
 
-  const revealTargets = document.querySelectorAll('.quick-download-inner,.feature-visual,.feature-item,.arena-display,.social-card,.download-inner,.support-inner');
+  const revealTargets = document.querySelectorAll([
+    '.hero-left > *',
+    '.section-label',
+    '.section-title',
+    '.section-copy',
+    '.manifesto-card',
+    '.format-row',
+    '.arena-selector',
+    '.arena-display',
+    '.feature-visual',
+    '.feature-item',
+    '.social-head > *',
+    '.social-card',
+    '.loop-tabs',
+    '.loop-panel',
+    '.bounty',
+    '.step',
+    '.ledger-row',
+    '.faq-list details',
+    '.support-inner',
+    '.download-inner > *',
+    '.quick-download-inner > *'
+  ].join(','));
   if ('IntersectionObserver' in window) {
     const revealObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach(entry => {
@@ -12,11 +34,14 @@
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.14, rootMargin: '0px 0px -35px 0px' });
-    revealTargets.forEach(element => {
+    }, { threshold: 0.10, rootMargin: '0px 0px -48px 0px' });
+    revealTargets.forEach((element, index) => {
       element.classList.add('bf-depth-reveal');
+      element.style.setProperty('--bf-reveal-delay', Math.min(index % 5, 4) * 65 + 'ms');
       revealObserver.observe(element);
     });
+  } else {
+    revealTargets.forEach(element => element.classList.add('bf-depth-visible'));
   }
 
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
