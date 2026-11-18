@@ -589,3 +589,54 @@ footer{
 @media(prefers-reduced-motion:reduce){
   .bf-star,.bf-cosmos:after,.bf-planet{animation:none!important}
 }
+
+
+/* PERFORMANCE PASS: preserve the cosmic art direction with a lighter render budget. */
+.bf-cosmos{opacity:.55;contain:strict}
+.bf-star{
+  box-shadow:0 0 3px rgba(65,119,255,.32);
+  animation:none;
+}
+.bf-star:nth-child(3n){box-shadow:0 0 4px rgba(110,158,255,.4)}
+.bf-cosmos:after{
+  filter:none;
+  animation-duration:22s;
+}
+.bf-planet{
+  animation:none;
+  transform:translate3d(0,0,0);
+  box-shadow:inset -24px -20px 36px rgba(2,12,42,.48),0 0 26px rgba(65,119,255,.18);
+  will-change:auto;
+}
+.bf-planet:before{box-shadow:none}
+.bf-planet:after{mix-blend-mode:normal;opacity:.28}
+.bf-planet--hero{animation:none}
+.social-card{
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+.manifesto-card,.feature-visual,.loop-panel,.bounty,.poster{
+  box-shadow:0 14px 34px rgba(7,19,47,.12),inset 0 1px rgba(255,255,255,.5);
+}
+.core-orbit{filter:none}
+@media(max-width:700px){
+  .bf-cosmos{opacity:.36}
+  .bf-star{box-shadow:none}
+  .bf-cosmos:after{display:none}
+  .bf-planet--identity,.bf-planet--formats,.bf-planet--inside,
+  .bf-planet--community,.bf-planet--loop,.bf-planet--wallet,
+  .bf-planet--download{display:none}
+  .bf-planet--hero{
+    width:min(72vw,310px);
+    box-shadow:inset -20px -18px 28px rgba(2,12,42,.46),0 0 18px rgba(65,119,255,.14);
+  }
+  .core-assembly{animation:none!important}
+  .core-orbit{filter:none}
+  .manifesto-card,.feature-visual,.loop-panel,.bounty,.poster{
+    box-shadow:0 9px 22px rgba(7,19,47,.11);
+  }
+  .social-card{-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .bf-cosmos:after,.bf-star,.bf-planet,.core-assembly{animation:none!important}
+}
