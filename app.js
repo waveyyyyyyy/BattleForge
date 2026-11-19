@@ -1306,13 +1306,19 @@ async function showHistory() {
 
 async function openPastMatchDetails(id) {
   if(!currentUser) return showAuth();
-  const {data:t,error}=await supabase.from('tournaments').select('id,title,game_mode,starts_at,description,is_past_match').eq('id',Number(id)).eq('is_past_match',true).maybeSingle();
-  if(error||!t){toast('Could not load this past match.');return;}
-  const {data:rows,error:resultsError}=await supabase.rpc('get_public_past_match_results',{p_tournament_id:Number(id)});
-  if(resultsError){console.warn('Past match results could not be loaded:',resultsError);toast('Could not load published rankings.');return;}
+  // Open the full-page shell immediately; load the data behind it.
+  modal('<div class="bf-past-match-full-page bf-past-match-loading"><header class="bf-past-match-hero"><span class="eyebrow">BATTLEFORGE · MATCH INTELLIGENCE</span><h1>Preparing your battle report</h1><p>Retrieving verified match data…</p></header><main class="bf-past-match-content">'+bfLoadingScreen('Loading match intel','Syncing final rankings and player statistics','pulse')+'</main></div>');
+  const matchId=Number(id);
+  const [matchResponse,resultsResponse]=await Promise.all([
+    supabase.from('tournaments').select('id,title,game_mode,starts_at,description,is_past_match').eq('id',matchId).eq('is_past_match',true).maybeSingle(),
+    supabase.rpc('get_public_past_match_results',{p_tournament_id:matchId}),
+    loadLifetimeKillRanks(true)
+  ]);
+  const {data:t,error}=matchResponse;
+  const {data:rows,error:resultsError}=resultsResponse;
+  if(error||!t){close();toast('Could not load this past match.');return;}
+  if(resultsError){console.warn('Past match results could not be loaded:',resultsError);close();toast('Could not load published rankings.');return;}
   const results=Array.isArray(rows)?rows:[];
-  await loadLifetimeKillRanks(true);
-  const resultUserIds=results.map(r=>r.user_id).filter(Boolean);
   const mine=results.find(r=>r.user_id===currentUser.id);
   const rankingHtml=results.map(r=>{const stats=lifetimeKillRanks.get(String(r.user_id));const name=String(r.username||stats?.username||'Player').trim();const playerNo=r.player_number??stats?.player_number;const totalKills=Number(stats?.lifetime_kills||0);return '<div class="profile-history-row bf-past-rank-row">'+'<div class="bf-past-rank-copy"><b>#'+esc(r.placement||'—')+' · '+esc(name)+rankBadgeHtml(totalKills)+'</b><small>'+(playerNo?'PLAYER ID #'+esc(playerNo)+' · ':'')+Number(r.kills||0)+' kills this match · '+totalKills.toLocaleString('en-IN')+' lifetime kills · '+Number(r.earned_points||0)+' coins earned'+(r.note?' · '+esc(r.note):'')+'</small></div>'+(r.user_id===currentUser.id?'<b>YOU</b>':'')+'</div>';}).join('');
   const performance=mine?'<div class="result-banner"><small>YOUR PERFORMANCE</small><b>'+(mine.placement?'Rank #'+Number(mine.placement)+' · ':'')+Number(mine.kills||0)+' kills</b>'+(mine.note?'<p>'+esc(mine.note)+'</p>':'')+'</div><button class="outline full" id="bfOpenDisputeForm" data-tournament-id="'+esc(id)+'">Dispute this result</button>':'<div class="result-banner"><small>YOUR PERFORMANCE</small><b>No published result for your account</b></div>';

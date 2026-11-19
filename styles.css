@@ -482,3 +482,34 @@ button:active,.join:active,.outline:active{transform:scale(.975)}
 /* SVG emoji artwork in chat body and live composer preview */
 .bf-chat-input-wrap{position:relative;flex:1;min-width:0}.bf-chat-input-wrap input{width:100%}.bf-chat-input-preview{display:flex;gap:3px;flex-wrap:wrap;position:absolute;left:12px;right:10px;bottom:5px;pointer-events:none;max-height:24px;overflow:hidden}.bf-chat-input-preview:empty{display:none}.bf-chat-input-preview .bf-inline-chat-emoji{width:17px;height:17px;vertical-align:middle}.bf-inline-chat-emoji{width:25px;height:25px;vertical-align:-7px;display:inline-block;margin:0 1px}.bf-match-chat-message>p{line-height:1.65;overflow-wrap:anywhere}
 @media(max-width:560px){.bf-past-archive-grid{grid-template-columns:minmax(0,1fr)}.bf-past-archive-card{min-height:200px}.bf-past-archive-head{padding:24px 18px}.bf-past-match-content{padding:18px 14px 40px}}
+
+/* Restore the selected-match highlight with a clear BattleForge accent */
+.modal.admin-modal .bf-admin-match-card.is-selected,
+.modal.admin-modal .bf-admin-match-card[aria-pressed="true"]{
+ border:2px solid #c7ff3d!important;
+ background:linear-gradient(115deg,rgba(199,255,61,.18),rgba(49,92,244,.23) 55%,#101a29)!important;
+ box-shadow:0 0 0 2px rgba(199,255,61,.16),0 0 24px rgba(199,255,61,.13),inset 0 0 22px rgba(199,255,61,.06)!important;
+}
+.modal.admin-modal .bf-admin-match-card.is-selected .bf-admin-match-card-top:after{content:'SELECTED';align-self:center;padding:4px 7px;border-radius:5px;background:#c7ff3d;color:#101820;font-size:8px;font-weight:1000;letter-spacing:.1em}
+.modal.admin-modal .bf-admin-match-card.is-selected .bf-admin-match-card-bottom span{background:rgba(199,255,61,.1);color:#efffc7}
+/* Restore a comfortable full-width chat composer on mobile */
+.bf-match-chat-form{display:flex!important;align-items:center!important;gap:9px!important;width:100%!important;min-height:66px!important;padding:10px 12px!important}
+.bf-chat-input-wrap{flex:1 1 auto!important;min-width:0!important;width:100%!important}
+.bf-chat-input-wrap input#bfMatchChatInput{display:block!important;width:100%!important;min-width:0!important;height:50px!important;min-height:50px!important;padding:0 14px!important;font-size:16px!important;line-height:1.35!important;border-radius:15px!important;box-sizing:border-box!important}
+.bf-chat-emoji-toggle,.bf-chat-send{flex:0 0 44px!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}
+.bf-chat-input-preview{bottom:4px!important;left:14px!important}
+.bf-chat-input-wrap input#bfMatchChatInput:not(:placeholder-shown){padding-bottom:0!important}
+/* Improve contrast of archive slogans and full match report headings */
+.bf-past-archive-head h2{color:#ffffff!important;text-shadow:0 2px 18px rgba(0,0,0,.45)!important}
+.bf-past-archive-head p{color:#d7e4f6!important}
+.bf-past-match-hero h1{color:#ffffff!important;text-shadow:0 2px 20px rgba(0,0,0,.5)!important}
+.bf-past-match-hero p{color:#d7e4f6!important}
+.bf-past-match-content h3{color:#ffffff!important}
+.bf-past-match-content .result-banner{color:#f7fbff!important;background:linear-gradient(120deg,#1c2e49,#142238)!important;border:1px solid rgba(199,255,61,.28)!important}
+.bf-past-match-content .result-banner small{color:#c7ff3d!important}
+.bf-past-match-content .result-banner b,.bf-past-match-content .result-banner p{color:#f2f7ff!important}
+.bf-past-rank-copy b{color:#ffffff!important}.bf-past-rank-copy small{color:#c1cee0!important}
+.bf-past-match-loading .bf-past-match-hero h1{color:#ffffff!important}
+.bf-past-match-loading .bf-loading-screen{min-height:42vh}
+.bf-past-match-loading .bf-loading-screen *{color:#eaf2ff}
+.bf-past-match-loading .bf-loading-screen .eyebrow{color:#c7ff3d!important}
