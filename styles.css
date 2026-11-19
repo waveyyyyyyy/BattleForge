@@ -88,3 +88,10 @@ html{scroll-behavior:smooth;scroll-padding-top:90px}body{background:radial-gradi
 @media(min-width:620px){.bf-admin-match-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.modal.admin-modal .admin-home-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:390px){.modal.admin-modal .modal-card{padding-left:10px!important;padding-right:10px!important}.modal.admin-modal .admin-form-grid{grid-template-columns:1fr}.admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.bf-admin-recent-card{align-items:flex-start;flex-direction:column}.bf-admin-recent-card time{max-width:100%;text-align:left}.admin-ranking-head,.admin-ranking-row{grid-template-columns:minmax(0,1fr) 58px 70px;gap:5px}.admin-ranking-row{padding:8px 5px}}
 @media(prefers-reduced-motion:reduce){.modal.admin-modal *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+.admin-payment-card{margin:12px 0;padding:14px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.025);overflow-wrap:anywhere}
+.admin-payment-card h3{font-size:14px;margin:0 0 6px}.admin-payment-card p{font-size:10px;color:var(--muted);line-height:1.5;margin:6px 0}
+.admin-payment-card .wallet-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.bf-force-update-gate{position:fixed;inset:0;z-index:1000000;display:grid;place-items:center;padding:22px;background:rgba(3,5,10,.97);backdrop-filter:blur(16px)}
+.bf-force-update-card{width:min(100%,440px);padding:26px 20px;border:1px solid rgba(120,160,255,.35);border-radius:22px;background:linear-gradient(145deg,#111b32,#090d17);box-shadow:0 22px 70px rgba(0,0,0,.5);text-align:center}
+.bf-force-update-card h2{font-size:24px;margin:12px 0}.bf-force-update-card p{font-size:12px;line-height:1.65;color:var(--muted)}
