@@ -1,3 +1,4 @@
+// Admin portal UI backport for the website-linked APK source.
 import { createClient } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
