@@ -129,6 +129,15 @@ footer{background:#fff;border-top:1px solid var(--line);padding:35px 0 22px}.foo
 }
 @media(prefers-reduced-motion:reduce){.floating-download,.quick-download .button{transition:none}}
 
+
+/* Prevent decorative 3D elements from creating a sideways page canvas on phones. */
+html,body{width:100%;max-width:100%;overflow-x:clip}
+body{position:relative}
+@supports not (overflow:clip){html,body{overflow-x:hidden}}
+@media(max-width:900px){
+  html,body{overflow-x:clip}
+  .hero-grid,.hero,.section,.social-hub,.blueprint,.download-band,main,footer{max-width:100%;}
+}
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
 </head>
