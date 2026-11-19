@@ -45,3 +45,78 @@
 .bf-past-rank-row> b:last-child{margin-left:auto;padding:6px 9px;border-radius:999px;background:#e8efff;color:#2454c7!important;font-size:9px}
 .bf-past-match-loading .bf-past-match-hero{min-height:220px}
 @media(max-width:560px){.bf-past-archive-head{border-radius:21px!important;padding:22px!important}.bf-past-archive-stat{width:100%;gap:8px}.bf-past-archive-card{min-height:220px!important}.bf-past-match-hero{border-radius:0 0 22px 22px!important}.bf-past-match-content .bf-past-rank-row{align-items:flex-start}}
+
+
+/* FINAL PALETTE LOCK — Past Matches must use BattleForge white + blue only.
+   Overrides legacy dark/green/orange theme tokens for this screen exclusively. */
+.bf-past-archive-head,
+.bf-past-archive-card,
+.bf-past-match-full-page,
+.bf-past-match-content,
+.bf-past-your-performance,
+.bf-past-match-content .result-banner,
+.bf-past-match-content .bf-past-rank-row{
+  color:#263442!important;
+}
+.bf-past-archive-head{
+  background:linear-gradient(135deg,#fff 0%,#f4f7ff 58%,#eaf0ff 100%)!important;
+  border:1px solid #d9e3ff!important;
+  box-shadow:0 12px 32px rgba(49,92,244,.09)!important;
+}
+.bf-past-archive-head:after{border-color:rgba(49,92,244,.14)!important;box-shadow:0 0 0 24px rgba(49,92,244,.035),0 0 0 48px rgba(49,92,244,.02)!important}
+.bf-past-archive-head .eyebrow{background:#edf2ff!important;color:#315cf4!important}
+.bf-past-archive-head h2{color:#263442!important;-webkit-text-fill-color:#263442!important}
+.bf-past-archive-head p,.bf-past-archive-card .history-meta{color:#687887!important}
+.bf-past-archive-stat{background:#fff!important;border-color:#d9e3ff!important}
+.bf-past-archive-stat b,.bf-past-archive-card .bf-archive-result b{color:#315cf4!important}
+.bf-past-archive-stat span,.bf-past-archive-card .bf-archive-result small{color:#687887!important}
+.bf-past-archive-card{
+  background:linear-gradient(145deg,#fff 0%,#f8faff 100%)!important;
+  border:1px solid #d9e1e7!important;
+  box-shadow:0 5px 18px rgba(43,61,77,.06)!important;
+}
+.bf-past-archive-card:before{background:radial-gradient(circle,rgba(49,92,244,.09),rgba(49,92,244,0) 72%)!important}
+.bf-past-archive-card:hover{border-color:#9bb5ff!important;box-shadow:0 12px 26px rgba(49,92,244,.12)!important}
+.bf-past-archive-card .bf-archive-matchno{color:#315cf4!important}
+.bf-past-archive-card .bf-archive-status,
+.bf-past-archive-card .bf-archive-status.is-published{
+  background:#edf2ff!important;color:#315cf4!important;border:1px solid #dbe4ff!important;
+}
+.bf-past-archive-card h3{color:#263442!important;-webkit-text-fill-color:#263442!important}
+.bf-past-archive-card .bf-archive-result{background:#f4f7ff!important;border-color:#dbe4ff!important}
+.bf-past-archive-card .bf-archive-open{color:#315cf4!important}
+.bf-past-match-full-page{background:#fff!important}
+.bf-past-match-hero{
+  background:linear-gradient(135deg,#fff 0%,#f2f6ff 100%)!important;
+  border:1px solid #dbe4ff!important;
+  color:#263442!important;
+  box-shadow:0 8px 24px rgba(49,92,244,.08)!important;
+}
+.bf-past-match-hero:after{border-color:rgba(49,92,244,.12)!important;box-shadow:0 0 0 28px rgba(49,92,244,.035),0 0 0 58px rgba(49,92,244,.02)!important}
+.bf-past-match-hero .eyebrow{color:#315cf4!important;-webkit-text-fill-color:#315cf4!important}
+.bf-past-match-hero h1{color:#263442!important;-webkit-text-fill-color:#263442!important;text-shadow:none!important}
+.bf-past-match-hero p{color:#687887!important;-webkit-text-fill-color:#687887!important}
+.bf-past-back,.bf-past-hero-tag{
+  background:#edf2ff!important;border:1px solid #dbe4ff!important;color:#315cf4!important;
+}
+.bf-past-match-content{background:#fff!important;color:#263442!important}
+.bf-past-match-content h3{color:#263442!important}
+.bf-past-your-performance,
+.bf-past-match-content .result-banner{
+  background:linear-gradient(135deg,#f1f5ff,#fff)!important;
+  border:1px solid #dbe4ff!important;
+  color:#263442!important;
+}
+.bf-past-your-performance .eyebrow,
+.bf-past-match-content .result-banner small{color:#315cf4!important}
+.bf-past-your-performance strong,
+.bf-past-match-content .result-banner b{color:#315cf4!important}
+.bf-past-your-performance span:last-child,
+.bf-past-match-content .result-banner p{color:#687887!important}
+.bf-past-match-content .bf-past-rank-row{
+  background:#fff!important;border:1px solid #d9e1e7!important;
+  box-shadow:0 4px 12px rgba(43,61,77,.05)!important;
+}
+.bf-past-rank-copy b{color:#263442!important}
+.bf-past-rank-copy small{color:#687887!important}
+.bf-past-rank-row> b:last-child{background:#edf2ff!important;color:#315cf4!important}
