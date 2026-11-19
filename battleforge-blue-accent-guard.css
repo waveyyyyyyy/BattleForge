@@ -11,3 +11,11 @@ body :is(.bf-ticket-status,.bf-ticket-status.is-resolved,.bf-auth-kicker i,.bf-n
 body :is(.bf-support-hub-icon,.bf-faq-bubble.bot,.bf-faq-bubble.user,.bf-copy-room,.bf-streak-card,.bf-ticket-status){background-color:#edf3ff!important;color:#315cf4!important}
 body :is(.bf-auth-visual,.bf-notifications-hero){background-image:linear-gradient(135deg,#142f70,#2454bd 58%,#3979ed)!important}
 body svg [fill="#42b7a5"],body svg [fill="#8ff5e7"],body svg [stroke="#42b7a5"],body svg [stroke="#8ff5e7"],body svg [stroke="#6ed8ca"]{fill:#315cf4!important;stroke:#315cf4!important}
+
+/* Final hard overrides for legacy green states and profile/payment accents */
+:root{--bf-acid:#315cf4!important;--bf-acid-soft:rgba(49,92,244,.10)!important;--bf-lime:#315cf4!important;--bf-lime-soft:rgba(49,92,244,.10)!important}
+body :is(.bf-payment-status-approved,.bf-payment-status-pending,.bf-payment-status-rejected){background:#edf3ff!important;color:#214dd0!important;border-color:#cbd9ff!important}
+body :is(.bf-profile-avatar,.bf-profile-pic-row-preview){border-color:#8eacff!important;box-shadow:0 0 0 3px rgba(49,92,244,.10)!important}
+body :is(.bf-admin-quick:active,.admin-quick:active,.bf-streak-card,.bf-streak-reward,.bf-streak-day,.bf-referral-card,.referral-card,.referral-stat){border-color:#d5e2ff!important;background:#fff!important;color:#080f1d!important}
+#modal.bf-safe-dialog .bf-blaze-online i,#modal .bf-blaze-online i,.bf-lb-showcase-top i,.bf-auth-kicker i,.bf-notifications-summary i,.bf-notification-status i,.bf-secure-dot{background:#315cf4!important;box-shadow:0 0 0 4px rgba(49,92,244,.12)!important}
+body :is(.bf-payment-status-approved,.bf-ticket-status.is-resolved,.bf-notification-status,.bf-lb-showcase-top small){-webkit-text-fill-color:#214dd0!important}
