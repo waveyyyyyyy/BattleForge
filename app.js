@@ -1310,8 +1310,7 @@ async function openPastMatchDetails(id) {
   const matchId=Number(id);
   const [matchResponse,resultsResponse]=await Promise.all([
     supabase.from('tournaments').select('id,title,game_mode,starts_at,description,is_past_match,entry_points,per_kill_points,prize_pool_points,max_players').eq('id',matchId).eq('is_past_match',true).maybeSingle(),
-    supabase.rpc('get_public_past_match_results',{p_tournament_id:matchId}),
-    Promise.resolve({data:null,error:null})
+    supabase.rpc('get_public_past_match_results',{p_tournament_id:matchId})
   ]);
   const {data:t,error}=matchResponse;
   const {data:rows,error:resultsError}=resultsResponse;
@@ -1649,7 +1648,7 @@ async function loadAdminEntries() {
     <button id="adminAddRankingPlaceholder" class="outline full">＋ Add placeholder player (—)</button><button id="adminConfirmAllResults" class="join full">Publish / update rankings & prizes</button>
     <p class="notice">Each prize is the total points to credit. Re-publishing updates the final result and credits/debits only the difference, preventing duplicate payouts.</p>`;
   setupAdminRankingInteractions();
-  syncRankingPositions();
+  sortAdminRankingByKills();
   $('#adminAddRankingPlaceholder')?.addEventListener('click',()=>addRankingPlaceholder());
 }
 function addRankingPlaceholder(){const box=$('#adminRankingRows');if(!box)return;const row=document.createElement('div');row.className='admin-ranking-row ranking-placeholder';row.dataset.resultRow='';row.dataset.ign='—';row.innerHTML='<div class="ranking-player-cell"><span class="ranking-drag">☰</span><span class="ranking-bracket">[—]</span><div><b>—</b><small>Placeholder — not linked to a player account</small></div></div><label class="ranking-input"><span>Kills</span><input class="result-kills" type="number" min="0" value="0"></label><label class="ranking-input"><span>Total prize</span><input class="result-reward" type="number" min="0" value="0"></label><input class="result-rank" type="hidden"><button type="button" class="outline" data-remove-placeholder>Remove</button>';box.appendChild(row);row.querySelector('[data-remove-placeholder]').addEventListener('click',()=>{row.remove();syncRankingPositions();});setupAdminRankingInteractions();syncRankingPositions();
