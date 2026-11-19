@@ -34,10 +34,11 @@ function toast(message) {
   setTimeout(() => el.classList.remove('show'), 2600);
 }
 function modal(html) {
-  $('#modalContent').innerHTML = html;
-  $('#modal').classList.remove('hidden');
+  const overlay=$('#modal');$('#modalContent').innerHTML=html;
+  overlay.classList.toggle('admin-modal',html.includes('admin-dashboard-head'));
+  overlay.classList.remove('hidden');
 }
-function close() { $('#modal').classList.add('hidden'); }
+function close() { $('#modal').classList.add('hidden');$('#modal').classList.remove('admin-modal'); }
 function setPage(tab) {
   const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules'].includes(tab) ? tab : 'arena');
   document.querySelectorAll('.page-view').forEach(page => page.classList.toggle('active', page.dataset.page === target));
@@ -304,7 +305,7 @@ async function showHistory() {
 async function loadAdminRoom() {
   if (!isAdmin) return;
   const id = Number($('#adminTournament')?.value);
-  const selectedTournament = tournaments.find(t => Number(t.id) === id);
+  const selectedTournament = (window.battleForgeAdminTournaments || tournaments).find(t => Number(t.id) === id);
   const descriptionEditor = $('#adminEditDescription');
   if (descriptionEditor) descriptionEditor.value = selectedTournament?.description ?? '';
   const roomId = $('#adminRoomId');
@@ -320,44 +321,99 @@ async function loadAdminRoom() {
 }
 
 async function showAdmin() {
-  if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
-  const options = tournaments.map(t => `<option value="${esc(t.id)}">${esc(t.title)} (${esc(t.game_mode)})</option>`).join('');
-  const openCount = tournaments.filter(t => t.status === 'open').length;
-  const closedCount = tournaments.filter(t => t.status === 'closed' || t.status === 'full').length;
-  const playerTotal = Object.values(counts).reduce((sum, n) => sum + Number(n || 0), 0);
-  modal(`<div class="admin-dashboard-head"><div class="eyebrow"><span class="live-dot"></span> ORGANISER CONTROL CENTRE</div><h2>Admin dashboard</h2><p>Everything you need to run a match, from one place.</p></div>
-    <div class="admin-metrics"><div><small>TOURNAMENTS</small><b>${tournaments.length}</b></div><div><small>OPEN</small><b>${openCount}</b></div><div><small>REGISTRATIONS</small><b>${playerTotal}</b></div><div><small>CLOSED / FULL</small><b>${closedCount}</b></div></div>
-    <div class="admin-quick-grid"><button class="admin-quick" data-admin-jump="adminCreateSection"><span>＋</span><b>Create match</b><small>Set mode, slots & rules</small></button><button class="admin-quick" data-admin-jump="adminManageSection"><span>⚙</span><b>Manage match</b><small>Status, room & description</small></button><button class="admin-quick" data-admin-jump="adminPlayersSection"><span>♙</span><b>Players & results</b><small>Review entries and kills</small></button></div>
-    <div id="adminCreateSection" class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Create tournament</h3><p>Set the match details players will see.</p></div></div>
-    <label class="field">TOURNAMENT TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
-    <div class="admin-form-grid"><label class="field">GAME MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label></div>
-    <div class="admin-form-grid"><label class="field">ENTRY FEE (PTS)<input id="adminEntry" type="number" min="0" value="0"></label><label class="field">PER-KILL REWARD (PTS)<input id="adminPerKill" type="number" min="0" value="0"></label><label class="field">DISPLAYED PRIZE POOL (PTS)<input id="adminPrize" type="number" min="0" value="0"></label></div>
-    <label class="field">START TIME (OPTIONAL)<input id="adminStarts" type="datetime-local"></label>
-    <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminDescription" maxlength="5000" rows="5" placeholder="Paste room instructions, start time, scoring, screenshot proof, and disqualification rules…"></textarea></label>
-    <p class="admin-helper">Tip: include the exact start time, room release time, kill scoring, late-entry policy, and what proof players must submit.</p>
-    <button id="adminCreateTournament" class="join full">＋ Create tournament</button></div>
-    <div id="adminManageSection" class="admin-section"><div class="admin-section-title"><span>02</span><div><h3>Manage tournament</h3><p>Select a match first, then edit its settings.</p></div></div>
-    <label class="field">SELECT TOURNAMENT<select id="adminTournament">${options || '<option value="">Create a tournament first</option>'}</select></label>
-    <div class="admin-current-summary" id="adminSelectedSummary">${tournaments.length ? 'Select a tournament to load its current settings.' : 'No tournaments yet.'}</div>
-    <div class="admin-form-grid"><label class="field">ENTRY FEE (PTS)<input id="adminEditEntry" type="number" min="0" max="1000000"></label><label class="field">PER-KILL REWARD (PTS)<input id="adminEditPerKill" type="number" min="0" max="1000000"></label></div><button id="adminSaveRewards" class="join full">Save entry fee & per-kill reward</button>
-    <label class="field">MATCH DESCRIPTION & RULES<textarea id="adminEditDescription" maxlength="5000" rows="5" placeholder="Player-facing rules and match instructions"></textarea></label>
-    <button id="adminSaveDescription" class="outline full">Save description</button>
-    <div class="admin-form-grid"><label class="field">ENTRY STATUS<select id="adminStatus"><option value="open">Open entries</option><option value="closed">Close entries</option><option value="full">Mark full</option></select></label><div class="field"><span>DESTRUCTIVE ACTION</span><button id="adminDeleteTournament" class="outline full danger-button">Delete tournament</button></div></div>
-    <button id="adminSetStatus" class="join full secondary-action">Save entry status</button></div>
-    <div class="admin-section"><div class="admin-section-title"><span>03</span><div><h3>Room & lobby</h3><p>Only publish these details when you are ready.</p></div></div>
-    <label class="field">ROOM ID<input id="adminRoomId" maxlength="80" placeholder="Enter room ID"></label><label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80" placeholder="Enter room password"></label>
-    <label class="admin-check"><input id="adminRoomPublished" type="checkbox"><span><b>Publish room to registered players</b><small>Players will see room details and the eligible roster.</small></span></label>
-    <button id="adminSaveRoom" class="join full">Save room settings</button></div>
-    <div id="adminPlayersSection" class="admin-section"><div class="admin-section-title"><span>04</span><div><h3>Players & results</h3><p>Load registered players and publish verified match results.</p></div></div><button id="adminLoadEntries" class="outline full">Load players / record results</button><div id="adminEntries" class="admin-entries"></div></div>
-    <div class="admin-footer-note"><span>ⓘ</span><p>Deleting permanently removes the tournament, registrations, room and results. Result publishing records results only; it does not transfer prize money or credit wallet coins.</p></div>`);
-  $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); });
-  document.querySelectorAll('[data-admin-jump]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'})));
-  await loadAdminRoom(); syncAdminSelectedSummary();
+ if(!currentUser||!isAdmin){toast('Admin access required.');return;}
+ const {data,error}=await supabase.from('tournaments').select('id,title,description,game_mode,status,is_past_match,is_cancelled,starts_at,created_at,entry_points,per_kill_points,prize_pool_points,max_players').order('created_at',{ascending:false});
+ if(error)console.warn(error);
+ window.battleForgeAdminTournaments=data||tournaments;
+ const all=window.battleForgeAdminTournaments;
+ const total=Object.values(counts).reduce((a,b)=>a+Number(b||0),0);
+ modal(\`<div class="admin-dashboard-head"><div class="eyebrow"><span class="live-dot"></span> ORGANISER CONTROL CENTRE</div><h2>Admin portal</h2><p>Your complete BattleForge control room.</p><div class="admin-metrics"><div><small>MATCHES</small><b>\${all.length}</b></div><div><small>LIVE</small><b>\${all.filter(t=>!t.is_past_match).length}</b></div><div><small>PAST</small><b>\${all.filter(t=>t.is_past_match).length}</b></div><div><small>ENTRIES</small><b>\${total}</b></div></div></div>
+ <div class="admin-home-grid" id="adminHomeGrid">
+ <button class="admin-home-card" data-admin-page-open="create"><span class="bf-admin-icon">＋</span><b>Create match</b><small>Set up a tournament</small></button>
+ <button class="admin-home-card" data-admin-page-open="manage"><span class="bf-admin-icon">⌘</span><b>Manage matches</b><small>Lobby, settings and rankings</small></button>
+ <button class="admin-home-card" data-admin-page-open="players"><span class="bf-admin-icon">♙</span><b>All players</b><small>Recently registered and directory</small></button>
+ <button class="admin-home-card" data-admin-page-open="search"><span class="bf-admin-icon">⌕</span><b>Search matches</b><small>Find by match ID</small></button>
+ </div>
+ <div class="admin-page-back hidden" id="adminPageBack"><button class="outline" id="adminBackHome">← Admin portal</button><b id="adminPageTitle">Admin section</b></div>
+ <section class="admin-page hidden" data-admin-page="create"><div class="admin-section-title"><span>01</span><div><h3>Create match</h3><p>Configure the match players will see.</p></div></div>
+ <label class="field">MATCH TITLE<input id="adminTitle" maxlength="80" placeholder="Weekend Solo Cup"></label>
+ <div class="admin-form-grid"><label class="field">GAME MODE<select id="adminMode"><option>SOLO</option><option>DUO</option><option>SQUAD</option></select></label><label class="field">MAX PLAYERS<input id="adminMax" type="number" min="1" max="500" value="48"></label></div>
+ <div class="admin-form-grid"><label class="field">ENTRY FEE<input id="adminEntry" type="number" min="0" value="0"></label><label class="field">PER-KILL REWARD<input id="adminPerKill" type="number" min="0" value="0"></label><label class="field">PRIZE POOL<input id="adminPrize" type="number" min="0" value="0"></label></div>
+ <label class="field">START TIME<input id="adminStarts" type="datetime-local"></label><label class="field">DESCRIPTION & RULES<textarea id="adminDescription" maxlength="5000" rows="5"></textarea></label><button id="adminCreateTournament" class="join full">＋ Create match</button></section>
+ <section class="admin-page hidden" data-admin-page="manage"><div class="admin-section-title"><span>02</span><div><h3>Manage matches</h3><p>Choose a live or past match. Room & Lobby and Match Rankings are grouped here.</p></div></div>
+ <div class="admin-section"><div class="admin-section-title"><div><h3>Match selector</h3><p>Newest matches first, with status and full match details.</p></div></div><div id="adminMatchPicker"></div></div>
+ <select id="adminTournament" class="admin-hidden-select"><option value="">Choose a match</option>\${all.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.title)+' · #'+esc(t.id)+'</option>').join('')}</select>
+ <div class="admin-current-summary" id="adminSelectedSummary">Select a match above.</div>
+ <div class="admin-section"><div class="admin-section-title"><span>01</span><div><h3>Match settings</h3><p>Rewards, description, status and deletion.</p></div></div>
+ <div class="admin-form-grid"><label class="field">ENTRY FEE<input id="adminEditEntry" type="number" min="0"></label><label class="field">PER-KILL REWARD<input id="adminEditPerKill" type="number" min="0"></label></div><button id="adminSaveRewards" class="join full">Save rewards</button>
+ <label class="field">DESCRIPTION<textarea id="adminEditDescription" rows="4" maxlength="5000"></textarea></label><button id="adminSaveDescription" class="outline full">Save description</button>
+ <div class="admin-form-grid"><label class="field">ENTRY STATUS<select id="adminStatus"><option value="open">Open</option><option value="closed">Closed</option><option value="full">Full</option></select></label><div class="field"><span>PAST MATCH</span><button id="adminMarkPastMatch" class="outline full">Move to Past Matches</button></div></div><button id="adminSetStatus" class="join full">Save status</button><button id="adminDeleteTournament" class="outline danger-button full">Delete match</button></div>
+ <div class="admin-section"><div class="admin-section-title"><span>02</span><div><h3>Room & Lobby</h3><p>Set room credentials and publish them to registered players.</p></div></div><label class="field">ROOM ID<input id="adminRoomId" maxlength="80"></label><label class="field">ROOM PASSWORD<input id="adminRoomPassword" maxlength="80"></label><label class="admin-check"><input id="adminRoomPublished" type="checkbox"><span><b>Publish room to registered players</b><small>Only eligible players will see these details.</small></span></label><button id="adminSaveRoom" class="join full">Save room & lobby</button></div>
+ <div class="admin-section"><div class="admin-section-title"><span>03</span><div><h3>Match Rankings</h3><p>Load the roster, arrange ranks, kills and total prize.</p></div></div><button id="adminLoadRankings" class="outline full">Load players & rankings</button><div id="adminRankingEditor"><p class="admin-helper">Select a match, then load its rankings.</p></div></div></section>
+ <section class="admin-page hidden" data-admin-page="players"><div class="admin-section-title"><span>03</span><div><h3>All players</h3><p>Newest accounts and complete player directory.</p></div></div>
+ <div class="admin-recent-wrap"><div class="admin-section-title"><div><h3>Recently registered</h3><p>Newest first, with registration dates and activity.</p></div></div><div id="bfAdminRecentRegistrations"><p class="admin-helper">Loading…</p></div></div>
+ <label class="field">SEARCH BY PLAYER ID OR USERNAME<input id="bfAdminPlayerSearch" type="search" maxlength="80" placeholder="Player ID or username"></label><button id="bfAdminPlayerSearchBtn" class="join full">Search all players</button><div id="bfAdminPlayerDirectoryList"></div><div class="admin-form-grid"><button id="bfAdminPlayersPrev" class="outline" disabled>Previous</button><button id="bfAdminPlayersNext" class="outline">Next</button></div><p id="bfAdminPlayerPageInfo" class="admin-helper"></p></section>
+ <section class="admin-page hidden" data-admin-page="search"><div class="admin-section-title"><span>04</span><div><h3>Search matches</h3><p>Find a match and inspect its roster and room details.</p></div></div><label class="field">MATCH ID<input id="adminMatchSearchId" type="number" min="1" placeholder="Match ID"></label><button id="adminMatchSearchButton" class="join full">Search match</button><div id="adminMatchSearchResult"><p class="admin-helper">Search results appear here.</p></div></section>\`);
+ const names={create:'Create match',manage:'Manage matches',players:'All players',search:'Search matches'};
+ const openPage=page=>{document.querySelectorAll('#modalContent [data-admin-page]').forEach(x=>x.classList.toggle('hidden',x.dataset.adminPage!==page));$('#adminHomeGrid')?.classList.toggle('hidden',page!=='home');$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=names[page]||'Admin portal';const card=$('#modal .modal-card');if(card)card.scrollTo({top:0,behavior:'auto'});if(page==='manage')renderAdminMatchPickers();if(page==='players')loadAdminPlayerDirectory(0);};
+ document.querySelectorAll('[data-admin-page-open]').forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.adminPageOpen)));
+ $('#adminBackHome')?.addEventListener('click',()=>openPage('home'));
+ $('#adminTournament')?.addEventListener('change',async()=>{await loadAdminRoom();syncAdminSelectedSummary();});
+ $('#adminLoadRankings')?.addEventListener('click',loadAdminRankings);
+ $('#bfAdminPlayerSearchBtn')?.addEventListener('click',()=>loadAdminPlayerDirectory(0));
+ $('#bfAdminPlayersPrev')?.addEventListener('click',()=>loadAdminPlayerDirectory(Math.max(0,(window.battleForgeAdminDirectoryOffset||0)-100)));
+ $('#bfAdminPlayersNext')?.addEventListener('click',()=>loadAdminPlayerDirectory((window.battleForgeAdminDirectoryOffset||0)+100));
+ $('#adminMatchSearchButton')?.addEventListener('click',loadAdminMatchSearch);
+ $('#adminMarkPastMatch')?.addEventListener('click',async()=>{const id=Number($('#adminTournament')?.value);if(!id)return toast('Choose a match first.');if(!confirm('Move this match to Past Matches?'))return;const {error}=await supabase.rpc('admin_mark_match_past',{p_tournament_id:id});if(error)return toast(error.message);toast('Match moved to Past Matches.');await refreshData();await showAdmin();document.querySelector('[data-admin-page-open="manage"]')?.click();});
+ await loadAdminRoom();syncAdminSelectedSummary();renderAdminMatchPickers();
+}
+function renderAdminMatchPickers(){
+ const all=window.battleForgeAdminTournaments||tournaments,target=$('#adminMatchPicker');if(!target)return;
+ const chosen=String($('#adminTournament')?.value||'');
+ const newest=(a,b)=>new Date(b.created_at||b.starts_at||0)-new Date(a.created_at||a.starts_at||0);
+ const card=t=>{const n=Number(counts[String(t.id)]||0),status=t.is_past_match?'Past match':t.is_cancelled?'Cancelled':t.status==='open'?'Open':t.status==='full'?'Full':'Closed',date=t.starts_at?new Date(t.starts_at).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'Schedule not set';return '<button type="button" class="bf-admin-match-card '+(String(t.id)===chosen?'is-selected':'')+'" data-admin-match-pick="'+esc(t.id)+'"><span class="bf-admin-match-card-top"><b>'+esc(t.title||'Match')+'</b><small>#'+esc(t.id)+'</small></span><span class="bf-admin-match-card-meta">'+esc(t.game_mode||'MATCH')+' · '+esc(date)+'</span><span class="bf-admin-match-card-bottom"><span>'+esc(status)+'</span><span>'+n+'/'+Number(t.max_players||0)+' players</span><span>Entry '+Number(t.entry_points||0)+'</span><span>Kill '+Number(t.per_kill_points||0)+'</span><span>Prize '+Number(t.prize_pool_points||0)+'</span></span><span class="bf-admin-match-description">'+esc(String(t.description||'').slice(0,120))+'</span></button>';};
+ const live=all.filter(t=>!t.is_past_match).sort(newest),past=all.filter(t=>t.is_past_match).sort(newest);
+ target.innerHTML='<div class="bf-admin-match-groups"><section><div class="bf-admin-match-group-title"><b>Live matches</b><small>'+live.length+'</small></div>'+(live.length?live.map(card).join(''):'<p class="admin-helper">No live matches.</p>')+'</section><section><div class="bf-admin-match-group-title"><b>Past matches</b><small>'+past.length+'</small></div>'+(past.length?past.map(card).join(''):'<p class="admin-helper">No past matches.</p>')+'</section></div>';
+ target.querySelectorAll('[data-admin-match-pick]').forEach(b=>b.addEventListener('click',async()=>{const id=String(b.dataset.adminMatchPick);$('#adminTournament').value=id;target.querySelectorAll('[data-admin-match-pick]').forEach(x=>x.classList.toggle('is-selected',x===b));await loadAdminRoom();syncAdminSelectedSummary();$('#adminRankingEditor').innerHTML='<p class="admin-helper">Tap Load players & rankings to edit this match.</p>'; }));
+}
+async function loadAdminPlayerDirectory(offset=0){
+ const target=$('#bfAdminPlayerDirectoryList');if(!target||!isAdmin)return;
+ const search=$('#bfAdminPlayerSearch')?.value.trim()||'';target.innerHTML='<p class="admin-helper">Loading player directory…</p>';
+ const {data,error}=await supabase.rpc('admin_list_all_players',{p_search:search,p_limit:100,p_offset:Math.max(0,offset)});
+ if(error){target.innerHTML='<p class="notice">'+esc(error.message)+'</p>';return;}
+ const rows=data||[];window.battleForgeAdminDirectoryOffset=offset;
+ const recent=$('#bfAdminRecentRegistrations');if(recent){const newest=[...rows].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)).slice(0,8);recent.innerHTML=newest.length?newest.map(p=>'<article class="bf-admin-recent-card"><div><b>'+esc(p.username||('Player #'+p.player_number))+'</b><small>PLAYER ID #'+esc(p.player_number)+' · '+Number(p.entries_count||0)+' matches · '+Number(p.wins_count||0)+' wins</small></div><time>'+esc(p.created_at?new Date(p.created_at).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'Date unavailable')+'</time></article>').join(''):'<p class="admin-helper">No recent registrations found.</p>';}
+ target.innerHTML=rows.length?rows.map(p=>'<article class="bf-admin-player-card"><div><b>'+esc(p.username||('Player #'+p.player_number))+'</b><small>PLAYER ID #'+esc(p.player_number)+' · '+Number(p.entries_count||0)+' matches · '+Number(p.wins_count||0)+' wins</small><small>Registered '+esc(p.created_at?new Date(p.created_at).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'Date unavailable')+'</small></div></article>').join(''):'<p class="admin-helper">No registered players found.</p>';
+ $('#bfAdminPlayersPrev').disabled=offset<=0;$('#bfAdminPlayersNext').disabled=rows.length<100;$('#bfAdminPlayerPageInfo').textContent=rows.length?'Showing '+(offset+1)+'–'+(offset+rows.length):'No results';
+}
+async function loadAdminMatchSearch(){
+ const id=Number($('#adminMatchSearchId')?.value),target=$('#adminMatchSearchResult');if(!Number.isInteger(id)||id<1)return toast('Enter a valid match ID.');
+ target.innerHTML='<p class="admin-helper">Searching…</p>';const {data,error}=await supabase.rpc('admin_search_match_details',{p_match_number:id});
+ if(error){target.innerHTML='<p class="notice">'+esc(error.message)+'</p>';return;}const t=data?.tournament;if(!t){target.innerHTML='<p class="admin-helper">No match found with ID #'+id+'.</p>';return;}
+ const entries=data.entries||[],room=data.room||{};target.innerHTML='<article class="admin-detail-card"><h3>'+esc(t.title)+' · #'+esc(t.id)+'</h3><p>'+esc(t.game_mode||'Match')+' · '+esc(t.status||'')+' · '+(t.is_past_match?'Past':'Live')+'</p><div class="bf-admin-match-card-bottom"><span>Entry '+Number(t.entry_points||0)+'</span><span>Kill '+Number(t.per_kill_points||0)+'</span><span>Prize '+Number(t.prize_pool_points||0)+'</span><span>Slots '+Number(t.max_players||0)+'</span></div><p>Starts: '+esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Not set')+'</p><p>Room ID: '+esc(room.room_id||'Not set')+' · Password: '+esc(room.room_password||'Not set')+'</p><p>Registered players: '+entries.length+'</p>'+entries.map(e=>'<div class="bf-admin-player-card"><div><b>'+esc(e.in_game_name||'Player')+'</b><small>Player #'+esc(e.player_number||'—')+' · '+Number(e.kills||0)+' kills · '+(e.placement?'Rank '+e.placement:'Pending')+'</small></div></div>').join('')+'</article>';
+}
+async function loadAdminRankings(){
+ const id=Number($('#adminTournament')?.value),target=$('#adminRankingEditor');if(!id)return toast('Choose a match first.');
+ target.innerHTML='<p class="admin-helper">Loading roster and saved rankings…</p>';
+ const [{data:entries,error},{data:saved,error:savedError}]=await Promise.all([supabase.rpc('admin_list_tournament_entries',{p_tournament_id:id}),supabase.from('tournament_results').select('entry_id,placement,kills,earned_points,published').eq('tournament_id',id)]);
+ if(error){target.innerHTML='<p class="notice">'+esc(error.message)+'</p>';return;}if(savedError){target.innerHTML='<p class="notice">'+esc(savedError.message)+'</p>';return;}
+ const byEntry=new Map((saved||[]).map(r=>[String(r.entry_id),r]));const ordered=[...(entries||[])].sort((a,b)=>(byEntry.get(String(a.entry_id))?.placement||999999)-(byEntry.get(String(b.entry_id))?.placement||999999)||new Date(a.created_at||0)-new Date(b.created_at||0));
+ if(!ordered.length){target.innerHTML='<p class="admin-helper">No registered players in this match yet.</p>';return;}
+ target.innerHTML='<p class="admin-helper">'+((saved||[]).some(r=>r.published)?'Published rankings loaded. Re-publishing adjusts only the prize difference.':'Pending results. Set each player’s rank, kills and total prize.')+' Drag ☰ to reorder.</p><div class="admin-ranking-head"><span>RANK / PLAYER</span><span>KILLS</span><span>TOTAL PRIZE</span></div><div id="adminRankingRows" class="admin-ranking-rows">'+ordered.map((e,i)=>{const r=byEntry.get(String(e.entry_id))||{};return '<div class="admin-ranking-row" draggable="true" data-entry-id="'+esc(e.entry_id)+'"><div class="ranking-player-cell"><span class="ranking-drag">☰</span><span class="ranking-bracket">['+(i+1)+']</span><div><b>'+esc(e.in_game_name||'Player')+'</b><small>Registered '+esc(new Date(e.created_at).toLocaleDateString('en-IN'))+'</small></div></div><label class="ranking-input"><span>Kills</span><input class="result-kills" type="number" min="0" value="'+Number(r.kills||0)+'"></label><label class="ranking-input"><span>Total prize</span><input class="result-reward" type="number" min="0" max="1000000" value="'+Number(r.earned_points||0)+'"></label><input class="result-rank" type="hidden" value="'+(i+1)+'"></div>';}).join('')+'</div><label class="field">ADMIN NOTE<input id="adminBulkResultNote" maxlength="500" placeholder="Verified by screenshot"></label><button id="adminPublishRankings" class="join full">Publish rankings & prizes</button>';
+ const box=$('#adminRankingRows');let dragged=null;box.querySelectorAll('.admin-ranking-row').forEach(row=>{row.addEventListener('dragstart',e=>{dragged=row;row.classList.add('dragging');e.dataTransfer.effectAllowed='move';});row.addEventListener('dragend',()=>{row.classList.remove('dragging');dragged=null;syncAdminRankingPositions();});row.addEventListener('dragover',e=>{e.preventDefault();if(!dragged||dragged===row)return;const rect=row.getBoundingClientRect();box.insertBefore(dragged,e.clientY<rect.top+rect.height/2?row:row.nextSibling);});});
+ syncAdminRankingPositions();$('#adminPublishRankings')?.addEventListener('click',publishAdminRankings);
+}
+function syncAdminRankingPositions(){document.querySelectorAll('#adminRankingRows .admin-ranking-row').forEach((row,i)=>{row.querySelector('.ranking-bracket').textContent='['+(i+1)+']';row.querySelector('.result-rank').value=String(i+1);});}
+async function publishAdminRankings(){
+ const id=Number($('#adminTournament')?.value),rows=[...document.querySelectorAll('#adminRankingRows .admin-ranking-row')];if(!id||!rows.length)return toast('Load a match roster first.');
+ const results=rows.map(row=>({entry_id:row.dataset.entryId,placement:Number(row.querySelector('.result-rank').value),kills:Number(row.querySelector('.result-kills').value),reward:Number(row.querySelector('.result-reward').value),note:$('#adminBulkResultNote')?.value.trim()||''}));
+ if(results.some(r=>!r.entry_id||!Number.isInteger(r.placement)||r.placement<1||!Number.isInteger(r.kills)||r.kills<0||!Number.isInteger(r.reward)||r.reward<0)||new Set(results.map(r=>r.placement)).size!==results.length)return toast('Check ranks, kills and prizes. Each rank must be unique.');
+ const b=$('#adminPublishRankings');b.disabled=true;b.textContent='Publishing…';const {error}=await supabase.rpc('admin_publish_match_results',{p_tournament_id:id,p_results:results});b.disabled=false;b.textContent='Publish rankings & prizes';if(error)return toast(error.message);toast('Rankings published and prizes processed.');await refreshData();await loadAdminRankings();
 }
 
 function syncAdminSelectedSummary() {
   const id = Number($('#adminTournament')?.value);
-  const t = tournaments.find(item => Number(item.id) === id);
+  const t = (window.battleForgeAdminTournaments || tournaments).find(item => Number(item.id) === id);
   const el = $('#adminSelectedSummary');
   if (!el) return;
   if (!t) { el.textContent = 'Select a tournament to load its current settings.'; return; }
@@ -565,9 +621,9 @@ $('#modalContent').addEventListener('click', async e => {
     const { error } = await supabase.rpc('admin_set_tournament_room', { p_tournament_id:id, p_room_id:$('#adminRoomId').value.trim(), p_room_password:$('#adminRoomPassword').value.trim(), p_published:$('#adminRoomPublished').checked });
     button.disabled = false; if (error) return toast(error.message);
     toast('Match room saved. You can update it anytime.');
-    await loadAdminEntries();
+    await loadAdminRankings();
   }
-  if (button.id === 'adminLoadEntries') await loadAdminEntries();
+  if (button.id === 'adminLoadEntries') await loadAdminRankings();
   if (button.dataset.resultEntry) showResultForm(button.dataset.resultEntry, button.dataset.ign || 'Player');
   if (button.id === 'adminPublishResult') {
     if (!pendingResultEntry) return toast('Choose a player first.');
