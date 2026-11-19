@@ -298,6 +298,7 @@ jobs:
         run: |
           TAG="battleforge-apk-${BUILD_NUMBER}"
           gh release create "$TAG" BattleForge.apk \
+            --target "$GITHUB_SHA" \
             --title "BattleForge Android APK build #${BUILD_NUMBER}" \
             --notes "Direct APK download for BattleForge build #${BUILD_NUMBER}. Install this APK on Android."
       - name: Upload APK artifact
