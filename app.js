@@ -366,6 +366,7 @@ function modal(html) {
   overlay.classList.toggle('bf-payment-history-modal', html.includes('bf-payment-history-screen'));
   overlay.classList.toggle('bf-fullscreen-chat', html.includes('bf-chat-header') || html.includes('bf-match-chat'));
   overlay.classList.toggle('bf-safe-dialog', html.includes('bf-auth-sheet') || html.includes('notification-sheet') || html.includes('profile-sheet') || html.includes('bf-profile-loading') || html.includes('bf-support-hub') || html.includes('bf-faq-chat'));
+  overlay.classList.toggle('admin-modal', html.includes('admin-dashboard-head'));
   overlay.classList.remove('hidden');
   overlay.scrollTop = 0;
   const card = $('#modal .modal-card');
@@ -421,7 +422,7 @@ function updateChatSoundToggle(){
     const state=$('#bfChatSoundState');if(state)state.textContent=toggle.checked?'On':'Off';
   }
 }
-function close() { if(activeMatchChatChannel){supabase.removeChannel(activeMatchChatChannel).catch(()=>{});activeMatchChatChannel=null;} const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-payment-history-modal','bf-fullscreen-chat','bf-safe-dialog','bf-edge-screen'); }
+function close() { if(activeMatchChatChannel){supabase.removeChannel(activeMatchChatChannel).catch(()=>{});activeMatchChatChannel=null;} const overlay=$('#modal'); overlay.classList.add('hidden'); overlay.classList.remove('profile-modal','bf-payment-history-modal','bf-fullscreen-chat','bf-safe-dialog','bf-edge-screen','admin-modal'); }
 let bfPageHistory=['arena'];
 function navigateBack() {
   const overlay=$('#modal');
@@ -1439,7 +1440,6 @@ async function showAdmin() {
   const openAdminPage=(page)=>{const manageAllowed=page==='manage'&&(adminIsOwner||['tournament_manage','room_manage','results_manage'].some(p=>adminPermissions.has(p)));if(page!=='home'&&!adminIsOwner&&!adminPermissions.has(pagePermission[page])&&!manageAllowed){toast('Your admin role cannot access this section.');return;}document.querySelectorAll('[data-admin-page]').forEach(el=>{const required=el.dataset.adminRequiredPermission;const allowed=!required||adminIsOwner||adminPermissions.has(required);el.classList.toggle('hidden',el.dataset.adminPage!==page||!allowed);});document.querySelectorAll('.admin-home-menu').forEach(el=>el.classList.toggle('hidden',page!=='home'));$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=adminPages[page]||'Admin section';const content=$('#modalContent');if(content){content.dataset.adminView=page;const back=$('#adminPageBack');if(back&&back.parentElement!==content)content.insertBefore(back,content.firstElementChild);}const card=$('#modal .modal-card');if(card)card.scrollTo({top:0,behavior:'auto'});if(page==='directory'&&!window.battleForgeAdminDirectoryLoaded){window.battleForgeAdminDirectoryLoaded=true;loadAdminPlayerDirectory(0);}renderAdminMatchPickers();};
   document.querySelectorAll('[data-admin-page-open]').forEach(button=>{const page=button.dataset.adminPageOpen;const permission=pagePermission[page];button.classList.toggle('hidden',!!permission&&!adminIsOwner&&!adminPermissions.has(permission));button.addEventListener('click',()=>openAdminPage(page));});
   $('#adminBackHome')?.addEventListener('click',()=>openAdminPage('home'));
-  $('#bfAdminMatchSearchBtn')?.addEventListener('click',searchAdminMatch);
   document.querySelectorAll('[data-admin-jump]').forEach(button=>button.addEventListener('click',()=>{const map={adminCreateSection:'create',adminManageSection:'manage',adminPlayersSection:'players'};openAdminPage(map[button.dataset.adminJump]||'home');document.getElementById(button.dataset.adminJump)?.scrollIntoView({behavior:'smooth',block:'start'});}));
   const roomSelect = $('#adminRoomTournament');
   if (roomSelect) roomSelect.value = $('#adminTournament')?.value || roomSelect.value;
