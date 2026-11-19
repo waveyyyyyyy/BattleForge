@@ -165,3 +165,41 @@ body svg [fill="#42b7a5"],body svg [fill="#8ff5e7"],body svg [stroke="#42b7a5"],
 #modal .bf-match-report{contain:layout paint;content-visibility:auto}
 #modal .bf-report-rank-row{contain:layout paint}
 #modal .bf-report-hero:after{animation:none!important}
+
+/* Compact vertical admin ranking cards: player identity first, numeric fields beneath */
+#adminRankingRows.admin-ranking-rows{display:flex!important;flex-direction:column!important;gap:10px!important}
+#adminRankingRows .admin-ranking-row{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"player" "inputs" "remove"!important;gap:10px!important;min-height:0!important;padding:12px!important}
+#adminRankingRows .ranking-player-cell{grid-area:player!important;display:grid!important;grid-template-columns:30px 34px minmax(0,1fr)!important;align-items:center!important;gap:8px!important;width:100%!important;min-width:0!important}
+#adminRankingRows .ranking-player-info{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;min-width:0!important}
+#adminRankingRows .ranking-player-info>b{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:6px!important;max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important;color:#14213a!important;font-size:13px!important}
+#adminRankingRows .ranking-player-info>small{font-size:10px!important;color:#73829a!important}
+#adminRankingRows .ranking-player-info .danger-button{margin-top:3px!important;padding:4px 8px!important;font-size:9px!important}
+#adminRankingRows .ranking-drag{width:30px!important;height:36px!important;min-width:30px!important;flex:none!important;font-size:20px!important}
+#adminRankingRows .ranking-bracket{width:34px!important;height:34px!important;min-width:34px!important;flex:none!important;border-radius:10px!important;font-size:12px!important}
+#adminRankingRows .ranking-inputs{grid-area:inputs!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:9px!important;width:100%!important;min-width:0!important}
+#adminRankingRows .ranking-input{display:flex!important;flex-direction:column!important;gap:6px!important;min-width:0!important;max-width:none!important;width:100%!important;padding:9px!important;border:1px solid #e0e9fb!important;border-radius:10px!important;background:#f7f9ff!important;box-sizing:border-box!important}
+#adminRankingRows .ranking-input>span{display:block!important;white-space:nowrap!important;font-size:9px!important;font-weight:900!important;color:#53698e!important;letter-spacing:.04em!important}
+#adminRankingRows .ranking-input input{display:block!important;width:100%!important;min-width:0!important;height:42px!important;padding:0 10px!important;border:1px solid #cfdbf0!important;border-radius:8px!important;background:#fff!important;color:#14213a!important;font-size:17px!important;font-weight:850!important;box-sizing:border-box!important}
+#adminRankingRows .ranking-placeholder>[data-remove-placeholder]{grid-area:remove!important;justify-self:end!important}
+#adminResultsSection .admin-ranking-head{display:flex!important;justify-content:space-between!important;gap:8px!important;align-items:center!important}
+#adminResultsSection .admin-ranking-head>span{font-size:9px!important;white-space:normal!important}
+#adminResultsSection .admin-ranking-head>span+span{display:none!important}
+
+/* Past-match scoreboard: recognizable rank insignias plus expressive kill/coin counters */
+#modal .bf-report-player-name{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:7px!important;color:#101a2d!important;font-size:14px!important;font-weight:950!important;line-height:1.25!important}
+#modal .bf-report-player-name .bf-kill-rank{display:inline-flex!important;vertical-align:middle!important;flex:0 0 23px!important;width:23px!important;height:23px!important;margin:0!important}
+#modal .bf-report-player-name .bf-kill-rank svg{display:block!important;width:100%!important;height:100%!important}
+#modal .bf-report-stat-chips{display:flex!important;flex-wrap:wrap!important;gap:7px!important;margin-top:9px!important}
+#modal .bf-report-stat-chips>span{display:inline-flex!important;align-items:center!important;gap:5px!important;min-height:34px!important;padding:5px 9px!important;border:1px solid #dce6f8!important;border-radius:10px!important;background:#f3f7ff!important;box-sizing:border-box!important}
+#modal .bf-report-stat-chips i{font-style:normal!important;font-size:15px!important;line-height:1!important}
+#modal .bf-report-stat-chips strong{color:#1e4fd1!important;font-size:15px!important;font-weight:950!important;font-variant-numeric:tabular-nums!important}
+#modal .bf-report-stat-chips small{color:#71819b!important;font-size:8px!important;font-weight:950!important;letter-spacing:.08em!important}
+#modal .bf-report-stat-coin{background:#fff9e8!important;border-color:#f1dfad!important}
+#modal .bf-report-stat-coin strong{color:#91640b!important}
+#modal .bf-report-player-id,#modal .bf-report-player-note{display:block!important;margin-top:5px!important;color:#73829a!important;font-size:9px!important}
+#modal .bf-report-rank-row{display:grid!important;grid-template-columns:38px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;padding:13px!important;border:1px solid #e0e8f7!important;border-radius:14px!important;background:#fff!important}
+#modal .bf-report-rank-copy{min-width:0!important}
+#modal .bf-report-rank-number{display:grid!important;place-items:center!important;width:36px!important;height:36px!important;border-radius:11px!important;background:#315cf4!important;color:#fff!important;font-size:13px!important;font-weight:950!important}
+#modal .bf-match-report{content-visibility:visible!important}
+#modal .bf-match-report *{scroll-behavior:auto!important}
+@media(max-width:360px){#adminRankingRows .ranking-inputs{gap:6px!important}#adminRankingRows .ranking-input{padding:7px!important}#adminRankingRows .ranking-input>span{font-size:8px!important}#modal .bf-report-rank-row{grid-template-columns:32px minmax(0,1fr) auto!important;gap:7px!important;padding:10px!important}#modal .bf-report-rank-number{width:30px!important;height:30px!important}}
