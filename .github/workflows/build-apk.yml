@@ -3,7 +3,7 @@ run-name: BattleForge APK build - ${{ github.ref_name }}
 on:
   workflow_dispatch:
   push:
-    branches: [main, "feature/payment-minimums-earned-withdrawal-policy", "feature/wallet-profile-payment-ids"]
+    branches: [main, "feature/payment-minimums-earned-withdrawal-policy", "feature/wallet-profile-payment-ids", "admin-portal-website-apk-490"]
 permissions:
   contents: write
 jobs:
