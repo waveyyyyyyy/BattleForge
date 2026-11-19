@@ -42,7 +42,8 @@ function close() { $('#modal').classList.add('hidden');$('#modal').classList.rem
 function setPage(tab) {
   const target = tab === 'arena-list' ? 'arena' : (['arena','wallet','history','rules'].includes(tab) ? tab : 'arena');
   document.querySelectorAll('.page-view').forEach(page => page.classList.toggle('active', page.dataset.page === target));
-  document.querySelectorAll('[data-tab]').forEach(button => button.classList.toggle('active', button.dataset.tab === target));
+  document.addEventListener('click',async e=>{const b=e.target.closest('[data-payment-action]');if(b)await handleAdminPaymentAction(b);});
+document.querySelectorAll('[data-tab]').forEach(button => button.classList.toggle('active', button.dataset.tab === target));
   document.body.dataset.page = target;
   close();
   if (target === 'history') showHistory();
@@ -234,7 +235,7 @@ async function handleNativeAuthCallback(rawUrl) {
     googleAuthCodesHandled.add(code);
     await Browser.close().catch(() => {});
     close();
-    await refreshData();
+    await refreshData().then(()=>checkRequiredAppUpdate());
     toast('Signed in successfully with Google.');
   } catch (error) {
     await Browser.close().catch(() => {});
@@ -332,7 +333,7 @@ async function showAdmin() {
  <button class="admin-home-card" data-admin-page-open="create"><span class="bf-admin-icon">＋</span><b>Create match</b><small>Set up a tournament</small></button>
  <button class="admin-home-card" data-admin-page-open="manage"><span class="bf-admin-icon">⌘</span><b>Manage matches</b><small>Lobby, settings and rankings</small></button>
  <button class="admin-home-card" data-admin-page-open="players"><span class="bf-admin-icon">♙</span><b>All players</b><small>Recently registered and directory</small></button>
- <button class="admin-home-card" data-admin-page-open="search"><span class="bf-admin-icon">⌕</span><b>Search matches</b><small>Find by match ID</small></button>
+ <button class="admin-home-card" data-admin-page-open="search"><span class="bf-admin-icon">⌕</span><b>Search matches</b><small>Find by match ID</small></button><button class="admin-home-card" data-admin-page-open="payments"><span class="bf-admin-icon">₹</span><b>Payments</b><small>Deposits and withdrawals</small></button><button class="admin-home-card" data-admin-page-open="social"><span class="bf-admin-icon">◎</span><b>Social links</b><small>Official BattleForge links</small></button><button class="admin-home-card" data-admin-page-open="updates"><span class="bf-admin-icon">⬆</span><b>App updates</b><small>Versions and force update</small></button>
  </div>
  <div class="admin-page-back hidden" id="adminPageBack"><button class="outline" id="adminBackHome">← Admin portal</button><b id="adminPageTitle">Admin section</b></div>
  <section class="admin-page hidden" data-admin-page="create"><div class="admin-section-title"><span>01</span><div><h3>Create match</h3><p>Configure the match players will see.</p></div></div>
@@ -353,9 +354,13 @@ async function showAdmin() {
  <section class="admin-page hidden" data-admin-page="players"><div class="admin-section-title"><span>03</span><div><h3>All players</h3><p>Newest accounts and complete player directory.</p></div></div>
  <div class="admin-recent-wrap"><div class="admin-section-title"><div><h3>Recently registered</h3><p>Newest first, with registration dates and activity.</p></div></div><div id="bfAdminRecentRegistrations"><p class="admin-helper">Loading…</p></div></div>
  <label class="field">SEARCH BY PLAYER ID OR USERNAME<input id="bfAdminPlayerSearch" type="search" maxlength="80" placeholder="Player ID or username"></label><button id="bfAdminPlayerSearchBtn" class="join full">Search all players</button><div id="bfAdminPlayerDirectoryList"></div><div class="admin-form-grid"><button id="bfAdminPlayersPrev" class="outline" disabled>Previous</button><button id="bfAdminPlayersNext" class="outline">Next</button></div><p id="bfAdminPlayerPageInfo" class="admin-helper"></p></section>
- <section class="admin-page hidden" data-admin-page="search"><div class="admin-section-title"><span>04</span><div><h3>Search matches</h3><p>Find a match and inspect its roster and room details.</p></div></div><label class="field">MATCH ID<input id="adminMatchSearchId" type="number" min="1" placeholder="Match ID"></label><button id="adminMatchSearchButton" class="join full">Search match</button><div id="adminMatchSearchResult"><p class="admin-helper">Search results appear here.</p></div></section>`);
- const names={create:'Create match',manage:'Manage matches',players:'All players',search:'Search matches'};
- const openPage=page=>{document.querySelectorAll('#modalContent [data-admin-page]').forEach(x=>x.classList.toggle('hidden',x.dataset.adminPage!==page));$('#adminHomeGrid')?.classList.toggle('hidden',page!=='home');$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=names[page]||'Admin portal';const card=$('#modal .modal-card');if(card)card.scrollTo({top:0,behavior:'auto'});if(page==='manage')renderAdminMatchPickers();if(page==='players')loadAdminPlayerDirectory(0);};
+ <section class="admin-page hidden" data-admin-page="search"><div class="admin-section-title"><span>04</span><div><h3>Search matches</h3><p>Find a match and inspect its roster and room details.</p></div></div><label class="field">MATCH ID<input id="adminMatchSearchId" type="number" min="1" placeholder="Match ID"></label><button id="adminMatchSearchButton" class="join full">Search match</button><div id="adminMatchSearchResult"><p class="admin-helper">Search results appear here.</p></div>
+ <section class="admin-page hidden" data-admin-page="payments"><div class="admin-section-title"><span>05</span><div><h3>Payments & withdrawals</h3><p>Verify actual deposits and mark sent withdrawals as paid.</p></div></div><button id="adminLoadPayments" class="join full">Refresh payment requests</button><div id="adminPaymentRequests"><p class="admin-helper">Tap refresh to load requests.</p></div></section>
+ <section class="admin-page hidden" data-admin-page="social"><div class="admin-section-title"><span>06</span><div><h3>Social links</h3><p>Update official BattleForge links shown in the app.</p></div></div><label class="field">TELEGRAM URL<input id="adminSocialTelegram" type="url" placeholder="https://t.me/battleforgeff"></label><label class="field">INSTAGRAM URL<input id="adminSocialInstagram" type="url" placeholder="https://instagram.com/battleforgeff"></label><label class="field">YOUTUBE URL (OPTIONAL)<input id="adminSocialYoutube" type="url"></label><button id="adminSaveSocialLinks" class="join full">Save social links</button><p id="adminSocialStatus" class="admin-helper"></p><label class="field">REFERRAL APK DOWNLOAD URL<input id="adminReferralDownloadUrl" type="url" placeholder="https://.../BattleForge.apk"></label><button id="adminSaveReferralUrl" class="outline full">Save APK download link</button></section>
+ <section class="admin-page hidden" data-admin-page="updates"><div class="admin-section-title"><span>07</span><div><h3>App version & forced updates</h3><p>Set the latest version, minimum version and direct APK URL.</p></div></div><button id="loadAppUpdateConfig" class="outline full">Load current settings</button><div class="admin-form-grid"><label class="field">LATEST VERSION<input id="appLatestVersion" placeholder="1.2.491"></label><label class="field">MINIMUM VERSION<input id="appMinimumVersion" placeholder="1.2.490"></label></div><label class="field">DIRECT HTTPS APK LINK<input id="appApkUrl" type="url"></label><label class="field">UPDATE MESSAGE<textarea id="appUpdateMessage" rows="3" maxlength="500"></textarea></label><label class="admin-check"><input id="appForceUpdate" type="checkbox"><span><b>Force older versions to update</b><small>Blocks versions below the required version.</small></span></label><button id="saveAppUpdateConfig" class="join full">Save app update settings</button><p id="appUpdateStatus" class="admin-helper"></p></section>
+</section>`);
+ const names={create:'Create match',manage:'Manage matches',players:'All players',search:'Search matches',payments:'Payments',social:'Social links',updates:'App updates'};
+ const openPage=page=>{document.querySelectorAll('#modalContent [data-admin-page]').forEach(x=>x.classList.toggle('hidden',x.dataset.adminPage!==page));$('#adminHomeGrid')?.classList.toggle('hidden',page!=='home');$('#adminPageBack')?.classList.toggle('hidden',page==='home');if($('#adminPageTitle'))$('#adminPageTitle').textContent=names[page]||'Admin portal';const card=$('#modal .modal-card');if(card)card.scrollTo({top:0,behavior:'auto'});if(page==='manage')renderAdminMatchPickers();if(page==='players')loadAdminPlayerDirectory(0);if(page==='payments')loadAdminPaymentRequests();if(page==='social')loadAdminSocialLinks();if(page==='updates')loadAppUpdateConfig();};
  document.querySelectorAll('[data-admin-page-open]').forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.adminPageOpen)));
  $('#adminBackHome')?.addEventListener('click',()=>openPage('home'));
  $('#adminTournament')?.addEventListener('change',async()=>{await loadAdminRoom();syncAdminSelectedSummary();});
@@ -363,7 +368,7 @@ async function showAdmin() {
  $('#bfAdminPlayerSearchBtn')?.addEventListener('click',()=>loadAdminPlayerDirectory(0));
  $('#bfAdminPlayersPrev')?.addEventListener('click',()=>loadAdminPlayerDirectory(Math.max(0,(window.battleForgeAdminDirectoryOffset||0)-100)));
  $('#bfAdminPlayersNext')?.addEventListener('click',()=>loadAdminPlayerDirectory((window.battleForgeAdminDirectoryOffset||0)+100));
- $('#adminMatchSearchButton')?.addEventListener('click',loadAdminMatchSearch);
+ $('#adminMatchSearchButton')?.addEventListener('click',loadAdminMatchSearch);$('#adminLoadPayments')?.addEventListener('click',loadAdminPaymentRequests);$('#adminSaveSocialLinks')?.addEventListener('click',saveAdminSocialLinks);$('#adminSaveReferralUrl')?.addEventListener('click',saveAdminReferralUrl);$('#loadAppUpdateConfig')?.addEventListener('click',loadAppUpdateConfig);$('#saveAppUpdateConfig')?.addEventListener('click',saveAppUpdateConfig);
  $('#adminMarkPastMatch')?.addEventListener('click',async()=>{const id=Number($('#adminTournament')?.value);if(!id)return toast('Choose a match first.');if(!confirm('Move this match to Past Matches?'))return;const {error}=await supabase.rpc('admin_mark_match_past',{p_tournament_id:id});if(error)return toast(error.message);toast('Match moved to Past Matches.');await refreshData();await showAdmin();document.querySelector('[data-admin-page-open="manage"]')?.click();});
  await loadAdminRoom();syncAdminSelectedSummary();renderAdminMatchPickers();
 }
@@ -392,6 +397,52 @@ async function loadAdminMatchSearch(){
  if(error){target.innerHTML='<p class="notice">'+esc(error.message)+'</p>';return;}const t=data?.tournament;if(!t){target.innerHTML='<p class="admin-helper">No match found with ID #'+id+'.</p>';return;}
  const entries=data.entries||[],room=data.room||{};target.innerHTML='<article class="admin-detail-card"><h3>'+esc(t.title)+' · #'+esc(t.id)+'</h3><p>'+esc(t.game_mode||'Match')+' · '+esc(t.status||'')+' · '+(t.is_past_match?'Past':'Live')+'</p><div class="bf-admin-match-card-bottom"><span>Entry '+Number(t.entry_points||0)+'</span><span>Kill '+Number(t.per_kill_points||0)+'</span><span>Prize '+Number(t.prize_pool_points||0)+'</span><span>Slots '+Number(t.max_players||0)+'</span></div><p>Starts: '+esc(t.starts_at?new Date(t.starts_at).toLocaleString():'Not set')+'</p><p>Room ID: '+esc(room.room_id||'Not set')+' · Password: '+esc(room.room_password||'Not set')+'</p><p>Registered players: '+entries.length+'</p>'+entries.map(e=>'<div class="bf-admin-player-card"><div><b>'+esc(e.in_game_name||'Player')+'</b><small>Player #'+esc(e.player_number||'—')+' · '+Number(e.kills||0)+' kills · '+(e.placement?'Rank '+e.placement:'Pending')+'</small></div></div>').join('')+'</article>';
 }
+
+const APP_FALLBACK_VERSION='1.2.490';
+function compareAppVersions(a,b){const x=String(a||'0').split('.').map(v=>parseInt(v,10)||0),y=String(b||'0').split('.').map(v=>parseInt(v,10)||0);for(let i=0;i<Math.max(x.length,y.length);i++){const p=x[i]||0,q=y[i]||0;if(p!==q)return p>q?1:-1;}return 0;}
+async function loadAdminPaymentRequests(){
+ const target=$('#adminPaymentRequests');if(!target||!isAdmin)return;target.innerHTML='<p class="admin-helper">Loading…</p>';
+ const [dep,wd]=await Promise.all([supabase.from('deposit_requests').select('id,user_id,amount,payer_upi,receiver_upi,status,created_at,payment_reference').order('created_at',{ascending:false}).limit(100),supabase.from('withdrawal_requests').select('id,user_id,amount,fee_amount,net_amount,account_name,payout_upi,status,created_at,payout_reference').order('created_at',{ascending:false}).limit(100)]);
+ if(dep.error||wd.error){target.innerHTML='<p class="notice">'+esc((dep.error||wd.error).message)+'</p>';return;}
+ const rows=[...(dep.data||[]).map(x=>({...x,kind:'deposit'})),...(wd.data||[]).map(x=>({...x,kind:'withdrawal'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+ const ids=[...new Set(rows.map(x=>x.user_id).filter(Boolean))];const {data:players}=ids.length?await supabase.from('player_accounts').select('user_id,player_number,username').in('user_id',ids):{data:[]};const pm=new Map((players||[]).map(p=>[p.user_id,p]));
+ target.innerHTML=rows.length?rows.map(x=>{const p=pm.get(x.user_id)||{};return '<article class="admin-payment-card"><h3>'+x.kind.toUpperCase()+' · ₹'+Number(x.amount).toFixed(2)+'</h3><p>'+esc(x.status)+' · '+esc(new Date(x.created_at).toLocaleString('en-IN'))+'</p><p>Player #'+esc(p.player_number||'—')+' · '+esc(p.username||'')+'</p><p>UPI: '+esc(x.kind==='deposit'?x.payer_upi:x.payout_upi)+' · Ref: '+esc(x.payment_reference||x.payout_reference||'—')+'</p>'+(x.kind==='deposit'&&['pending','reported_paid'].includes(x.status)?'<label class="field">UTR<input id="depRef-'+esc(x.id)+'"></label><button class="join full" data-payment-action="verify-deposit" data-request-id="'+esc(x.id)+'">Verify & credit</button><button class="outline full" data-payment-action="reject-deposit" data-request-id="'+esc(x.id)+'">Reject</button>':'')+(x.kind==='withdrawal'&&['pending','approved'].includes(x.status)?'<label class="field">Payout UTR<input id="wdRef-'+esc(x.id)+'"></label><button class="join full" data-payment-action="paid-withdrawal" data-request-id="'+esc(x.id)+'">Mark paid</button><button class="outline full" data-payment-action="reject-withdrawal" data-request-id="'+esc(x.id)+'">Reject & refund</button>':'')+'</article>';}).join(''):'<p class="admin-helper">No payment requests.</p>';
+}
+async function handleAdminPaymentAction(button){
+ const id=button.dataset.requestId,action=button.dataset.paymentAction;if(!isAdmin||!id)return;const deposit=action.endsWith('deposit');
+ const rpc=deposit?'admin_process_deposit':'admin_process_withdrawal';
+ const args=deposit?{p_request_id:id,p_action:action==='verify-deposit'?'verify':'reject',p_payment_reference:$('#depRef-'+id)?.value.trim()||null,p_note:null}:{p_request_id:id,p_action:action==='paid-withdrawal'?'paid':'reject',p_payout_reference:$('#wdRef-'+id)?.value.trim()||null,p_note:null};
+ if(action==='paid-withdrawal'&&!args.p_payout_reference)return toast('Enter the payout UTR after sending payment.');
+ if(!confirm(action==='verify-deposit'?'Confirm the deposit has actually reached BattleForge?':action==='paid-withdrawal'?'Confirm you have sent the withdrawal?':'Confirm this action?'))return;
+ button.disabled=true;const {error}=await supabase.rpc(rpc,args);button.disabled=false;if(error)return toast(error.message);toast('Payment request updated.');await loadAdminPaymentRequests();
+}
+function validAdminHttpsUrl(v){try{return new URL(String(v||'').trim()).protocol==='https:';}catch{return false;}}
+async function loadAdminSocialLinks(){
+ const {data,error}=await supabase.rpc('get_battleforge_social_links');if(error)return toast(error.message);const x=Array.isArray(data)?data[0]||{}:data||{};
+ $('#adminSocialTelegram').value=x.telegram_url||'';$('#adminSocialInstagram').value=x.instagram_url||'';$('#adminSocialYoutube').value=x.youtube_url||'';
+ const {data:d}=await supabase.rpc('get_battleforge_referral_download_url');const row=Array.isArray(d)?d[0]:d;$('#adminReferralDownloadUrl').value=row?.download_url||'';
+}
+async function saveAdminSocialLinks(){
+ const args={p_telegram_url:$('#adminSocialTelegram').value.trim(),p_instagram_url:$('#adminSocialInstagram').value.trim(),p_youtube_url:$('#adminSocialYoutube').value.trim()||null};
+ for(const [n,v] of [['Telegram',args.p_telegram_url],['Instagram',args.p_instagram_url],['YouTube',args.p_youtube_url]])if(v&&!validAdminHttpsUrl(v))return toast(n+' URL must use HTTPS.');
+ const {error}=await supabase.rpc('admin_update_battleforge_social_links',args);if(error)return toast(error.message);$('#adminSocialStatus').textContent='Social links saved.';toast('Social links saved.');
+}
+async function saveAdminReferralUrl(){
+ const url=$('#adminReferralDownloadUrl').value.trim();if(!validAdminHttpsUrl(url))return toast('Enter a valid HTTPS APK URL.');const {error}=await supabase.rpc('admin_update_battleforge_referral_download_url',{p_download_url:url});if(error)return toast(error.message);$('#adminSocialStatus').textContent='Referral APK link saved.';toast('APK link saved.');
+}
+async function loadAppUpdateConfig(){
+ const {data,error}=await supabase.from('app_update_config').select('latest_version,minimum_version,apk_url,update_message,force_update').eq('id',1).maybeSingle();if(error)return toast(error.message);if(!data)return toast('No update settings found.');
+ $('#appLatestVersion').value=data.latest_version||APP_FALLBACK_VERSION;$('#appMinimumVersion').value=data.minimum_version||APP_FALLBACK_VERSION;$('#appApkUrl').value=data.apk_url||'';$('#appUpdateMessage').value=data.update_message||'';$('#appForceUpdate').checked=data.force_update===true;toast('Update settings loaded.');
+}
+async function saveAppUpdateConfig(){
+ const latest=$('#appLatestVersion').value.trim(),minimum=$('#appMinimumVersion').value.trim(),apk=$('#appApkUrl').value.trim(),message=$('#appUpdateMessage').value.trim(),force=$('#appForceUpdate').checked;
+ const valid=v=>/^[0-9]+([.][0-9]+){1,3}$/.test(v||'');if(!valid(latest)||!valid(minimum))return toast('Enter valid version numbers.');if(compareAppVersions(minimum,latest)>0)return toast('Minimum cannot be newer than latest.');if(!validAdminHttpsUrl(apk))return toast('APK link must be HTTPS.');
+ const {error}=await supabase.rpc('admin_set_app_update_config',{p_latest_version:latest,p_minimum_version:minimum,p_apk_url:apk,p_update_message:message,p_force_update:force});if(error)return toast(error.message);$('#appUpdateStatus').textContent='Saved · '+latest+' · force update '+(force?'ON':'OFF');toast('App update settings saved.');await checkRequiredAppUpdate();
+}
+async function checkRequiredAppUpdate(){
+ try{const {data,error}=await supabase.from('app_update_config').select('latest_version,minimum_version,apk_url,update_message,force_update').eq('id',1).maybeSingle();if(error||!data?.apk_url)return;let installed=APP_FALLBACK_VERSION;try{installed=(await App.getInfo()).version||installed;}catch{}const min=data.minimum_version||APP_FALLBACK_VERSION,latest=data.latest_version||min;const required=compareAppVersions(installed,min)<0||(data.force_update&&compareAppVersions(installed,latest)<0);if(!required||$('#bf-force-update-gate')||!validAdminHttpsUrl(data.apk_url))return;const gate=document.createElement('div');gate.id='bf-force-update-gate';gate.className='bf-force-update-gate';gate.innerHTML='<div class="bf-force-update-card"><span class="eyebrow">UPDATE REQUIRED</span><h2>BattleForge needs an update</h2><p>'+esc(data.update_message||'Install the latest version to continue.')+'</p><p>Installed '+esc(installed)+' · Latest '+esc(latest)+'</p><button class="join full" id="bfUpdateDownload">Download update</button></div>';document.body.appendChild(gate);gate.querySelector('#bfUpdateDownload').addEventListener('click',()=>Capacitor.isNativePlatform()?Browser.open({url:data.apk_url}):window.open(data.apk_url,'_blank','noopener'));}catch(e){console.warn(e);}
+}
+
 async function loadAdminRankings(){
  const id=Number($('#adminTournament')?.value),target=$('#adminRankingEditor');if(!id)return toast('Choose a match first.');
  target.innerHTML='<p class="admin-helper">Loading roster and saved rankings…</p>';
