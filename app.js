@@ -1673,7 +1673,7 @@ function sortAdminRankingByKills(){
 }
 function setupAdminRankingInteractions(){
   const box=$('#adminRankingRows');if(!box||box.dataset.interactionsReady==='1')return;box.dataset.interactionsReady='1';
-  box.addEventListener('input',e=>{if(e.target.matches('.result-kills'))sortAdminRankingByKills();});
+  box.addEventListener('change',e=>{if(e.target.matches('.result-kills'))sortAdminRankingByKills();});
   let active=null;
   const finish=()=>{if(!active)return;active.row.classList.remove('dragging');active.handle.classList.remove('is-grabbing');active=null;syncRankingPositions();};
   box.addEventListener('pointerdown',e=>{const handle=e.target.closest('.ranking-drag');if(!handle||e.button!==0)return;const row=handle.closest('.admin-ranking-row');if(!row)return;e.preventDefault();active={row,handle,pointerId:e.pointerId};handle.classList.add('is-grabbing');row.classList.add('dragging');try{handle.setPointerCapture(e.pointerId)}catch(_){}});
