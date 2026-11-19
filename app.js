@@ -1204,32 +1204,29 @@ async function showNotifications() {
   const ids = await getSeenNotificationIds();
   const unreadCount = items.filter(n => !ids.includes(String(n.id))).length;
   const pushAction = Capacitor.isNativePlatform()
-    ? '<button id="enablePhoneNotifications" class="outline full bf-notification-push">⌁ &nbsp; Enable phone notifications</button>'
+    ? '<button id="enablePhoneNotifications" class="outline full bf-notification-push"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Enable phone notifications</button>'
     : '';
   const cards = items.length ? items.map((n, index) => {
     const unread = !ids.includes(String(n.id));
     const date = n.created_at ? new Date(n.created_at).toLocaleString([], {dateStyle:'medium',timeStyle:'short'}) : 'BattleForge update';
     return `<article class="notification-card bf-notification-item ${unread ? 'unread' : 'read'}">
-      <div class="bf-notification-rail"><span class="bf-notification-icon" aria-hidden="true">${unread ? '✦' : '✓'}</span><i></i></div>
+      <div class="bf-notification-card-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 4 34 12v16l-14 8L6 28V12z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m13 20 4.5 4.5L27 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><i></i></div>
       <div class="bf-notification-copy">
-        <div class="notification-card-top"><b>${esc(n.title || 'BattleForge update')}</b><small>${esc(date)}</small></div>
+        <div class="bf-notification-meta"><span class="bf-notification-kind">${unread ? 'NEW TRANSMISSION' : 'ARCHIVED UPDATE'}</span><time>${esc(date)}</time></div>
+        <h3>${esc(n.title || 'BattleForge update')}</h3>
         <p>${esc(n.message || '')}</p>
-        <span class="bf-notification-status">${unread ? '<i></i> NEW UPDATE' : '✓ READ'}</span>
+        <div class="bf-notification-card-foot"><span class="bf-notification-status">${unread ? '<i></i> UNREAD' : 'READ'}</span><span class="bf-notification-index">BF / ${String(index + 1).padStart(2,'0')}</span></div>
       </div>
-      <span class="bf-notification-index">${String(index + 1).padStart(2,'0')}</span>
     </article>`;
-  }).join('') : '<div class="empty-state bf-notification-empty"><span>✦</span><h3>All clear, champion.</h3><p>You’re fully caught up. New tournament drops and important BattleForge updates will land here.</p><div class="bf-notification-empty-orbit" aria-hidden="true">BF</div></div>';
+  }).join('') : '<div class="empty-state bf-notification-empty"><div class="bf-notification-empty-mark" aria-hidden="true"><svg viewBox="0 0 72 72"><path d="M36 7 61 21v30L36 65 11 51V21z" fill="none" stroke="currentColor" stroke-width="2"/><path d="m23 36 9 9 18-20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>You’re all caught up.</h3><p>No new intel right now. Important tournament drops, room details and BattleForge updates will appear here.</p><span class="bf-notification-empty-tag">BATTLEFORGE · LIVE INTEL</span></div>';
   modal(`<section class="notification-sheet bf-notifications">
-    <div class="bf-notifications-hero">
-      <div class="bf-notifications-hero-art" aria-hidden="true"><span class="bf-notice-orbit"></span><span class="bf-notice-orbit two"></span><span class="bf-notice-bell">♢</span><i>✦</i></div>
-      <div class="bf-notifications-heading">
-        <div><div class="eyebrow">BATTLEFORGE INTEL</div><h2>Command <em>feed.</em></h2><p class="profile-help">The latest from your arena, all in one place.</p></div>
-        <span class="bf-notification-count"><b>${unreadCount}</b><small>UNREAD</small></span>
-      </div>
-      <div class="bf-notifications-summary"><span><i></i> LIVE UPDATES</span><span>${items.length} TOTAL · ${items.length-unreadCount} READ</span></div>
-    </div>
-    ${unreadCount ? '<button id="markNotificationsRead" class="outline full bf-notification-mark"><span>✓</span> Mark all as read</button>' : ''}
-    <div class="bf-notification-section-label"><span>RECENT TRANSMISSIONS</span><i></i></div>
+    <header class="bf-notifications-hero">
+      <div class="bf-notifications-hero-grid" aria-hidden="true"></div>
+      <div class="bf-notifications-topline"><span>BF / PLAYER INTELLIGENCE</span><span class="bf-notifications-live"><i></i> SYSTEM ONLINE</span></div>
+      <div class="bf-notifications-hero-main"><div><span class="bf-notifications-overline">YOUR ARENA. YOUR UPDATES.</span><h2>THE<br><em>INTEL FEED.</em></h2><p>Every important update, match alert and tournament announcement — all in one place.</p></div><div class="bf-notifications-hero-emblem" aria-hidden="true"><img src="./assets/battleforge-logo.svg" alt=""></div></div>
+      <div class="bf-notifications-metrics"><div><b>${items.length}</b><span>ALL UPDATES</span></div><i></i><div><b>${unreadCount}</b><span>UNREAD</span></div><i></i><div><b>${items.length-unreadCount}</b><span>READ</span></div></div>
+    </header>
+    <div class="bf-notifications-toolbar"><div><span class="bf-notifications-overline">LATEST FROM BATTLEFORGE</span><h3>Transmission log</h3></div>${unreadCount ? '<button id="markNotificationsRead" class="bf-notification-mark"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Mark all read</button>' : '<span class="bf-notifications-all-clear">ALL CAUGHT UP</span>'}</div>
     <div class="bf-notification-list">${cards}</div>
     ${pushAction}
   </section>`);
@@ -1301,7 +1298,7 @@ async function showHistory() {
   const mine=publishedResults||[];
   const publicResults=await Promise.all(matches.map(async t=>{if(t.results_published_at)return String(t.id);const {data,error:resultError}=await supabase.rpc('get_public_past_match_results',{p_tournament_id:Number(t.id)});return !resultError&&Array.isArray(data)&&data.length?String(t.id):null;}));
   const publishedMatchIds=new Set(publicResults.filter(Boolean));
-  target.innerHTML='<section class="bf-archive-feature"><div class="bf-archive-feature-top"><span class="bf-archive-kicker">BATTLEFORGE / THE VAULT</span><span class="bf-archive-index">FIELD RECORDS · 01—'+String(matches.length).padStart(2,'0')+'</span></div><div class="bf-archive-feature-main"><div><p class="bf-archive-overline">EVERY MATCH LEAVES A MARK</p><h2>THE<br><em>AFTERMATH.</em></h2><p class="bf-archive-feature-copy">Your battles. Your numbers. Your legacy. Explore the official match records and verified player results.</p></div><div class="bf-archive-emblem" aria-hidden="true"><img src="./assets/battleforge-logo.svg" alt=""><i></i><b></b></div></div><div class="bf-archive-feature-stats"><div><b>'+matches.length+'</b><span>ARCHIVED MATCHES</span></div><i></i><div><b>'+publishedMatchIds.size+'</b><span>RESULTS PUBLISHED</span></div><span class="bf-archive-feature-mark">BATTLEFORGE®</span></div></section><div class="bf-archive-section-head"><div><span>THE RECORDS</span><h3>Match archive</h3></div><small>SELECT A MATCH TO EXPLORE</small></div><div class="bf-past-archive-grid">'+matches.map((t,index)=>{const r=mine.find(x=>String(x.tournament_id)===String(t.id));const published=publishedMatchIds.has(String(t.id));const summary=r?((r.placement?'#'+Number(r.placement)+' · ':'')+Number(r.kills||0)+' KILLS · '+Number(r.earned_points||0)+' COINS'):published?'FINAL RANKINGS READY':'RESULTS PENDING';const dt=t.starts_at?new Date(t.starts_at):null;const date=dt&&!Number.isNaN(dt.getTime())?dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'DATE NOT SET';const time=dt&&!Number.isNaN(dt.getTime())?dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}):'TIME NOT SET';return '<button type="button" class="history-card past-match-card bf-past-archive-card" data-past-match="'+esc(t.id)+'"><span class="bf-archive-card-top"><span class="bf-archive-matchno">MATCH / '+bfMatchNumber(t.id)+'</span><span class="bf-archive-status '+(published?'is-published':'')+'">'+(published?'RESULTS PUBLISHED':'AWAITING RESULTS')+'</span></span><h3>'+esc(t.title)+'</h3><div class="bf-archive-facts"><span><small>MODE</small><b>'+esc(t.game_mode||'MATCH')+'</b></span><span><small>DATE</small><b>'+esc(date)+'</b></span><span><small>START TIME</small><b>'+esc(time)+'</b></span><span><small>ENTRY FEE</small><b>'+Number(t.entry_points||0)+' COINS</b></span><span><small>PER KILL</small><b>'+Number(t.per_kill_points||0)+' COINS</b></span><span><small>PRIZE POOL</small><b>'+Number(t.prize_pool_points||0)+' COINS</b></span></div><div class="bf-archive-result"><small>'+(r?'YOUR BATTLE REPORT':'MATCH RESULT')+'</small><b>'+esc(summary)+'</b></div><span class="bf-archive-open">VIEW MATCH REPORT <b>↗</b></span></button>';}).join('')+'</div>';
+  target.innerHTML='<section class="bf-archive-feature"><div class="bf-archive-feature-top"><span class="bf-archive-kicker">BATTLEFORGE / THE VAULT</span><span class="bf-archive-index">FIELD RECORDS · 01—'+String(matches.length).padStart(2,'0')+'</span></div><div class="bf-archive-feature-main"><div><p class="bf-archive-overline">EVERY MATCH LEAVES A MARK</p><h2>THE<br><em>AFTERMATH.</em></h2><p class="bf-archive-feature-copy">Your battles. Your numbers. Your legacy. Explore the official match records and verified player results.</p></div><div class="bf-archive-emblem" aria-hidden="true"><img src="./assets/battleforge-logo.svg" alt=""><i></i><b></b></div></div><div class="bf-archive-feature-stats"><div><b>'+matches.length+'</b><span>ARCHIVED MATCHES</span></div><i></i><div><b>'+publishedMatchIds.size+'</b><span>RESULTS PUBLISHED</span></div><span class="bf-archive-feature-mark">BATTLEFORGE®</span></div></section><div class="bf-archive-section-head"><div><span>THE RECORDS</span><h3>Match archive</h3></div><small>SELECT A MATCH TO EXPLORE</small></div><div class="bf-past-archive-grid">'+matches.map((t,index)=>{const r=mine.find(x=>String(x.tournament_id)===String(t.id));const published=publishedMatchIds.has(String(t.id));const summary=r?((r.placement?'#'+Number(r.placement)+' · ':'')+Number(r.kills||0)+' KILLS · '+Number(r.earned_points||0)+' COINS'):published?'FINAL RANKINGS READY':'RESULTS PENDING';const dt=t.starts_at?new Date(t.starts_at):null;const date=dt&&!Number.isNaN(dt.getTime())?dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'DATE NOT SET';const time=dt&&!Number.isNaN(dt.getTime())?dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}):'TIME NOT SET';return '<button type="button" class="history-card past-match-card bf-past-archive-card" data-past-match="'+esc(t.id)+'"><span class="bf-archive-card-top"><span class="bf-archive-matchno"><i>BF / ARCHIVE</i> <b>'+bfMatchNumber(t.id)+'</b></span><span class="bf-archive-status '+(published?'is-published':'')+'"><i></i>'+(published?'OFFICIAL RESULTS':'RESULTS PENDING')+'</span></span><span class="bf-archive-card-art" aria-hidden="true"><span class="bf-archive-art-ring one"></span><span class="bf-archive-art-ring two"></span><span class="bf-archive-art-core"><img src="./assets/battleforge-logo.svg" alt=""></span><span class="bf-archive-art-caption">COMPETITIVE<br>RECORDS</span></span><span class="bf-archive-title-wrap"><small>THE BATTLE RECORD</small><h3>'+esc(t.title)+'</h3><span class="bf-archive-mode">'+esc(t.game_mode||'MATCH')+' <i>·</i> '+esc(date)+'</span></span><span class="bf-archive-card-stats"><span><small>ENTRY</small><b>'+Number(t.entry_points||0)+' <i>COINS</i></b></span><span><small>PER KILL</small><b>'+Number(t.per_kill_points||0)+' <i>COINS</i></b></span><span><small>PRIZE POOL</small><b>'+Number(t.prize_pool_points||0)+' <i>COINS</i></b></span></span><span class="bf-archive-result"><small>'+(r?'YOUR BATTLE REPORT':'MATCH INTEL')+'</small><b>'+esc(summary)+'</b></span><span class="bf-archive-open"><span>OPEN OFFICIAL MATCH REPORT</span><b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M8 5h11v11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></b></span></button>';}).join('')+'</div>';
 }
 
 async function openPastMatchDetails(id) {
@@ -1675,11 +1672,30 @@ function setupAdminRankingInteractions(){
   const box=$('#adminRankingRows');if(!box||box.dataset.interactionsReady==='1')return;box.dataset.interactionsReady='1';
   box.addEventListener('change',e=>{if(e.target.matches('.result-kills'))sortAdminRankingByKills();});
   let active=null;
-  const finish=()=>{if(!active)return;active.row.classList.remove('dragging');active.handle.classList.remove('is-grabbing');active=null;syncRankingPositions();};
-  box.addEventListener('pointerdown',e=>{const handle=e.target.closest('.ranking-drag');if(!handle||e.button!==0)return;const row=handle.closest('.admin-ranking-row');if(!row)return;e.preventDefault();active={row,handle,pointerId:e.pointerId};handle.classList.add('is-grabbing');row.classList.add('dragging');try{handle.setPointerCapture(e.pointerId)}catch(_){}});
-  box.addEventListener('pointermove',e=>{if(!active||e.pointerId!==active.pointerId)return;e.preventDefault();const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('.admin-ranking-row');if(!target||target===active.row||!box.contains(target))return;const rect=target.getBoundingClientRect();const marker=e.clientY<rect.top+rect.height/2?target:target.nextElementSibling;if(marker===active.row||(!marker&&active.row===box.lastElementChild))return;box.insertBefore(active.row,marker);syncRankingPositions();},{passive:false});
-  box.addEventListener('pointerup',e=>{if(active&&e.pointerId===active.pointerId)finish()});box.addEventListener('pointercancel',finish);box.addEventListener('lostpointercapture',finish);
-  box.querySelectorAll('.result-kills').forEach(input=>input.addEventListener('change',sortAdminRankingByKills));
+  const finish=e=>{if(!active||e&&e.pointerId!==active.pointerId)return;active.row.classList.remove('dragging');active.handle.classList.remove('is-grabbing');active=null;syncRankingPositions();};
+  box.addEventListener('pointerdown',e=>{
+    const handle=e.target.closest('.ranking-drag');if(!handle)return;
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    const row=handle.closest('.admin-ranking-row');if(!row)return;
+    e.preventDefault();
+    active={row,handle,pointerId:e.pointerId,startY:e.clientY,moved:false};
+    handle.classList.add('is-grabbing');
+  });
+  document.addEventListener('pointermove',e=>{
+    if(!active||e.pointerId!==active.pointerId)return;
+    if(!active.moved&&Math.abs(e.clientY-active.startY)<4)return;
+    active.moved=true;e.preventDefault();active.row.classList.add('dragging');
+    const hit=document.elementFromPoint(e.clientX,e.clientY);
+    const target=hit?.closest?.('.admin-ranking-row');
+    if(!target||target===active.row||!box.contains(target))return;
+    const rect=target.getBoundingClientRect();
+    const before=e.clientY<rect.top+rect.height/2;
+    const marker=before?target:target.nextElementSibling;
+    if(marker===active.row||(!marker&&active.row===box.lastElementChild))return;
+    box.insertBefore(active.row,marker);syncRankingPositions();
+  },{passive:false});
+  document.addEventListener('pointerup',finish);
+  document.addEventListener('pointercancel',finish);
 }
 async function publishBulkResults(button) {
   if (!isAdmin) return toast('Admin access required.');
