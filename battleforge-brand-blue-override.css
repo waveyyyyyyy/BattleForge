@@ -126,3 +126,42 @@ body :is(button,a,[role=button]):focus-visible{outline-color:#315cf4!important}
 .bf-notification-item.unread:before{background:linear-gradient(#79a6ff,#315cf4)!important}
 body :is(.bf-blaze-online,.bf-chat-online,.bf-secure-dot,.bf-auth-kicker i){color:#315cf4!important}
 body svg [fill="#42b7a5"],body svg [fill="#8ff5e7"],body svg [stroke="#42b7a5"],body svg [stroke="#8ff5e7"],body svg [stroke="#6ed8ca"]{fill:#315cf4!important;stroke:#315cf4!important}
+
+/* Admin match ranking: explicit rank numbers and reliable touch/mouse drag target */
+#adminRankingRows.admin-ranking-rows{display:grid;gap:9px;touch-action:pan-y}
+#adminRankingRows .admin-ranking-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;position:relative;min-height:72px;padding:11px;border:1px solid #dce6f8;border-radius:13px;background:#fff;transition:border-color .12s ease,background .12s ease,transform .12s ease}
+#adminRankingRows .admin-ranking-row.dragging{z-index:4;border:2px solid #315cf4;background:#f0f5ff;transform:scale(1.012);box-shadow:0 9px 22px rgba(49,92,244,.14)}
+#adminRankingRows .ranking-player-cell{display:flex;align-items:center;gap:9px;min-width:0}
+#adminRankingRows .ranking-drag{display:grid;place-items:center;flex:0 0 34px;width:34px;height:42px;border:1px solid #cfddfa;border-radius:9px;background:#edf3ff;color:#315cf4;font-size:18px;font-weight:900;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+#adminRankingRows .ranking-drag.is-grabbing{cursor:grabbing;background:#315cf4;color:#fff;border-color:#315cf4}
+#adminRankingRows .ranking-bracket{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:9px;background:#315cf4;color:#fff;font-size:12px;font-weight:950;font-variant-numeric:tabular-nums}
+#adminRankingRows .ranking-player-cell>div{min-width:0}
+#adminRankingRows .ranking-player-cell>div>b{display:flex;align-items:center;flex-wrap:wrap;gap:5px;color:#101a2d;font-size:12px}
+#adminRankingRows .ranking-player-cell>div>small{display:block;color:#73829a;font-size:9px}
+#adminRankingRows .ranking-input{min-width:58px;max-width:84px}
+#adminRankingRows .ranking-input input{width:100%;min-width:0;box-sizing:border-box}
+#adminRankingRows .ranking-input>span{font-size:8px;letter-spacing:.08em}
+#adminResultsSection .admin-ranking-head{display:grid;grid-template-columns:minmax(0,1fr) 62px 80px;gap:8px;align-items:center}
+#adminResultsSection .admin-ranking-count{display:inline-block;margin-left:5px;padding:4px 6px;border-radius:6px;background:#edf3ff;color:#315cf4;font-size:8px;font-weight:950;white-space:nowrap}
+#adminResultsSection .admin-ranking-head>span{font-size:8px;line-height:1.3}
+@media(max-width:390px){#adminRankingRows .admin-ranking-row{grid-template-columns:minmax(0,1fr) 54px 70px;gap:6px;padding:8px}#adminRankingRows .ranking-player-cell{gap:5px}#adminRankingRows .ranking-drag{flex-basis:28px;width:28px;height:38px}#adminRankingRows .ranking-bracket{flex-basis:27px;width:27px;height:27px;font-size:10px}#adminRankingRows .ranking-input{min-width:0;max-width:none}}
+
+/* Match report totals and logo treatment */
+#page-history .bf-archive-emblem{overflow:hidden}
+#page-history .bf-archive-emblem>img{display:block;width:76%;max-height:58px;object-fit:contain;position:relative;z-index:1}
+#page-history .bf-archive-emblem i,#page-history .bf-archive-emblem b{z-index:2}
+#modal .bf-report-hero-mark{right:17px;bottom:12px;display:flex;align-items:center;gap:5px;max-width:110px;overflow:hidden;opacity:.78}
+#modal .bf-report-hero-mark img{display:block;width:76px;max-height:36px;object-fit:contain}
+#modal .bf-report-hero-mark span{flex:0 0 auto;color:#315cf4;font-size:8px;font-weight:900;letter-spacing:.08em}
+#modal .bf-report-totals{padding:15px;border:1px solid #d6e2fb;border-radius:17px;background:linear-gradient(135deg,#fff 0%,#f1f6ff 100%)}
+#modal .bf-report-total-label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+#modal .bf-report-total-label small{color:#7e8da7;font-size:8px;font-weight:900;letter-spacing:.1em}
+#modal .bf-report-total-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#modal .bf-report-total-grid>div{display:grid;gap:5px;min-width:0;padding:12px;border:1px solid #e0e9fb;border-radius:12px;background:#fff}
+#modal .bf-report-total-grid span{color:#7e8da7;font-size:8px;font-weight:900;letter-spacing:.1em}
+#modal .bf-report-total-grid b{color:#315cf4;font-size:clamp(23px,6vw,32px);font-weight:950;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.05em}
+#modal .bf-report-total-grid i{color:#4f607b;font-size:8px;font-weight:850;font-style:normal;letter-spacing:.1em}
+#modal .bf-match-report,#modal .bf-match-report *{animation:none!important;scroll-behavior:auto!important;transition:none!important}
+#modal .bf-match-report{contain:layout paint;content-visibility:auto}
+#modal .bf-report-rank-row{contain:layout paint}
+#modal .bf-report-hero:after{animation:none!important}
