@@ -117,3 +117,12 @@ body :is(button,a,[role=button]):focus-visible{outline-color:#315cf4!important}
 #modal .bf-match-report *{text-shadow:none!important;box-shadow:none}
 #modal .bf-match-report button{box-shadow:none!important}
 @media(max-width:360px){#page-history .bf-archive-emblem{flex-basis:72px;width:72px;height:72px;border-radius:22px}#page-history .bf-archive-feature-main{gap:6px}#modal .bf-report-body{padding:14px}#modal .bf-report-hero{padding:17px}}
+
+/* Direct legacy teal/green literals still present in the support and auth components */
+.bf-auth-kicker i{background:#315cf4!important;box-shadow:0 0 0 4px rgba(49,92,244,.12)!important}
+.bf-payment-select input{accent-color:#315cf4!important}
+.bf-chat-intro{border-left-color:#315cf4!important;background:rgba(49,92,244,.07)!important;color:#35445b!important}
+.bf-faq-bubble.user{background:linear-gradient(140deg,#e8efff,#dce7ff)!important;border-color:#cbd9ff!important;color:#172238!important}
+.bf-notification-item.unread:before{background:linear-gradient(#79a6ff,#315cf4)!important}
+body :is(.bf-blaze-online,.bf-chat-online,.bf-secure-dot,.bf-auth-kicker i){color:#315cf4!important}
+body svg [fill="#42b7a5"],body svg [fill="#8ff5e7"],body svg [stroke="#42b7a5"],body svg [stroke="#8ff5e7"],body svg [stroke="#6ed8ca"]{fill:#315cf4!important;stroke:#315cf4!important}
