@@ -1209,7 +1209,7 @@ async function submitAdminTournament(button) {
 
 async function showAdmin() {
   if (!currentUser || !isAdmin) { toast('Admin access required.'); return; }
-  const { data: adminTournamentRows, error: adminTournamentError } = await supabase.from('tournaments').select('id,title,description,game_mode,status,is_past_match,is_cancelled,starts_at,entry_points,per_kill_points,prize_pool_points,max_players').order('id', { ascending: false });
+  const { data: adminTournamentRows, error: adminTournamentError } = await supabase.from('tournaments').select('id,title,description,game_mode,status,is_past_match,is_cancelled,starts_at,created_at,entry_points,per_kill_points,prize_pool_points,max_players').order('id', { ascending: false });
   const adminAllTournaments = adminTournamentError ? tournaments : (adminTournamentRows || []);
   window.battleForgeAdminTournaments = adminAllTournaments;
   const options = adminAllTournaments.map(t => `<option value="${esc(t.id)}">${esc(t.title)} (${esc(t.game_mode || 'Match')})${t.is_past_match ? ' · Past' : ''}</option>`).join('');
@@ -1263,7 +1263,7 @@ async function showAdmin() {
   $('#adminCreateTournament')?.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); submitAdminTournament(event.currentTarget); });
   $('#adminBroadcastAudience')?.addEventListener('change', syncBroadcastAudience);
   $('#adminLoadBroadcasts')?.addEventListener('click', loadAdminBroadcasts);
-  $('#adminTournament')?.addEventListener('change', async () => { await loadAdminRoom(); syncAdminSelectedSummary(); await loadAdminSchedule(); });
+  $('#adminTournament')?.addEventListener('change', async () => { const roomSelect=$('#adminRoomTournament'),resultsSelect=$('#adminResultsTournament'); if(roomSelect)roomSelect.value=$('#adminTournament').value; if(resultsSelect)resultsSelect.value=$('#adminTournament').value; renderAdminMatchPickers(); await loadAdminRoom(); syncAdminSelectedSummary(); await loadAdminSchedule(); });
   $('#adminResultsTournament')?.addEventListener('change', loadAdminEntries);
   $('#adminLoadResultsRoster')?.addEventListener('click', loadAdminEntries);
   $('#adminLoadEntries')?.addEventListener('click', () => openAdminPage('players'));
