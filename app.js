@@ -1279,8 +1279,8 @@ async function showAdmin() {
   const roomSelect = $('#adminRoomTournament');
   if (roomSelect) roomSelect.value = $('#adminTournament')?.value || roomSelect.value;
   openAdminPage('home');
-  await loadAdminRoom(); syncAdminSelectedSummary(); await loadAdminSchedule(); if(adminIsOwner)await loadAdminSocialLinks();
-  await loadAdminControls();
+  await Promise.all([loadAdminRoom(),loadAdminSchedule(),loadAdminControls(),adminIsOwner?loadAdminSocialLinks():Promise.resolve()]);
+  syncAdminSelectedSummary();
   renderAdminMatchPickers();
 }
 
