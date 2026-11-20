@@ -348,3 +348,66 @@ body svg [fill="#42b7a5"],body svg [fill="#8ff5e7"],body svg [stroke="#42b7a5"],
  #modal .bf-auth-body .google-sign-in,#modal .bf-auth-body .bf-auth-submit{min-height:49px!important;padding-inline:13px!important}
  #modal .bf-auth-provider-icon{flex-basis:23px!important;width:23px!important;height:23px!important}
 }
+
+
+/* BattleForge blue identity: stronger Arena CTA + full blue-white tournament detail banner */
+#page-arena .hero-actions .join{
+  background:linear-gradient(135deg,#2865f5 0%,#174bd4 58%,#123daF 100%)!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+  border:1px solid #83aaff!important;border-radius:12px!important;
+  box-shadow:0 8px 22px #174bd44a,inset 0 1px 0 #ffffff55!important;
+  text-shadow:0 1px 2px #0b2d85!important;
+}
+#page-arena .hero-actions .join:hover:not(:disabled){
+  background:linear-gradient(135deg,#3976ff,#1d52df)!important;
+  box-shadow:0 10px 26px #174bd466,inset 0 1px 0 #ffffff66!important;
+}
+#modal .detail-hero{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  min-height:188px!important;padding:27px 24px 25px!important;
+  border:1px solid #75a1ff!important;border-radius:23px!important;
+  background:
+    radial-gradient(ellipse at 88% 12%,#ffffff35 0%,#ffffff00 38%),
+    radial-gradient(ellipse at 12% 110%,#8db7ff55 0%,#8db7ff00 48%),
+    linear-gradient(122deg,#2868f4 0%,#1e55dc 48%,#1746bf 100%)!important;
+  box-shadow:0 16px 34px #1748bb38,inset 0 1px 0 #ffffff55!important;
+}
+#modal .detail-hero:before{
+  content:""!important;position:absolute!important;z-index:-1!important;
+  width:210px!important;height:210px!important;right:-65px!important;top:-84px!important;
+  border:1px solid #ffffff42!important;border-radius:50%!important;
+  box-shadow:0 0 0 18px #ffffff0d,0 0 0 38px #ffffff0a,0 0 42px #b9d3ff35!important;
+  pointer-events:none!important;
+}
+#modal .detail-hero:after{
+  content:""!important;position:absolute!important;z-index:-1!important;
+  inset:0!important;opacity:.23!important;pointer-events:none!important;
+  background:repeating-linear-gradient(135deg,transparent 0 19px,#ffffff18 20px,#ffffff18 21px,transparent 22px 42px)!important;
+  mask-image:linear-gradient(110deg,#000 0%,transparent 76%)!important;
+}
+#modal .detail-hero>.tag{
+  display:inline-flex!important;align-items:center!important;
+  padding:8px 12px!important;border:1px solid #ffffffa8!important;
+  border-radius:999px!important;background:#ffffff!important;
+  color:#1749bd!important;-webkit-text-fill-color:#1749bd!important;
+  font-size:10px!important;font-weight:950!important;letter-spacing:1px!important;
+  box-shadow:0 4px 12px #0a2e8b30!important;
+}
+#modal .detail-hero h2{
+  position:relative!important;margin:17px 0 9px!important;
+  max-width:90%!important;font-family:Inter,system-ui,sans-serif!important;
+  font-size:clamp(28px,7vw,37px)!important;font-weight:950!important;
+  line-height:1.02!important;letter-spacing:-1.1px!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+  text-shadow:0 2px 12px #092d8b50!important;
+}
+#modal .detail-hero p{
+  position:relative!important;margin:0!important;
+  color:#eaf1ff!important;-webkit-text-fill-color:#eaf1ff!important;
+  font-size:11px!important;font-weight:750!important;letter-spacing:.55px!important;
+  line-height:1.55!important;text-shadow:0 1px 6px #0b328a55!important;
+}
+@media(max-width:380px){
+ #modal .detail-hero{min-height:174px!important;padding:23px 19px!important;border-radius:20px!important}
+ #modal .detail-hero h2{font-size:30px!important}
+}
