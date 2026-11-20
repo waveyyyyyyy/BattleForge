@@ -452,3 +452,17 @@ body svg [fill="#42b7a5"],body svg [fill="#8ff5e7"],body svg [stroke="#42b7a5"],
  #modal .modal-card .bf-auth-sheet .bf-auth-body label.field:has(#authPassword){margin-bottom:22px!important}
  #modal .modal-card .bf-auth-sheet .bf-auth-body button.bf-auth-submit{margin-top:21px!important;min-height:53px!important}
 }
+
+
+/* Auth buttons are one continuous touch target, including all child artwork and labels */
+#modal .bf-auth-sheet .bf-auth-body button#googleSignInBtn,
+#modal .bf-auth-sheet .bf-auth-body button#signInBtn,
+#modal .bf-auth-sheet .bf-auth-body button#signUpBtn{
+  cursor:pointer!important;pointer-events:auto!important;isolation:isolate!important;
+  -webkit-tap-highlight-color:transparent!important;touch-action:manipulation!important;
+}
+#modal .bf-auth-sheet .bf-auth-body button#googleSignInBtn *,
+#modal .bf-auth-sheet .bf-auth-body button#signInBtn *,
+#modal .bf-auth-sheet .bf-auth-body button#signUpBtn *{
+  pointer-events:none!important;
+}

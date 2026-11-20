@@ -1891,17 +1891,19 @@ $('#modalContent').addEventListener('submit', async e => {
   }
 });
 $('#modalContent').addEventListener('click', async e => {
+  // Resolve clicks from any child inside the auth buttons (label, icon, or arrow).
+  const authButton = e.target.closest('#googleSignInBtn, #signInBtn, #signUpBtn');
   const clearSocial=e.target.closest('[data-clear-social]'); if(clearSocial){const input=$('#'+clearSocial.dataset.clearSocial);if(input){input.value='';const status=$('#adminSocialStatus');if(status)status.textContent='Link cleared. Press Save social links to remove it from the profile.';}return;}
   const deleteBroadcast = e.target.closest('[data-delete-broadcast]'); if (deleteBroadcast) await deleteAdminBroadcast(deleteBroadcast.dataset.deleteBroadcast);
   if (e.target.id === 'copyDepositUpi') { try { await navigator.clipboard.writeText(RECEIVING_UPI_ID); toast('UPI ID copied.'); } catch { toast('UPI ID: '+RECEIVING_UPI_ID); } }
   if (e.target.id === 'createDepositRequest' && e.target.form?.id !== 'depositRequestForm') await createPaymentRequest('deposit');
   if (e.target.id === 'createWithdrawalRequest' && e.target.form?.id !== 'withdrawalRequestForm') await createPaymentRequest('withdrawal');
   if (e.target.closest('#enablePhoneNotifications')) { await setupBattleForgePush(true); return; }
-  if (e.target.id === 'googleSignInBtn') await googleSignIn();
+  if (authButton?.id === 'googleSignInBtn') { await googleSignIn(); return; }
   if (e.target.id === 'saveRequiredUsername') await saveRequiredUsername();
   if (e.target.id === 'requiredUsernameLogout') { usernameSetupOpen=false; await supabase.auth.signOut(); close(); await refreshData(); showAuth(); }
-  if (e.target.id === 'signInBtn') await authAction('signin');
-  if (e.target.id === 'signUpBtn') await authAction('signup');
+  if (authButton?.id === 'signInBtn') { await authAction('signin'); return; }
+  if (authButton?.id === 'signUpBtn') { await authAction('signup'); return; }
   if (e.target.id === 'backToSignIn') showAuth('signin');
   if (e.target.id === 'goToSignUp') showAuth('signup');
   if (e.target.id === 'signOutBtn') {
