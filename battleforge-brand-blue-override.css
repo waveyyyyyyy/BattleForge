@@ -411,3 +411,44 @@ body svg [fill="#42b7a5"],body svg [fill="#8ff5e7"],body svg [stroke="#42b7a5"],
  #modal .detail-hero{min-height:174px!important;padding:23px 19px!important;border-radius:20px!important}
  #modal .detail-hero h2{font-size:30px!important}
 }
+
+
+/* Sign-in screen: enforce BattleForge blue, remove inherited white Google label slab, and restore breathing room */
+#modal .modal-card .bf-auth-sheet .bf-auth-body button.google-sign-in,
+#modal .modal-card .bf-auth-sheet .bf-auth-body button.bf-auth-submit{
+  background:#315cf4!important;
+  background-image:linear-gradient(112deg,#244bd8 0%,#315cf4 56%,#477cff 100%)!important;
+  border:1px solid #83aaff!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+  box-shadow:0 8px 20px rgba(36,75,216,.22),inset 0 1px 0 rgba(255,255,255,.24)!important;
+}
+#modal .modal-card .bf-auth-sheet .bf-auth-body button.google-sign-in>span{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  flex:1 1 auto!important;min-width:0!important;width:auto!important;height:auto!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  background:transparent!important;background-image:none!important;
+  box-shadow:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important;
+  font:inherit!important;line-height:1.2!important;text-align:center!important;
+}
+#modal .modal-card .bf-auth-sheet .bf-auth-body button.google-sign-in>span:before,
+#modal .modal-card .bf-auth-sheet .bf-auth-body button.google-sign-in>span:after{
+  content:none!important;display:none!important;
+}
+#modal .modal-card .bf-auth-sheet .bf-auth-body button.google-sign-in .bf-google-provider-icon{
+  flex:0 0 27px!important;width:27px!important;height:27px!important;
+  padding:3px!important;border-radius:8px!important;background:#fff!important;
+}
+#modal .modal-card .bf-auth-sheet .bf-auth-body label.field:has(#authPassword){
+  margin-bottom:25px!important;
+}
+#modal .modal-card .bf-auth-sheet .bf-auth-body button.bf-auth-submit{
+  margin-top:24px!important;margin-bottom:16px!important;
+  min-height:56px!important;
+}
+#modal .modal-card .bf-auth-sheet .bf-auth-body button.bf-auth-submit>span{
+  background:transparent!important;box-shadow:none!important;
+}
+@media(max-width:380px){
+ #modal .modal-card .bf-auth-sheet .bf-auth-body label.field:has(#authPassword){margin-bottom:22px!important}
+ #modal .modal-card .bf-auth-sheet .bf-auth-body button.bf-auth-submit{margin-top:21px!important;min-height:53px!important}
+}
