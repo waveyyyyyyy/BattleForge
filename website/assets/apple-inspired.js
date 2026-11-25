@@ -79,3 +79,27 @@
   hero.addEventListener('pointerleave',()=>hero.querySelectorAll('.bf-float').forEach(n=>{n.style.marginLeft='';n.style.marginTop='';}),{passive:true});
  }
 })();
+
+
+/* Desktop-only pointer tilt: restrained angles, no layout reads during animation frames. */
+(() => {
+ const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const fine=window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+ if(reduce||!fine)return;
+ const selectors='.manifesto-card,.step,.feature-item,.ledger-row,.social-card,.feature-visual,.arena-display,.loop-panel,.bounty';
+ document.querySelectorAll(selectors).forEach(el=>{
+  el.addEventListener('pointermove',event=>{
+   const r=el.getBoundingClientRect();
+   const x=(event.clientX-r.left)/r.width-.5;
+   const y=(event.clientY-r.top)/r.height-.5;
+   const max=el.matches('.feature-visual,.arena-display,.loop-panel,.bounty')?5:3.2;
+   el.style.transform='perspective(1000px) rotateX('+(-y*max).toFixed(2)+'deg) rotateY('+(x*max).toFixed(2)+'deg) translateZ(5px)';
+   el.style.setProperty('--shine-x',(x*100+50).toFixed(1)+'%');
+   el.style.setProperty('--shine-y',(y*100+50).toFixed(1)+'%');
+  },{passive:true});
+  el.addEventListener('pointerleave',()=>{
+   el.style.transform='';
+   el.style.removeProperty('--shine-x');el.style.removeProperty('--shine-y');
+  },{passive:true});
+ });
+})();
