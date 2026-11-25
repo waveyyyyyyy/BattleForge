@@ -178,3 +178,81 @@ footer{background:#f7f7f9;border:0;padding:48px 0 24px}
  .reveal{opacity:1;transform:none;filter:none}
  .manifesto-card,.step,.feature-item,.ledger-row,.social-card{transition:none}
 }
+
+
+/* BATTLEFORGE 2.0 — richer motion, ambient objects and one coherent colour system */
+:root{--blue:#635bff;--blue-dark:#4438dc;--ink:#171821;--muted:#777987;--paper:#f7f6fb;--line:#e6e3ef;--bf-violet:#635bff;--bf-lilac:#b8a8ff;--bf-pink:#f4a8d3;--bf-cyan:#a4eaff;--bf-peach:#ffd2b2}
+::selection{background:#cfc5ff;color:#201a45}
+body{background:#fff;color:var(--ink)}
+header{background:rgba(255,255,255,.76);border-bottom:1px solid #e8e5f0;box-shadow:0 8px 32px #30235a08}
+.navlinks a{color:#626171}
+.button,.quick-download .button,.floating-download{background:linear-gradient(110deg,#635bff,#8b69f7 55%,#ad78e9);border:1px solid #ffffff60;color:#fff;box-shadow:0 12px 28px #635bff26}
+.button:hover,.quick-download .button:hover,.floating-download:hover{background:linear-gradient(110deg,#4f46df,#8b59e7);box-shadow:0 18px 38px #635bff42;transform:translateY(-3px)}
+.hero{background:linear-gradient(180deg,#fbfaff 0%,#f5f1ff 68%,#fff 100%)}
+.hero h1 span,.section-title em,.social-head h2 em,.download-inner h2 span{background:linear-gradient(105deg,#635bff 0%,#a66df2 48%,#f08bc4 82%,#ffbd91 100%);color:transparent;background-clip:text;-webkit-background-clip:text}
+.hero-right{background:radial-gradient(ellipse at 50% 48%,#c8baff 0%,#a99af6 27%,#d8c8ff 52%,#eee9ff 78%,#f8f5ff 100%);box-shadow:0 35px 100px #7560d522}
+.hero-right:before{background-image:radial-gradient(#fff9 1px,transparent 1px),radial-gradient(circle at 22% 22%,#fff9,transparent 30%),radial-gradient(circle at 82% 75%,#f7a9db70,transparent 28%);background-size:28px 28px,auto,auto;opacity:.48;mask:none}
+.hero-right:after{border-color:#ffffff9c;box-shadow:0 0 0 42px #ffffff24,0 0 0 84px #ffffff17,0 0 0 126px #ffffff0c;animation:bfHalo 8s ease-in-out infinite,bfRotate 48s linear infinite}
+.hero-right .brand-motion{filter:drop-shadow(0 32px 35px #6652c94a);animation:bfLogoHover 7s ease-in-out infinite}
+.hero-right .brand-orbit{border-color:#ffffffa8;box-shadow:0 0 28px #ffffff50,inset 0 0 25px #ffffff18}
+.hero-right .brand-orbit-two{border-color:#f5d7ff;animation-duration:13s}
+.hero-right .brand-orbit-three{border-color:#c5c1ff;animation-duration:17s}
+.hero-right .brand-logo-plate{border:1px solid #ffffffb5;background:linear-gradient(145deg,#ffffffed,#eee8ffdf);box-shadow:0 25px 65px #5641a54a,0 0 0 10px #ffffff20;backdrop-filter:blur(20px)}
+.poster{animation:bfCardFloat 7s ease-in-out infinite}
+.marquee{background:#191824}.marquee b{color:#c4b5ff}
+.quick-download{background:linear-gradient(110deg,#f4f0ff,#f9f1fb 55%,#effaff);border-color:#e9e1f5}
+.quick-download:before{border-color:#9c8aff55;box-shadow:0 0 0 24px #9c8aff12,0 0 0 48px #9c8aff09}
+.quick-download-kicker{color:#635bff}
+.quick-download-mark{background:linear-gradient(135deg,#e5deff,#c9c0ff);box-shadow:5px 5px 0 #a99ae9}
+.section.white,.inside-section{background:linear-gradient(180deg,#fff,#faf9fd)}
+.section:not(.white){background:#fff}
+.section-label b{color:#7163ef}
+.manifesto-card{background:linear-gradient(145deg,#f2efff,#e8e3ff);border:1px solid #e6dffb;box-shadow:0 18px 50px #5140a30b}
+.manifesto-card:nth-child(2){background:linear-gradient(145deg,#7165f4,#a27bec)}
+.manifesto-card:nth-child(3){background:linear-gradient(145deg,#252333,#46415c)}
+.arena-tab.active{background:linear-gradient(110deg,#6258ed,#8b67ef);border-color:transparent;box-shadow:0 12px 30px #635bff30}
+.arena-tab:hover:not(.active){background:#f3efff;color:#6258ed}
+.arena-display{background:radial-gradient(ellipse at 76% 32%,#e4d8ff 0%,#f1edff 42%,#f8f6fc 78%);border:1px solid #ebe5f8;box-shadow:inset 0 1px #fff,0 24px 65px #44337e0a}
+.glyph-mid{background:linear-gradient(135deg,#635bff,#c28cf4)}.glyph-front{color:#635bff}
+.inside-ribbon{border-color:#e7e2f2;color:#716c82}
+.feature-visual{background:radial-gradient(circle at 80% 10%,#564b82,#211f32 60%);box-shadow:0 28px 70px #27203e25}
+.feature-item{border-color:#e9e5f1;box-shadow:0 12px 35px #3d2a7308}
+.feature-item:hover{background:#f8f5ff;border-color:#d9cffc;box-shadow:0 18px 44px #635bff18}
+.loop-panel{background:radial-gradient(ellipse at 85% 12%,#635b91,#242132 60%);border-color:#49405e;box-shadow:0 30px 70px #25203c20}
+.loop-tab.active{background:linear-gradient(110deg,#6258ed,#8b67ef);border-color:transparent}
+.blueprint{background:radial-gradient(ellipse at 76% 20%,#a98af5 0%,#6755d9 38%,#302653 100%)}
+.blueprint:before{background-image:radial-gradient(#ffffff22 1px,transparent 1px),radial-gradient(circle at 20% 70%,#ffffff25,transparent 34%);background-size:32px 32px,auto;mask:none}
+.bounty{background:linear-gradient(145deg,#ffffff20,#ffffff09);border-color:#ffffff8a;box-shadow:0 25px 75px #21184735;backdrop-filter:blur(22px)}
+.step,.step+.step{border-color:#e9e5f1;box-shadow:0 15px 40px #3d2a7308}.step .big{color:#8a7af3}
+.ledger-row{border-color:#e9e5f1;box-shadow:0 14px 35px #3d2a7308}
+.download-band{background:radial-gradient(ellipse at 78% 15%,#54447d,#211f32 62%);position:relative;overflow:hidden}
+.download-band:before{content:"";position:absolute;width:430px;height:430px;border:1px solid #ffffff28;border-radius:50%;right:-100px;top:-270px;box-shadow:0 0 0 35px #ffffff0c,0 0 0 70px #ffffff08;animation:bfHalo 10s ease-in-out infinite}
+.faq-list details{border-color:#e9e5f1;box-shadow:0 10px 30px #3d2a7307}summary:after{color:#7665ef}
+.support-inner{background:linear-gradient(110deg,#f4f0ff,#f5f7ff);border:1px solid #ebe5f7}
+.social-hub{background:linear-gradient(120deg,#f3efff,#f8f4fb 55%,#eefaff);border-color:#e7e0f3}
+.social-card{border-color:#e8e3f1;border-radius:22px;box-shadow:0 16px 40px #3d2a730a}
+.social-card:hover{border-color:#b9aaff;box-shadow:0 22px 55px #635bff1c}
+.social-mark{background:linear-gradient(145deg,#f9f7ff,#e9e2ff);color:#7565ec;border-radius:17px}
+.social-card.soon{background:linear-gradient(145deg,#292638,#48405f);border-color:#49415e}
+footer{background:#faf9fc;border-color:#e9e5f1}
+.page-progress span,#page-progress-bar{background:linear-gradient(90deg,#635bff,#b16eea,#f18dc1)}
+.bf-float-layer{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;contain:layout paint}
+.bf-float{position:absolute;display:block;pointer-events:none;will-change:transform;animation:bfFloat var(--dur,12s) ease-in-out infinite;animation-delay:var(--delay,0s);opacity:var(--alpha,.58)}
+.bf-float.orb{width:var(--size,90px);height:var(--size,90px);border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff 0%,#e7ddff 12%,#b8a4ff 38%,#a78cf055 62%,transparent 74%);filter:blur(.2px) drop-shadow(0 18px 28px #7962d52a)}
+.bf-float.orb.pink{background:radial-gradient(circle at 32% 28%,#fff 0%,#ffe2f2 12%,#f4a9d5 38%,#f4a9d555 62%,transparent 74%)}
+.bf-float.orb.cyan{background:radial-gradient(circle at 32% 28%,#fff 0%,#d9f8ff 12%,#9cecff 38%,#9cecff55 62%,transparent 74%)}
+.bf-float.ring{width:var(--size,100px);height:var(--size,100px);border:1px solid #9b8aff80;border-radius:50%;box-shadow:0 0 0 10px #b9aaff16,0 0 30px #8c7bea1b;animation-name:bfRingFloat,bfRotate;animation-duration:var(--dur,15s),var(--spin,35s)}
+.bf-float.ring:after{content:"";position:absolute;inset:13%;border:1px dashed #ffffffbd;border-radius:50%}
+.bf-float.spark{width:14px;height:14px;background:linear-gradient(135deg,#fff,#c5b5ff);clip-path:polygon(50% 0,61% 38%,100% 50%,61% 62%,50% 100%,39% 62%,0 50%,39% 38%);filter:drop-shadow(0 0 9px #a68cff)}
+.bf-float.capsule{padding:10px 15px;border:1px solid #ffffffb5;border-radius:99px;background:#ffffff70;box-shadow:0 10px 30px #6654a51c;backdrop-filter:blur(14px);color:#6c5bd9;font:700 9px Manrope,sans-serif;letter-spacing:.12em;white-space:nowrap}
+.hero-right .bf-float{z-index:1}.hero-right .brand-motion{z-index:2}
+.bf-float-layer .bf-float:nth-child(1){left:7%;top:17%}.bf-float-layer .bf-float:nth-child(2){right:9%;top:21%}.bf-float-layer .bf-float:nth-child(3){left:18%;bottom:13%}.bf-float-layer .bf-float:nth-child(4){right:18%;bottom:12%}.bf-float-layer .bf-float:nth-child(5){left:48%;top:9%}.bf-float-layer .bf-float:nth-child(6){right:5%;top:54%}.bf-float-layer .bf-float:nth-child(7){left:4%;top:58%}.bf-float-layer .bf-float:nth-child(8){right:36%;bottom:5%}
+.hero .bf-float-layer .bf-float{opacity:.76}
+.section .bf-float-layer,.social-hub .bf-float-layer,.blueprint .bf-float-layer{z-index:0}
+.section>.wrap,.social-hub>.wrap,.blueprint>.wrap{position:relative;z-index:1}
+@keyframes bfFloat{0%,100%{transform:translate3d(0,0,0) rotate(-5deg)}25%{transform:translate3d(10px,-17px,0) rotate(3deg)}50%{transform:translate3d(-5px,-30px,0) rotate(8deg)}75%{transform:translate3d(-13px,-12px,0) rotate(-2deg)}}
+@keyframes bfRingFloat{0%,100%{transform:translate3d(0,0,0) scale(.96)}50%{transform:translate3d(8px,-22px,0) scale(1.04)}}
+@keyframes bfRotate{to{rotate:360deg}}
+@keyframes bfLogoHover{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-13px) rotate(1deg)}}
+@media(max-width:700px){.bf-float.orb{width:calc(var(--size,90px)*.68);height:calc(var(--size,90px)*.68)}.bf-float.ring{width:calc(var(--size,100px)*.7);height:calc(var(--size,100px)*.7)}.bf-float.capsule{font-size:7px;padding:7px 10px}.hero-right .bf-float-layer .bf-float:nth-child(6),.hero-right .bf-float-layer .bf-float:nth-child(7){display:none}.section{isolation:isolate}}
+@media(prefers-reduced-motion:reduce){.bf-float,.hero-right:after,.hero-right .brand-motion,.download-band:before{animation:none!important}.bf-float{transform:none!important}}
