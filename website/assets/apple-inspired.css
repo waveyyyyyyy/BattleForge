@@ -324,3 +324,64 @@ footer{background:#faf9fc;border-color:#e9e5f1}
  .hero-right .brand-logo-plate,.hero-right .brand-orbit,.hero-right .brand-orbit-two,.hero-right .brand-orbit-three{animation:none!important}
  .manifesto-card,.step,.feature-item,.ledger-row,.social-card,.feature-visual,.arena-display,.loop-panel{transform:none!important;transition:none!important}
 }
+
+
+/* READABILITY + PERFORMANCE + TYPOGRAPHY MOTION PASS */
+.social-card,.social-card *{color:#252238!important;text-shadow:none!important}
+.social-card{background:linear-gradient(145deg,#fff,#f2efff)!important;border:1px solid #d9d1f3!important;box-shadow:0 12px 28px #30235a12!important}
+.social-card .social-platform{color:#625b7b!important;font-weight:800;opacity:1!important}
+.social-card strong{color:#211d34!important;font-weight:900!important;opacity:1!important}
+.social-card .social-handle{color:#514a69!important;font-weight:700!important;opacity:1!important}
+.social-card .social-handle b{color:#625bff!important}
+.social-card .social-mark{background:#e9e3ff!important;color:#5145c7!important}
+.social-card .social-mark svg{color:inherit!important}
+.social-card.soon{background:linear-gradient(145deg,#292638,#48405f)!important;border-color:#625a7d!important}
+.social-card.soon,.social-card.soon *{color:#fff!important}
+.social-card.soon .social-platform,.social-card.soon .social-handle{color:#eee9ff!important}
+.social-card.soon .social-mark{background:#ffffff20!important;color:#fff!important}
+
+/* Keep depth, but remove expensive always-on paint work. */
+.bf-float-layer{contain:strict;isolation:isolate}
+.bf-float{filter:none!important;will-change:auto;animation-play-state:paused}
+.bf-float-layer.is-active .bf-float{animation-play-state:running}
+.bf-float.orb{box-shadow:inset -8px -10px 18px #5540a51c,inset 5px 6px 12px #ffffff90,0 10px 22px #51418c16}
+.bf-float.ring{box-shadow:0 0 0 7px #b9aaff10}
+.bf-float.ring:after{border-style:solid;opacity:.65}
+.bf-float.capsule{backdrop-filter:none!important;background:#ffffffdf;box-shadow:0 8px 20px #3f2e7b16}
+.manifesto-card,.step,.feature-item,.ledger-row,.social-card{will-change:auto!important}
+.hero-right .brand-motion{filter:none!important}
+.hero-right .brand-logo-plate{backdrop-filter:none!important}
+.feature-visual,.loop-panel,.bounty,.social-card{backdrop-filter:none!important}
+.hero-right:after,.launch-screen:before,.download-band:before{animation:none!important}
+.marquee-track{animation-duration:42s}
+.reveal{transition-duration:.42s;transition-timing-function:cubic-bezier(.2,.7,.2,1)}
+.bf-typing .bf-char{display:inline-block;opacity:0;transform:translateY(.24em);animation:bfTypeIn .24s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:var(--char-delay,0ms)}
+.bf-typing.bf-typed .bf-char{opacity:1;transform:none}
+@keyframes bfTypeIn{to{opacity:1;transform:translateY(0)}}
+.button,.text-link,.navlinks a,.loop-tab,.arena-tab,.social-card{ -webkit-tap-highlight-color:transparent}
+.button{position:relative;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease,background .2s ease}
+.button:after{content:"";position:absolute;inset:-40% auto -40% -45%;width:32%;background:linear-gradient(90deg,transparent,#ffffff70,transparent);transform:skewX(-20deg);transition:left .55s ease}
+.button:hover:after{left:125%}
+.button:active{transform:scale(.975)!important}
+.text-link{position:relative}
+.text-link:after{content:"";position:absolute;left:0;right:100%;bottom:-1px;height:2px;background:linear-gradient(90deg,#635bff,#f08bc4);transition:right .25s}
+.text-link:hover:after{right:0}
+.social-card{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease!important}
+.social-card:hover{transform:translateY(-5px)!important;box-shadow:0 18px 35px #51418c20!important}
+.social-card:focus-visible,.button:focus-visible,.text-link:focus-visible{outline:3px solid #635bff;outline-offset:4px}
+.loop-tab,.arena-tab{transition:background .2s ease,color .2s ease,transform .2s ease}
+.loop-tab:active,.arena-tab:active{transform:scale(.98)}
+details[open] p{animation:bfFadeUp .24s ease both}
+@keyframes bfFadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(max-width:700px){
+ .bf-float-layer .bf-float:nth-child(n+4){display:none!important}
+ .bf-float.orb{box-shadow:0 7px 15px #51418c12}
+ .marquee-track{animation-duration:55s}
+ .social-card:hover{transform:none!important}
+ .button:after{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ .bf-typing .bf-char{opacity:1;transform:none;animation:none}
+ .button:after{display:none}
+ .social-card,.button,.text-link,details[open] p{transition:none!important;animation:none!important}
+}
