@@ -256,3 +256,15 @@ footer{background:#faf9fc;border-color:#e9e5f1}
 @keyframes bfLogoHover{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-13px) rotate(1deg)}}
 @media(max-width:700px){.bf-float.orb{width:calc(var(--size,90px)*.68);height:calc(var(--size,90px)*.68)}.bf-float.ring{width:calc(var(--size,100px)*.7);height:calc(var(--size,100px)*.7)}.bf-float.capsule{font-size:7px;padding:7px 10px}.hero-right .bf-float-layer .bf-float:nth-child(6),.hero-right .bf-float-layer .bf-float:nth-child(7){display:none}.section{isolation:isolate}}
 @media(prefers-reduced-motion:reduce){.bf-float,.hero-right:after,.hero-right .brand-motion,.download-band:before{animation:none!important}.bf-float{transform:none!important}}
+
+/* Match the initial app intro and mobile controls to the new identity too. */
+.launch-screen{background:radial-gradient(ellipse at 50% 35%,#a99af6 0%,#7162df 42%,#28233e 100%);color:#fff}
+.launch-screen:before{content:"";position:absolute;width:min(90vw,620px);aspect-ratio:1;border:1px solid #ffffff35;border-radius:50%;box-shadow:0 0 0 35px #ffffff0c,0 0 0 70px #ffffff08,0 0 0 105px #ffffff06;animation:bfHalo 8s ease-in-out infinite}
+.launch-brand{position:relative;z-index:1;filter:drop-shadow(0 24px 35px #17102d66)}
+.launch-brand .brand-logo-plate{background:linear-gradient(145deg,#ffffffed,#eee8ffdf);border:1px solid #ffffffb5;box-shadow:0 25px 65px #24184c55,0 0 0 10px #ffffff20;backdrop-filter:blur(20px)}
+.launch-brand .brand-orbit{border-color:#ffffffa8;box-shadow:0 0 28px #ffffff50,inset 0 0 25px #ffffff18}
+.launch-word{letter-spacing:.2em}.launch-word i{color:#e1d8ff}
+.launch-line{background:#ffffff30}.launch-line span{background:linear-gradient(90deg,#fff,#d8caff,#f7b8dc)}
+.menu{border-color:#e7e2f0;color:#4d456d;background:#ffffffa8;border-radius:50%;width:42px;height:42px}
+.navlinks.open{background:rgba(255,255,255,.96);border:1px solid #e7e2f0;box-shadow:0 22px 55px #35245d18;backdrop-filter:blur(24px)}
+@media(prefers-reduced-motion:reduce){.launch-screen:before{animation:none}}
