@@ -48,7 +48,7 @@
   const floatIO=new IntersectionObserver(entries=>entries.forEach(e=>{
    e.target.classList.toggle('is-active',e.isIntersecting);
   }),{rootMargin:'100px'});
-  floatLayers.forEach(layer=>floatIO.observe(layer.parentElement));
+  floatLayers.forEach(layer=>floatIO.observe(layer));
  }else floatLayers.forEach(layer=>layer.classList.add('is-active'));
 
  // Character typing on key display headings. Original text remains available to assistive tech.
