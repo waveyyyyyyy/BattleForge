@@ -140,7 +140,7 @@ body{position:relative}
 }
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
-<link rel="stylesheet" href="assets/apple-inspired.css?v=20261125-1">
+<link rel="stylesheet" href="assets/apple-inspired.css?v=20261125-2">
 </head>
 <body>
 <div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">INITIALIZING PLAYER SYSTEM</div></div>
@@ -236,5 +236,5 @@ arenaTabs.forEach(tab=>tab.addEventListener('click',()=>{
 const loopData={discover:{n:'01',k:'FIND YOUR NEXT MATCH',t:'THE ARENA<br>STARTS HERE.',p:'Explore tournaments, compare formats and check the details before choosing where to compete.',symbol:'⌕'},enter:{n:'02',k:'MAKE YOUR CALL',t:'PICK YOUR<br>FORMAT.',p:'Choose Solo, Duo or Squad. Review the entry details, rules and room information before you lock in.',symbol:'↗'},play:{n:'03',k:'SHOW UP AND PLAY',t:'MAKE THE<br>MOMENT COUNT.',p:'Compete in your match, stay connected and follow the instructions shared for your tournament.',symbol:'✳'},track:{n:'04',k:'FOLLOW YOUR PROGRESS',t:'KEEP THE<br>RECEIPTS.',p:'Check verified results, leaderboard movement, player stats and your account activity in one place.',symbol:'⌁'}};document.querySelectorAll('.loop-tab').forEach(tab=>tab.addEventListener('click',()=>{const d=loopData[tab.dataset.step];if(!d)return;document.querySelectorAll('.loop-tab').forEach(t=>{const active=t===tab;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active));});const panel=document.querySelector('.loop-panel');panel.classList.add('loop-changing');setTimeout(()=>{document.getElementById('loop-number').textContent=d.n;document.getElementById('loop-kicker').textContent=d.k;document.getElementById('loop-title').innerHTML=d.t;document.getElementById('loop-copy').textContent=d.p;document.getElementById('loop-symbol').textContent=d.symbol;panel.classList.remove('loop-changing');},140);}));</script>
 <a class="floating-download" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-apk-538/BattleForge.apk" aria-label="Download BattleForge for Android"><span class="floating-download-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/></svg></span><span class="floating-download-copy"><small>ANDROID APP</small><strong>GET BATTLEFORGE</strong></span><span class="arr">↗</span></a>
 <script src="assets/immersive-3d.js?v=20261118-reveal1" defer></script>
-<script src="assets/apple-inspired.js?v=20261125-1" defer></script>
+<script src="assets/apple-inspired.js?v=20261125-2" defer></script>
 </body></html>
