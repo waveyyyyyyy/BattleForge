@@ -472,3 +472,5 @@ details[open] p{animation:bfFadeUp .24s ease both}
 .bf-easter-toast.is-on{opacity:1;transform:translate(-50%,0)}
 @media(max-width:760px){.forge-signal{padding:12px 18px;gap:8px}.forge-signal-copy{font-size:9px;line-height:1.4}.forge-signal-index{font-size:8px}.achievement-grid{grid-template-columns:1fr}.achievement-showcase{padding:18px;margin-top:32px}.achievement-card{padding:13px}.bf-cursor-glow,.bf-cursor-ring{display:none}}
 @media(prefers-reduced-motion:reduce){.hero-right .brand-logo-plate{animation:none!important}.bf-cursor-glow,.bf-cursor-ring,.bf-spark{display:none!important}.achievement-card,.vault-trigger{transition:none!important}.reward-vault{animation:none!important}}
+
+.bf-hero-active .bf-spark{animation-play-state:running}.hero-right:not(.bf-hero-active) .bf-spark{animation-play-state:paused}
