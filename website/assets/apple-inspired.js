@@ -106,3 +106,103 @@
   document.documentElement.classList.toggle('bf-page-hidden',document.hidden);
  });
 })();
+
+
+/* Experience layer: interactions are pointer-aware, viewport-aware and reduced-motion safe. */
+(() => {
+ const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const fine=window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+ const $=(s,r=document)=>r.querySelector(s);
+ const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+
+ // Pointer halo + card spotlight only on precise pointer devices.
+ if(fine&&!reduce){
+  const glow=document.createElement('div'),ring=document.createElement('div');
+  glow.className='bf-cursor-glow';ring.className='bf-cursor-ring';
+  document.body.append(glow,ring);
+  let x=0,y=0,frame=0;
+  window.addEventListener('pointermove',e=>{
+   x=e.clientX;y=e.clientY;
+   if(frame)return;
+   frame=requestAnimationFrame(()=>{
+    glow.style.left=ring.style.left=x+'px';glow.style.top=ring.style.top=y+'px';
+    glow.classList.add('is-visible');ring.classList.add('is-visible');frame=0;
+   });
+  },{passive:true});
+  document.addEventListener('pointerover',e=>{
+   const hit=e.target.closest('a,button,[role="tab"],.achievement-card,.social-card');
+   ring.classList.toggle('is-hover',!!hit);
+  },{passive:true});
+  $$('.manifesto-card,.social-card,.achievement-card,.feature-visual,.bounty,.arena-display').forEach(card=>{
+   card.classList.add('bf-spotlight');
+   card.addEventListener('pointermove',e=>{
+    const r=card.getBoundingClientRect();
+    card.style.setProperty('--spot-x',(e.clientX-r.left)+'px');
+    card.style.setProperty('--spot-y',(e.clientY-r.top)+'px');
+   },{passive:true});
+  });
+ }
+
+ // Magnetic CTA: tiny movement, frame-throttled, desktop only.
+ if(fine&&!reduce){
+  $$('.hero-cta .button,.quick-download .button,.download-inner .button,.arena-display .button').forEach(button=>{
+   let frame=0;
+   button.addEventListener('pointermove',e=>{
+    const r=button.getBoundingClientRect(),dx=(e.clientX-r.left-r.width/2)/r.width,dy=(e.clientY-r.top-r.height/2)/r.height;
+    if(frame)cancelAnimationFrame(frame);
+    frame=requestAnimationFrame(()=>{button.style.translate=(dx*5).toFixed(1)+'px '+(dy*4).toFixed(1)+'px';frame=0;});
+   },{passive:true});
+   button.addEventListener('pointerleave',()=>{if(frame)cancelAnimationFrame(frame);frame=0;button.style.translate='';},{passive:true});
+  });
+ }
+
+ // Add a restrained spark field to the hero arena; never run when offscreen.
+ const hero=$('.hero-right');
+ if(hero&&!reduce){
+  const count=window.matchMedia('(max-width:700px)').matches?7:13;
+  for(let i=0;i<count;i++){
+   const spark=document.createElement('i');spark.className='bf-spark';spark.setAttribute('aria-hidden','true');
+   spark.style.left=(8+((i*37)%84))+'%';spark.style.top=(8+((i*53)%82))+'%';
+   spark.style.setProperty('--spark-duration',(3.5+(i%5)*.7)+'s');
+   spark.style.setProperty('--spark-delay',(-i*.43)+'s');
+   spark.style.setProperty('--spark-x',((i%2?1:-1)*(8+(i%4)*5))+'px');
+   hero.appendChild(spark);
+  }
+  if('IntersectionObserver'in window){
+   const sparkIO=new IntersectionObserver(entries=>entries.forEach(e=>hero.classList.toggle('bf-hero-active',e.isIntersecting)),{rootMargin:'80px'});
+   sparkIO.observe(hero);
+  }else hero.classList.add('bf-hero-active');
+ }
+
+ // Reward vault: explanatory only; no invented payouts or live tournament claims.
+ const vaultButton=$('.vault-trigger'),vault=$('#reward-vault');
+ if(vaultButton&&vault){
+  vaultButton.addEventListener('click',()=>{
+   const open=vaultButton.getAttribute('aria-expanded')!=='true';
+   vaultButton.setAttribute('aria-expanded',String(open));vault.hidden=!open;
+   vaultButton.querySelector('b').textContent=open?'↘':'↗';
+  });
+ }
+
+ // Community signal cycles editorial prompts, not live tournament status.
+ const signal=$('.forge-signal-copy');
+ if(signal&&!reduce){
+  const messages=['YOUR NEXT MATCH STARTS WITH A SINGLE MOVE.','FIND YOUR FORMAT. BRING YOUR PEOPLE.','PLAY WITH INTENT. MAKE EVERY MOMENT COUNT.','THE FORGE IS BUILT AROUND THE PLAYERS.'];
+  let index=0;
+  window.setInterval(()=>{if(document.hidden)return;index=(index+1)%messages.length;signal.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}],{duration:520,easing:'ease'});signal.textContent=messages[index];},5200);
+ }
+
+ // Tiny logo Easter egg: five deliberate taps/clicks reveal a short Forge salute.
+ const logo=$('.hero-right .brand-logo-plate');
+ if(logo){
+  let taps=0,timer=0;
+  const toast=document.createElement('div');toast.className='bf-easter-toast';toast.textContent='FORGED BY PLAYERS. BUILT FOR THE NEXT MATCH.';document.body.appendChild(toast);
+  logo.addEventListener('click',()=>{
+   taps++;window.clearTimeout(timer);
+   if(taps>=5){taps=0;toast.classList.add('is-on');window.setTimeout(()=>toast.classList.remove('is-on'),2400);}
+   else timer=window.setTimeout(()=>{taps=0;},1800);
+  });
+  logo.style.cursor='pointer';logo.setAttribute('tabindex','0');logo.setAttribute('role','button');logo.setAttribute('aria-label','BattleForge logo. Discover a hidden message.');
+  logo.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();logo.click();}});
+ }
+})();
