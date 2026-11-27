@@ -80,6 +80,9 @@ Deno.serve(async req => {
   const { data: { user }, error: userError } = await userClient.auth.getUser();
   if (userError || !user) return json(req,{ error: "Authentication required" }, 401);
 
+  const adminClient = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
+  if (await rateLimited(adminClient, "payment-admin-alert", user.id, 600, 8)) return json(req, { error: "Too many payment alerts. Please wait before retrying." }, 429);
+
   let body: any;
   try {
     const raw = await req.text();
@@ -93,8 +96,6 @@ Deno.serve(async req => {
     return json(req,{ error: "Invalid request type or ID" }, 400);
   }
 
-  const adminClient = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
-  if (await rateLimited(adminClient, "payment-admin-alert", user.id, 600, 8)) return json(req, { error: "Too many payment alerts. Please wait before retrying." }, 429);
   const table = kind === "deposit" ? "deposit_requests" : "withdrawal_requests";
   const { data: request, error: requestError } = await adminClient
     .from(table).select("id,user_id,amount,status").eq("id", requestId).maybeSingle();
