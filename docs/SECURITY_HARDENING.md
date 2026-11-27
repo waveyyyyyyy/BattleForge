@@ -69,3 +69,9 @@ This is a reviewable security hardening tranche, not a guarantee that the app is
 ## Data integrity
 
 No wallet balances, deposit/withdrawal requests, player records, tournament entries, results, or payment records were changed by this security work. No secrets were rotated blindly. No production web deployment was promoted.
+
+## Payment-request webhook authentication (2026-11-27)
+
+The database payment-request trigger sends the Vault-held `battleforge_payment_request_webhook_secret` in the `x-bf-internal-secret` header. The `notify-admin-payment-request` Edge Function therefore has gateway JWT verification disabled so this server-to-server trigger can reach its handler. This does **not** make the endpoint unauthenticated: the handler validates the secret through `public.verify_battleforge_payment_webhook_secret(text)`, which is executable only by `service_role`. Requests without the internal header must still present a valid user JWT, and the function checks that the requested payment record belongs to that user. Both paths are rate-limited. The secret value is never returned to callers.
+
+The verifier function is defined in `supabase/migrations/20261127161000_verify_payment_request_webhook_secret.sql`. The live Edge Function is deployed as version 16; JWT verification is disabled at the gateway only because the function enforces its own two-path authentication.
