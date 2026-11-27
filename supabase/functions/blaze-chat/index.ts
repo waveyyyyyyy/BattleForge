@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { BLAZE_KNOWLEDGE } from "./knowledge.ts";
 
-const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://battleforge-website-battle-forge.vercel.app","https://battleforge-website-8c13whz27-battle-forge.vercel.app","http://localhost","https://localhost","capacitor://localhost","ionic://localhost"]);
+const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://battleforge-website-battle-forge.vercel.app","https://localhost","capacitor://localhost","ionic://localhost","http://localhost:5173","http://127.0.0.1:5173"]);
 function corsHeaders(req: Request) {
   const origin = req.headers.get("Origin") || "";
   return {
