@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { S3Client, PutObjectCommand, GetObjectCommand } from "npm:@aws-sdk/client-s3@3";
 
-const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://battleforge-website-battle-forge.vercel.app","https://battleforge-website-8c13whz27-battle-forge.vercel.app","http://localhost","https://localhost","capacitor://localhost","ionic://localhost"]);
+const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://battleforge-website-k74pt4hx5-battle-forge.vercel.app","https://battleforge-website-git-security-hardening-129197-battle-forge.vercel.app","https://localhost","capacitor://localhost","ionic://localhost","http://localhost:5173","http://127.0.0.1:5173"]);
 function corsHeaders(req: Request) {
   const origin = req.headers.get("Origin") || "";
   return {
@@ -53,12 +53,13 @@ Deno.serve(async (req: Request) => {
   if (authError || !authData.user) return json(req,{ error: "Invalid session" }, 401);
 
   const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: admin, error: adminError } = await db.from("admin_users").select("user_id").eq("user_id", authData.user.id).maybeSingle();
-  if (adminError) {
-    console.error("Admin authorization lookup failed", adminError.message);
-    return json(req,{ error: "Could not verify admin access" }, 500);
+  const { data: access, error: accessError } = await authClient.rpc("get_my_admin_access");
+  if (accessError || !Array.isArray(access?.permissions) || !access.permissions.includes("player_lookup")) {
+    return json(req, { error: "Player lookup permission required" }, 403);
   }
-  if (!admin) return json(req,{ error: "Admin access required" }, 403);
+  if (await rateLimited(db, "r2-player-archive", authData.user.id, 60, 10)) {
+    return json(req, { error: "Archive requests are limited. Please wait a minute." }, 429);
+  }
 
   const s3 = new S3Client({
     region: "auto",
@@ -67,7 +68,11 @@ Deno.serve(async (req: Request) => {
   });
 
   let body: Record<string, unknown>;
-  try { body = await req.json(); } catch { return json(req,{ error: "Invalid JSON body" }, 400); }
+  try {
+    const raw = await req.text();
+    if (new TextEncoder().encode(raw).byteLength > 12000) return json(req, { error: "Request is too large" }, 413);
+    body = JSON.parse(raw);
+  } catch { return json(req, { error: "Invalid JSON body" }, 400); }
   const action = String(body.action ?? "");
   const playerId = String(body.player_id ?? "");
   const search = String(body.search ?? "").trim().slice(0, 80);
