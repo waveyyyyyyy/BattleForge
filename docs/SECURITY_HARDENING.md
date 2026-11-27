@@ -9,7 +9,7 @@ This is a reviewable security hardening tranche, not a guarantee that the app is
 - Deployed all five Edge Functions with JWT verification enabled:
   - `blaze-chat` v5
   - `send-push-notification` v11
-  - `notify-admin-payment-request` v13
+  - `notify-admin-payment-request` v14
   - `r2-player-archive` v4
   - `r2-upload-test` v16
 - All five Edge Functions now use exact origin allowlists rather than wildcard CORS. The allowlist covers the verified BattleForge Vercel domain, the active security preview, Android/iOS Capacitor origins, and local development origins.
@@ -34,7 +34,7 @@ This is a reviewable security hardening tranche, not a guarantee that the app is
   - `tournament_chat_messages`: INSERT/DELETE, constrained by participant/admin RLS.
 - The 54 authenticated-executable SECURITY DEFINER notices are not all vulnerabilities: they include admin RPCs with permission checks, user-owned RPCs, and public app read functions. Inspected admin RPCs use `private.has_battleforge_permission`; do not blanket-revoke these grants because app features rely on them. Full role-by-role runtime negative testing with real test accounts is still required.
 - The single anon-executable SECURITY DEFINER function is `get_tournament_counts()`, intentionally retained for public aggregate tournament discovery.
-- Auth leaked-password protection is still disabled. The connected Supabase controls available in this session do not expose a safe Auth settings update; it must be enabled in Supabase Dashboard after testing password sign-in and reset flows.
+- Auth leaked-password protection is disabled, and this project is on Supabase Free. Supabase documents leaked-password protection as Pro-plan-and-above, so it cannot be enabled on the current plan. It requires a plan upgrade before the Dashboard toggle becomes available.
 
 ## Repository and CI changes
 
@@ -50,12 +50,12 @@ This is a reviewable security hardening tranche, not a guarantee that the app is
 
 - Baseline response headers are configured in both repository root and `website/vercel.json` because the website is served from its own folder.
 - Headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, strict referrer policy, no cross-domain policy, and disabled camera/microphone/geolocation.
-- A Vercel preview was deployed successfully from this security branch. The first preview response did not show the configured headers, which is why the website-root config was added. A second preview must be checked before claiming header verification.
+- A second Vercel preview was deployed successfully after adding `website/vercel.json`. The preview response was checked and returned all five configured security headers. Production headers remain unverified because the preview was not promoted.
 - No production website deployment was promoted. No GitHub PR was merged.
 
 ## Remaining release gates
 
-1. Enable Supabase leaked-password protection in Dashboard and verify sign-in, Google OAuth, password reset, and password update flows.
+1. If you upgrade the Supabase project to Pro, enable leaked-password protection in Dashboard and verify sign-in, Google OAuth, password reset, and password update flows.
 2. Complete a full Git mirror secret scan or confirm GitHub secret-scanning results. If a real credential was ever committed, revoke/rotate it at the issuer and update dependent integrations. Never print secret values in issues or chat.
 3. Complete test-account negative testing: anonymous vs player vs staff vs owner; cross-user profile/wallet/payment reads and writes; room credential isolation; chat; notifications; and every finance/tournament admin RPC.
 4. Verify exact CORS behavior from the production website and native Android WebView, including preflight requests. Add any verified production origin only; do not use wildcard origins.
