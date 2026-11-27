@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.0";
 
-const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://battleforge-website-battle-forge.vercel.app","https://localhost","capacitor://localhost","ionic://localhost","http://localhost:5173","http://127.0.0.1:5173"]);
+const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://localhost","capacitor://localhost","ionic://localhost","http://localhost:5173","http://127.0.0.1:5173"]);
 function corsHeaders(req: Request) {
   const origin = req.headers.get("Origin") || "";
   return {
@@ -13,12 +13,17 @@ function corsHeaders(req: Request) {
 function json(req: Request, body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders(req), "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store" } });
 }
-async function rateLimited(client: ReturnType<typeof createClient>, scope: string, userId: string, windowSeconds: number, maxRequests: number) {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(scope + ":" + userId));
+async function rateLimited(client: ReturnType<typeof createClient>, scope: string, identity: string, windowSeconds: number, maxRequests: number) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(scope + ":" + identity));
   const key = [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
   const { data, error } = await client.rpc("consume_edge_rate_limit", { p_rate_key: key, p_window_seconds: windowSeconds, p_max_requests: maxRequests });
   if (error) { console.error("Shared rate limiter unavailable", error.message); return true; }
   return data === true;
+}
+function getClientKey(req: Request) {
+  return req.headers.get("cf-connecting-ip")?.trim()
+    || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || "unknown";
 }
 
 
@@ -75,13 +80,38 @@ Deno.serve(async req => {
   const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !anon || !service) return json(req,{ error: "Server configuration is incomplete" }, 500);
 
-  const auth = req.headers.get("Authorization") || "";
-  const userClient = createClient(url, anon, { global: { headers: { Authorization: auth } } });
-  const { data: { user }, error: userError } = await userClient.auth.getUser();
-  if (userError || !user) return json(req,{ error: "Authentication required" }, 401);
-
   const adminClient = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
-  if (await rateLimited(adminClient, "payment-admin-alert", user.id, 600, 8)) return json(req, { error: "Too many payment alerts. Please wait before retrying." }, 429);
+  if (await rateLimited(adminClient, "payment-alert-ip", getClientKey(req), 60, 60)) {
+    return json(req, { error: "Too many payment alerts. Please wait before retrying." }, 429);
+  }
+
+  const internalSecret = req.headers.get("x-bf-internal-secret") || "";
+  const isInternal = internalSecret.length > 0;
+  let userId: string | null = null;
+
+  if (isInternal) {
+    if (internalSecret.length > 512) return json(req, { error: "Authentication failed" }, 401);
+    const { data: secretValid, error: secretError } = await adminClient.rpc(
+      "verify_battleforge_payment_webhook_secret",
+      { p_secret: internalSecret },
+    );
+    if (secretError || secretValid !== true) return json(req, { error: "Authentication failed" }, 401);
+    if (await rateLimited(adminClient, "payment-admin-alert-internal", getClientKey(req), 60, 30)) {
+      return json(req, { error: "Too many payment alerts. Please wait before retrying." }, 429);
+    }
+  } else {
+    const auth = req.headers.get("Authorization") || "";
+    const userClient = createClient(url, anon, {
+      global: { headers: { Authorization: auth } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+    if (userError || !user) return json(req, { error: "Authentication required" }, 401);
+    userId = user.id;
+    if (await rateLimited(adminClient, "payment-admin-alert-player", user.id, 600, 8)) {
+      return json(req, { error: "Too many payment alerts. Please wait before retrying." }, 429);
+    }
+  }
 
   let body: any;
   try {
@@ -99,7 +129,7 @@ Deno.serve(async req => {
   const table = kind === "deposit" ? "deposit_requests" : "withdrawal_requests";
   const { data: request, error: requestError } = await adminClient
     .from(table).select("id,user_id,amount,status").eq("id", requestId).maybeSingle();
-  if (requestError || !request || request.user_id !== user.id) {
+  if (requestError || !request || (!isInternal && request.user_id !== userId)) {
     return json(req,{ error: "Request not found for this user" }, 404);
   }
 
