@@ -1,4 +1,32 @@
+# Node / build output
 node_modules/
 dist/
 android/
 .DS_Store
+
+# Local environment files — keep the documented template only
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Local package-manager credentials
+.npmrc
+!.npmrc.example
+
+# Signing material and private credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.mobileprovision
+*.cer
+google-services.json
+GoogleService-Info.plist
+
+# Local database exports and backups
+*.dump
+*.backup
+*.bak
