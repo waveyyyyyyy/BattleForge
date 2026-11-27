@@ -4,7 +4,7 @@
   "private": true,
   "description": "BattleForge tournament app with Supabase auth and online registrations",
   "scripts": {
-    "start": "vite --host 0.0.0.0",
+    "start": "vite --host 127.0.0.1",
     "build": "vite build"
   },
   "dependencies": {
@@ -18,6 +18,6 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",
-    "vite": "^6.3.5"
+    "vite": "6.4.6"
   }
 }

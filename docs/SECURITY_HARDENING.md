@@ -1,0 +1,84 @@
+# BattleForge security hardening — 2026-11-27
+
+This is a reviewable security hardening tranche, not a guarantee that the app is unhackable or a formal penetration-test certification.
+
+## Live Supabase changes applied
+
+- Added private table `private.edge_rate_limits`, with RLS enabled and no client-role table grants.
+- Added `public.consume_edge_rate_limit(text, integer, integer)` as a bounded, atomic shared rate-limit RPC. It has an empty `search_path`; EXECUTE is revoked from `PUBLIC`, `anon`, and `authenticated`, and granted only to `service_role`.
+- Deployed all five Edge Functions with JWT verification enabled:
+  - `blaze-chat` v6
+  - `send-push-notification` v12
+  - `notify-admin-payment-request` v15
+  - `r2-player-archive` v5
+  - `r2-upload-test` v17
+- All five Edge Functions now use exact origin allowlists rather than wildcard CORS. The allowlist covers both verified BattleForge Vercel project domains, Android/iOS Capacitor origins, and exact local development origins; no preview wildcard is allowed.
+- Added shared DB-backed rate limiting to BLAZE, broadcast notifications, payment alerts, R2 archive requests, and the owner-only R2 test endpoint. Rate-limit failures fail closed.
+- BLAZE validates the signed-in user, limits requests to 12/minute, caps bodies at 20 KB, validates message count/role/length, and keeps the Gemini key server-side. Removed a duplicate response helper found during the follow-up review.
+- Broadcast endpoint now requires the `announcements_manage` permission. Archive endpoint requires `player_lookup`. R2 connection test requires owner access.
+- Payment-alert endpoint checks the signed-in user's ownership of the payment request, rate-limits calls, and enforces a real 12 KB body cap.
+- R2 archive endpoint enforces a real body cap and per-user rate limit. It retains source records; archival does not delete transactional history.
+- Revoked all anonymous write/DDL-like table privileges in the public schema, including TRUNCATE. Revoked TRUNCATE, REFERENCES, and TRIGGER from authenticated clients. Removed direct writes to tables that are mutated only through guarded RPCs/server code; preserved only required profile update, push-device management, and match-chat send/delete operations.
+- Revoked broad default grants for future public tables, sequences, and functions created by the `postgres` migration role. Future migrations must explicitly grant only the needed access.
+- Anonymous EXECUTE on `public.get_earnings_leaderboard(text)` remains revoked; authenticated access is retained. `get_tournament_counts()` remains intentionally public because it returns aggregate tournament counts.
+
+## Database authorization review
+
+- All 27 application tables inspected have RLS enabled.
+- The six RLS-enabled/no-policy tables are fail-closed: `private.edge_rate_limits`, `public.admin_users`, `public.battleforge_social_settings`, `public.match_kicks`, `public.player_bans`, and `public.r2_archive_manifest`. These have no anon/authenticated table grants.
+- Before grant tightening, direct client grants included TRUNCATE on multiple public tables. This bypasses RLS. The grant revocation above removed TRUNCATE from anon and authenticated; verification query returned zero tables with client TRUNCATE privileges.
+- Anonymous clients now have no INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, or TRIGGER privileges on public tables.
+- Remaining direct authenticated DML is limited to:
+  - `profiles`: UPDATE only, constrained by self-update RLS.
+  - `push_devices`: INSERT/UPDATE/DELETE, constrained by own-user RLS.
+  - `tournament_chat_messages`: INSERT/DELETE, constrained by participant/admin RLS.
+- The 54 authenticated-executable SECURITY DEFINER notices are not all vulnerabilities: they include admin RPCs with permission checks, user-owned RPCs, and public app read functions. Inspected admin RPCs use `private.has_battleforge_permission`; do not blanket-revoke these grants because app features rely on them. Full role-by-role runtime negative testing with real test accounts is still required.
+- The single anon-executable SECURITY DEFINER function is `get_tournament_counts()`, intentionally retained for public aggregate tournament discovery.
+- Auth leaked-password protection is disabled, and this project is on Supabase Free. Supabase documents leaked-password protection as Pro-plan-and-above, so it cannot be enabled on the current plan. It requires a plan upgrade before the Dashboard toggle becomes available.
+
+## Repository and CI changes
+
+- Vercel environment-variable inventory returned zero project variables (including zero hidden production variables). The frontend's Supabase publishable key is intentionally public; privileged service-role and R2 credentials are read only from Supabase Edge Function server environment variables. Secret values were not exposed or copied.
+
+- `.gitignore` excludes local env files, package credentials, signing keys/certificates, Firebase config, and database backups.
+- Vite is updated to patched 6.4.6 and its dev server binds to localhost.
+- Android build uses Node 22; GitHub Actions permissions are scoped and action references are pinned to immutable SHAs.
+- Added dedicated security CI and Dependabot. Latest security CI run passed dependency audit at high severity and the web build. The separate full-history secret scan also passed across the five active/release branches.
+- A package lockfile is not present yet, so CI still uses `npm install`, not reproducible `npm ci`. Generate and commit a lockfile before calling dependency installation fully reproducible.
+- TruffleHog v3.100.1 full-history scanning passed on five key branches (security/app, main, feature app, production website, and release/1.2.1): 2,318 chunks / 3.3 MB per branch scan, zero verified and zero unverified secrets. Output was redacted before logging. Current tracked source files were also scanned for common credential formats with no matches.
+- Frontend source review found a persisted chat reaction value inserted into HTML without escaping; it is now escaped. Other reviewed dynamic HTML uses the shared `esc()` helper or static content. A full formal taint analysis and browser-based XSS test remain outstanding.
+
+## Website deployment and headers
+
+- Baseline response headers are configured in both repository root and `website/vercel.json` because the website is served from its own folder.
+- Headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, strict referrer policy, no cross-domain policy, and disabled camera/microphone/geolocation.
+- A second Vercel preview was deployed successfully after adding `website/vercel.json`. The preview response was checked and returned all five configured security headers. Production headers remain unverified because the preview was not promoted.
+- No production website deployment was promoted. No GitHub PR was merged.
+
+## Remaining release gates
+
+1. If you upgrade the Supabase Free project to Pro, enable leaked-password protection in Dashboard and verify sign-in, Google OAuth, password reset, and password update flows.
+2. Complete a full Git mirror secret scan or confirm GitHub secret-scanning results. If a real credential was ever committed, revoke/rotate it at the issuer and update dependent integrations. Never print secret values in issues or chat.
+3. Complete test-account negative testing: anonymous vs player vs staff vs owner; cross-user profile/wallet/payment reads and writes; room credential isolation; chat; notifications; and every finance/tournament admin RPC.
+4. Verify exact CORS behavior from the production website and native Android WebView, including preflight requests. Add any verified production origin only; do not use wildcard origins.
+5. Deploy a new Vercel preview and verify the actual response headers. Do not add CSP until OAuth, Supabase WebSocket, inline boot code, and Android WebView behavior are inventoried and tested.
+6. Commit a real npm lockfile, switch CI to `npm ci`, and keep the dependency audit/build passing.
+7. Run an Android APK build and device smoke test after merging the security branch into the intended release branch.
+8. Review backups and complete a restore drill. Monitor auth failures, payment abuse, unexpected admin actions, and Edge Function errors.
+
+## Data integrity
+
+No wallet balances, deposit/withdrawal requests, player records, tournament entries, results, or payment records were changed by this security work. No secrets were rotated blindly. No production web deployment was promoted.
+
+## Payment-request webhook authentication (2026-11-27)
+
+The database payment-request trigger sends the Vault-held `battleforge_payment_request_webhook_secret` in the `x-bf-internal-secret` header. The `notify-admin-payment-request` Edge Function therefore has gateway JWT verification disabled so this server-to-server trigger can reach its handler. This does **not** make the endpoint unauthenticated: the handler validates the secret through `public.verify_battleforge_payment_webhook_secret(text)`, which is executable only by `service_role`. Requests without the internal header must still present a valid user JWT, and the function checks that the requested payment record belongs to that user. Both paths are rate-limited. The secret value is never returned to callers.
+
+The verifier function is defined in `supabase/migrations/20261127161000_verify_payment_request_webhook_secret.sql`. The live Edge Function is deployed as version 16; JWT verification is disabled at the gateway only because the function enforces its own two-path authentication.
+
+## Authorization verification (2026-11-27)
+
+- Under a transaction-scoped fake authenticated identity, all 36 public admin SECURITY DEFINER RPCs rejected the non-admin caller. No function unexpectedly succeeded.
+- A separate transaction-scoped test validated the permission mappings for finance, tournament_manager, moderator, support_agent, analyst, and owner. The temporary auth user, role assignments, and trigger-created rows were rolled back.
+- The fake non-admin identity could see zero rows across profiles, player_accounts, wallet_accounts, deposit_requests, withdrawal_requests, and tournament_entries.
+- These are database-level checks. Real account sign-in, device-level Android smoke tests, and live staff/owner account checks remain release gates.
