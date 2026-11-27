@@ -75,3 +75,10 @@ No wallet balances, deposit/withdrawal requests, player records, tournament entr
 The database payment-request trigger sends the Vault-held `battleforge_payment_request_webhook_secret` in the `x-bf-internal-secret` header. The `notify-admin-payment-request` Edge Function therefore has gateway JWT verification disabled so this server-to-server trigger can reach its handler. This does **not** make the endpoint unauthenticated: the handler validates the secret through `public.verify_battleforge_payment_webhook_secret(text)`, which is executable only by `service_role`. Requests without the internal header must still present a valid user JWT, and the function checks that the requested payment record belongs to that user. Both paths are rate-limited. The secret value is never returned to callers.
 
 The verifier function is defined in `supabase/migrations/20261127161000_verify_payment_request_webhook_secret.sql`. The live Edge Function is deployed as version 16; JWT verification is disabled at the gateway only because the function enforces its own two-path authentication.
+
+## Authorization verification (2026-11-27)
+
+- Under a transaction-scoped fake authenticated identity, all 36 public admin SECURITY DEFINER RPCs rejected the non-admin caller. No function unexpectedly succeeded.
+- A separate transaction-scoped test validated the permission mappings for finance, tournament_manager, moderator, support_agent, analyst, and owner. The temporary auth user, role assignments, and trigger-created rows were rolled back.
+- The fake non-admin identity could see zero rows across profiles, player_accounts, wallet_accounts, deposit_requests, withdrawal_requests, and tournament_entries.
+- These are database-level checks. Real account sign-in, device-level Android smoke tests, and live staff/owner account checks remain release gates.
