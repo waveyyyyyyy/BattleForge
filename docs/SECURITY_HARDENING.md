@@ -45,7 +45,7 @@ This is a reviewable security hardening tranche, not a guarantee that the app is
 - Android build uses Node 22; GitHub Actions permissions are scoped and action references are pinned to immutable SHAs.
 - Added dedicated security CI and Dependabot. Latest security CI run passed dependency audit at high severity and the web build. The separate full-history secret scan also passed across the five active/release branches.
 - A package lockfile is not present yet, so CI still uses `npm install`, not reproducible `npm ci`. Generate and commit a lockfile before calling dependency installation fully reproducible.
-- TruffleHog v3.100.1 full-history scanning passed on five key branches (security/app, main, feature app, production website, and release/1.2.1): 2,311 chunks / 3.3 MB per branch scan, zero verified and zero unverified secrets. Output was redacted before logging. Current tracked source files were also scanned for common credential formats with no matches.
+- TruffleHog v3.100.1 full-history scanning passed on five key branches (security/app, main, feature app, production website, and release/1.2.1): 2,318 chunks / 3.3 MB per branch scan, zero verified and zero unverified secrets. Output was redacted before logging. Current tracked source files were also scanned for common credential formats with no matches.
 - Frontend source review found a persisted chat reaction value inserted into HTML without escaping; it is now escaped. Other reviewed dynamic HTML uses the shared `esc()` helper or static content. A full formal taint analysis and browser-based XSS test remain outstanding.
 
 ## Website deployment and headers
