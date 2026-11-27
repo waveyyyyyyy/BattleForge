@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { S3Client, PutObjectCommand } from "npm:@aws-sdk/client-s3@3";
 
-const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://battleforge-website-battle-forge.vercel.app","https://battleforge-website-8c13whz27-battle-forge.vercel.app","http://localhost","https://localhost","capacitor://localhost","ionic://localhost"]);
+const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://battleforge-website-k74pt4hx5-battle-forge.vercel.app","https://battleforge-website-git-security-hardening-129197-battle-forge.vercel.app","https://localhost","capacitor://localhost","ionic://localhost","http://localhost:5173","http://127.0.0.1:5173"]);
 function corsHeaders(req: Request) {
   const origin = req.headers.get("Origin") || "";
   return {
@@ -35,10 +35,13 @@ Deno.serve(async (req: Request) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!serviceKey) return json(req, { error: "Server authorization configuration missing" }, 503);
   const adminClient = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data: admin, error: adminError } = await adminClient.from("admin_users").select("user_id").eq("user_id", data.user.id).maybeSingle();
-  if (adminError || !admin) return json(req, { error: "Admin access required" }, 403);
+  const userClient = createClient(supabaseUrl, supabaseKey, { global: { headers: { Authorization: auth } }, auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: access, error: accessError } = await userClient.rpc("get_my_admin_access");
+  if (accessError || access?.is_owner !== true) return json(req, { error: "Owner access required" }, 403);
   if (await rateLimited(adminClient, "r2-upload-test", data.user.id, 60, 1)) return json(req, { error: "Test uploads are limited to one per minute." }, 429);
 
+  const contentLength = Number(req.headers.get("content-length") || 0);
+  if (contentLength > 1024) return json(req, { error: "Request is too large" }, 413);
   const accountId = Deno.env.get("R2_ACCOUNT_ID");
   const accessKeyId = Deno.env.get("R2_ACCESS_KEY_ID");
   const secretAccessKey = Deno.env.get("R2_SECRET_ACCESS_KEY");
