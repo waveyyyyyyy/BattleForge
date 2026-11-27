@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.0";
 
-const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://battleforge-website-battle-forge.vercel.app","https://battleforge-website-8c13whz27-battle-forge.vercel.app","http://localhost","https://localhost","capacitor://localhost","ionic://localhost"]);
+const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://battleforge-website-k74pt4hx5-battle-forge.vercel.app","https://battleforge-website-git-security-hardening-129197-battle-forge.vercel.app","https://localhost","capacitor://localhost","ionic://localhost","http://localhost:5173","http://127.0.0.1:5173"]);
 function corsHeaders(req: Request) {
   const origin = req.headers.get("Origin") || "";
   return {
@@ -81,7 +81,11 @@ Deno.serve(async req => {
   if (userError || !user) return json(req,{ error: "Authentication required" }, 401);
 
   let body: any;
-  try { body = await req.json(); } catch { return json(req,{ error: "Invalid JSON body" }, 400); }
+  try {
+    const raw = await req.text();
+    if (new TextEncoder().encode(raw).byteLength > 12000) return json(req, { error: "Request is too large" }, 413);
+    body = JSON.parse(raw);
+  } catch { return json(req, { error: "Invalid JSON body" }, 400); }
   const kind = body.request_type;
   const requestId = String(body.request_id || "");
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
