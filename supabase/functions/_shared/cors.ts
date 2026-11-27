@@ -1,5 +1,6 @@
 const ALLOWED_ORIGINS = new Set([
   "https://battleforge-website.vercel.app",
+  "https://battleforge-website-battle-forge.vercel.app",
   "https://localhost",
   "capacitor://localhost",
   "ionic://localhost",
