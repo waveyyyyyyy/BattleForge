@@ -22,12 +22,6 @@ const WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 12;
 const requestWindows = new Map<string, { startedAt: number; count: number }>();
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" },
-  });
-}
 function getClientKey(req: Request) {
   return req.headers.get("cf-connecting-ip")?.trim()
     || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
