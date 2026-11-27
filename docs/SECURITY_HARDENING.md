@@ -7,12 +7,12 @@ This is a reviewable security hardening tranche, not a guarantee that the app is
 - Added private table `private.edge_rate_limits`, with RLS enabled and no client-role table grants.
 - Added `public.consume_edge_rate_limit(text, integer, integer)` as a bounded, atomic shared rate-limit RPC. It has an empty `search_path`; EXECUTE is revoked from `PUBLIC`, `anon`, and `authenticated`, and granted only to `service_role`.
 - Deployed all five Edge Functions with JWT verification enabled:
-  - `blaze-chat` v5
-  - `send-push-notification` v11
-  - `notify-admin-payment-request` v14
-  - `r2-player-archive` v4
-  - `r2-upload-test` v16
-- All five Edge Functions now use exact origin allowlists rather than wildcard CORS. The allowlist covers the verified BattleForge Vercel domain, the active security preview, Android/iOS Capacitor origins, and local development origins.
+  - `blaze-chat` v6
+  - `send-push-notification` v12
+  - `notify-admin-payment-request` v15
+  - `r2-player-archive` v5
+  - `r2-upload-test` v17
+- All five Edge Functions now use exact origin allowlists rather than wildcard CORS. The allowlist covers both verified BattleForge Vercel project domains, Android/iOS Capacitor origins, and exact local development origins; no preview wildcard is allowed.
 - Added shared DB-backed rate limiting to BLAZE, broadcast notifications, payment alerts, R2 archive requests, and the owner-only R2 test endpoint. Rate-limit failures fail closed.
 - BLAZE validates the signed-in user, limits requests to 12/minute, caps bodies at 20 KB, validates message count/role/length, and keeps the Gemini key server-side. Removed a duplicate response helper found during the follow-up review.
 - Broadcast endpoint now requires the `announcements_manage` permission. Archive endpoint requires `player_lookup`. R2 connection test requires owner access.
@@ -38,12 +38,14 @@ This is a reviewable security hardening tranche, not a guarantee that the app is
 
 ## Repository and CI changes
 
+- Vercel environment-variable inventory returned zero project variables (including zero hidden production variables). The frontend's Supabase publishable key is intentionally public; privileged service-role and R2 credentials are read only from Supabase Edge Function server environment variables. Secret values were not exposed or copied.
+
 - `.gitignore` excludes local env files, package credentials, signing keys/certificates, Firebase config, and database backups.
 - Vite is updated to patched 6.4.6 and its dev server binds to localhost.
 - Android build uses Node 22; GitHub Actions permissions are scoped and action references are pinned to immutable SHAs.
-- Added dedicated security CI and Dependabot. Latest security CI run passed dependency audit at high severity and the web build.
+- Added dedicated security CI and Dependabot. Latest security CI run passed dependency audit at high severity and the web build. The separate full-history secret scan also passed across the five active/release branches.
 - A package lockfile is not present yet, so CI still uses `npm install`, not reproducible `npm ci`. Generate and commit a lockfile before calling dependency installation fully reproducible.
-- Current tracked source files were scanned for common credential formats; no actual key/token patterns were found. A review of 130 recent commit diffs found no credential-shaped tokens; two private-key-marker matches were code that parses PEM key strings, not private key material. This is not a full scan of every historical commit or all Git objects; use GitHub secret scanning or a full mirror scan before certification.
+- TruffleHog v3.100.1 full-history scanning passed on five key branches (security/app, main, feature app, production website, and release/1.2.1): 2,311 chunks / 3.3 MB per branch scan, zero verified and zero unverified secrets. Output was redacted before logging. Current tracked source files were also scanned for common credential formats with no matches.
 - Frontend source review found a persisted chat reaction value inserted into HTML without escaping; it is now escaped. Other reviewed dynamic HTML uses the shared `esc()` helper or static content. A full formal taint analysis and browser-based XSS test remain outstanding.
 
 ## Website deployment and headers
