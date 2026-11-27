@@ -55,7 +55,7 @@ This is a reviewable security hardening tranche, not a guarantee that the app is
 
 ## Remaining release gates
 
-1. If you upgrade the Supabase project to Pro, enable leaked-password protection in Dashboard and verify sign-in, Google OAuth, password reset, and password update flows.
+1. If you upgrade the Supabase Free project to Pro, enable leaked-password protection in Dashboard and verify sign-in, Google OAuth, password reset, and password update flows.
 2. Complete a full Git mirror secret scan or confirm GitHub secret-scanning results. If a real credential was ever committed, revoke/rotate it at the issuer and update dependent integrations. Never print secret values in issues or chat.
 3. Complete test-account negative testing: anonymous vs player vs staff vs owner; cross-user profile/wallet/payment reads and writes; room credential isolation; chat; notifications; and every finance/tournament admin RPC.
 4. Verify exact CORS behavior from the production website and native Android WebView, including preflight requests. Add any verified production origin only; do not use wildcard origins.
