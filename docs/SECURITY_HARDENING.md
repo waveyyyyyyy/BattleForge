@@ -1,6 +1,6 @@
 # BattleForge security hardening — review notes
 
-This branch is a reviewable hardening change set. It is not a claim that the app is unhackable, and it does not change the live Supabase database, Auth configuration, Edge Function deployments, wallet data, or production deployment.
+This branch is a reviewable hardening change set. It is not a claim that the app is unhackable. The live Supabase project has received narrowly scoped database and BLAZE Edge Function security changes; no wallet balances, payment records, player records, or production web deployment were modified.
 
 ## Changes in this branch
 
@@ -16,10 +16,19 @@ This branch is a reviewable hardening change set. It is not a claim that the app
 - The public earnings leaderboard returns user UUIDs, player numbers, usernames and totals. Confirm that each field is intended for public disclosure; consider returning only public leaderboard fields.
 - Five tables have RLS enabled with no policies: `admin_users`, `battleforge_social_settings`, `match_kicks`, `player_bans`, and `r2_archive_manifest`. This is commonly deny-by-default, but verify grants and service-role-only access before adding policies.
 - Supabase Auth leaked-password protection is disabled. Enable after checking the sign-in and password-reset experience; this requires a controlled Auth configuration change.
-- Edge Functions currently use wildcard CORS in several handlers. BLAZE rate limiting uses in-memory per-isolate state and is not a reliable distributed abuse control. Replace with shared rate limiting and a strict allowed-origin list appropriate for the web app and native client.
+- Several Edge Functions still use wildcard CORS. BLAZE previously used only in-memory per-isolate rate limiting; a shared database-backed limiter has now been added and integrated into BLAZE. Other handlers still need abuse throttling and strict origin allowlists.
 - The payment notification handler verifies the caller and checks request ownership. Add abuse throttling and ensure its internal-trigger contract remains intentional.
 - The client uses a Supabase publishable key. This is designed to be public; never put service-role keys, signing credentials, Firebase service-account private keys, or R2 secret keys in the client.
 - The app source includes escaped HTML rendering helpers, but a full source-wide taint/XSS audit and runtime negative tests are still required.
+
+## Changes applied to live Supabase (2026-11-27)
+
+- Added `private.edge_rate_limits` with RLS enabled and no client-role grants. Only `service_role` can access the table.
+- Added `public.consume_edge_rate_limit(text, integer, integer)`, a `SECURITY DEFINER` RPC with an empty search path and strict parameter bounds. EXECUTE is revoked from `PUBLIC`, `anon`, and `authenticated`; only `service_role` can call it.
+- Deployed `blaze-chat` version 3 with JWT verification retained, server-side user validation, shared 12-requests-per-minute rate limiting, a local fallback limiter, and a 20 KB request-body cap.
+- Revoked anonymous EXECUTE on `public.get_earnings_leaderboard(text)` while preserving authenticated access. This reduces anonymous exposure of player UUIDs and leaderboard data. `get_tournament_counts()` remains anonymous because it exposes aggregate counts and may support public tournament discovery.
+- Rechecked function privileges: anon cannot execute the shared rate-limit RPC or earnings leaderboard; authenticated users cannot execute the limiter; service_role can execute it.
+- Re-ran Security Advisor. Anonymous SECURITY DEFINER exposure dropped from two findings to one (`get_tournament_counts`). The 54 authenticated SECURITY DEFINER notices remain and require function-by-function review; do not remove their grants indiscriminately.
 
 ## Required before production approval
 
@@ -36,4 +45,4 @@ This branch is a reviewable hardening change set. It is not a claim that the app
 
 ## Explicitly not done
 
-No production database policies, function grants, function bodies, Auth settings, secrets, wallet balances, or live deployments were changed by this branch. These require a reviewed change plan and explicit production approval. Secret rotation requires approval and coordinated replacement of dependent integrations.
+No wallet balances, payment records, player records, or production web deployment were modified. Auth leaked-password protection remains disabled because the available connected controls do not expose a safe Auth configuration operation; enable it in Supabase Dashboard after testing the password sign-in/reset flow. Wildcard CORS remains on several Edge Functions until the exact web and native origins are verified. Secret rotation requires evidence of exposure and coordinated replacement of dependent integrations.
