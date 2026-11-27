@@ -3,11 +3,16 @@ on:
   workflow_dispatch:
   push:
     branches: [main, "feature/payment-minimums-earned-withdrawal-policy", "admin-portal-overhaul"]
-permissions:
-  contents: write
+concurrency:
+  group: battleforge-android-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      actions: read
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
@@ -22,6 +27,8 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: npm install
+      - name: Audit installed dependencies
+        run: npm audit --audit-level=high
       - name: Copy app styles into Vite public assets
         run: |
           mkdir -p public
