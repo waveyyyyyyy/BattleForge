@@ -1344,6 +1344,103 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 }
 </style>
 
+
+<style id="battleforge-cinematic-composition-v2">
+/* CINEMATIC COMPOSITION V2 — coordinated full-scene choreography */
+.launch-screen{
+  animation:launchExit .68s 4.08s cubic-bezier(.7,0,.2,1) forwards!important;
+  gap:7px!important;
+}
+.launch-world:before{
+  inset:-24%!important;
+  background:
+    radial-gradient(ellipse at 12% 22%,rgba(65,218,247,.25),transparent 29%),
+    radial-gradient(ellipse at 88% 20%,rgba(255,116,197,.21),transparent 30%),
+    radial-gradient(ellipse at 50% 92%,rgba(151,119,255,.22),transparent 36%),
+    linear-gradient(132deg,#fff 0%,#f7faff 48%,#fff 100%)!important;
+  animation:worldBreath 4.6s ease-in-out both,worldDrift 8s 1s ease-in-out infinite alternate!important;
+}
+.launch-backtype{
+  top:49%!important;
+  font-size:clamp(106px,21vw,286px)!important;
+  line-height:.66!important;
+  letter-spacing:-.105em!important;
+  -webkit-text-stroke:1px rgba(35,31,72,.13)!important;
+  animation:backtypeReveal 3.85s .08s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-backtype em{
+  background:linear-gradient(95deg,rgba(78,210,242,.32),rgba(145,121,255,.32),rgba(255,130,199,.32))!important;
+  background-clip:text!important;-webkit-background-clip:text!important;
+}
+.launch-kicker{top:clamp(20px,4.5vh,48px)!important}
+.launch-bottomline{bottom:clamp(20px,4.5vh,48px)!important}
+.launch-side-note{color:#85819d!important}
+.launch-sweep{filter:blur(9px)!important}
+.sweep-one{animation:sweepAcrossA 3.8s .08s cubic-bezier(.16,.7,.2,1) both!important}
+.sweep-two{animation:sweepAcrossB 3.65s .28s cubic-bezier(.16,.7,.2,1) both!important}
+.sweep-three{animation:sweepAcrossC 3.5s .48s cubic-bezier(.16,.7,.2,1) both!important}
+.world-particle{animation-duration:3.15s!important}
+.launch-brand{
+  width:min(94vw,520px)!important;height:275px!important;
+  transform:translateY(-1.5vh)!important;
+}
+.launch-brand:before{
+  width:min(82vw,420px)!important;height:245px!important;
+  background:radial-gradient(ellipse,rgba(255,255,255,.98) 0%,rgba(79,220,247,.25) 25%,rgba(156,127,255,.22) 49%,rgba(255,139,208,.16) 68%,transparent 79%)!important;
+  animation:worldBloom 2.55s .15s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand .brand-orbit{display:none!important}
+.launch-brand .prism-petal,
+.launch-brand .white-ribbon{display:block!important}
+.launch-brand .prism-petal{
+  z-index:1!important;mix-blend-mode:screen!important;
+  box-shadow:inset 0 0 22px rgba(255,255,255,.8),0 8px 25px rgba(126,145,235,.12)!important;
+  animation-duration:3.15s!important;
+}
+.launch-brand .white-ribbon{
+  z-index:2!important;mix-blend-mode:screen!important;
+  filter:drop-shadow(0 4px 9px rgba(127,133,242,.12))!important;
+  animation-duration:3.2s!important;
+}
+.launch-brand .forge-fragment{
+  z-index:4!important;
+  box-shadow:0 5px 18px rgba(115,117,204,.12)!important;
+  animation-duration:3.2s!important;
+}
+.launch-brand .brand-logo-plate{
+  z-index:6!important;width:min(80vw,340px)!important;
+  animation:logoAssemble 1.5s .52s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand .brand-logo-plate img{
+  filter:drop-shadow(0 14px 20px rgba(75,78,145,.14)) drop-shadow(0 0 32px rgba(103,207,244,.3))!important;
+}
+.launch-word{
+  margin-top:-11px!important;
+  font-size:clamp(12px,1.7vw,15px)!important;
+  letter-spacing:.46em!important;
+  animation:wordReveal .9s 1.22s cubic-bezier(.16,1,.3,1) both,prismWordFlow 3.2s 2.1s ease-in-out infinite!important;
+}
+.launch-line{width:min(235px,58vw)!important;height:3px!important}
+.launch-caption{animation:microReveal .65s 1.58s ease both!important}
+@keyframes worldDrift{
+  from{transform:translate3d(-1.5%,0,0) scale(1)}
+  to{transform:translate3d(1.5%,1%,0) scale(1.04)}
+}
+@media(max-width:650px){
+  .launch-screen{animation:launchExit .62s 4.08s cubic-bezier(.7,0,.2,1) forwards!important}
+  .launch-backtype{font-size:clamp(82px,22vw,152px)!important;line-height:.72!important}
+  .launch-brand{height:228px!important;transform:translateY(-1vh)!important}
+  .launch-brand:before{width:94vw!important;height:190px!important}
+  .launch-brand .brand-logo-plate{width:min(82vw,300px)!important}
+  .launch-side-note{bottom:13%!important;top:auto!important}
+  .launch-bottomline{font-size:5.5px!important;letter-spacing:.08em!important}
+  .launch-kicker{font-size:5.5px!important;letter-spacing:.09em!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .launch-screen{animation:none!important;display:none!important}
+  .launch-world,.launch-brand .prism-petal,.launch-brand .white-ribbon{display:none!important}
+}
+</style>
 </head>
 <body>
 <div class="launch-screen" aria-hidden="true">
