@@ -867,92 +867,113 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 }
 </style>
 
-<style id="battleforge-rift-loader-v3">
-/* RIFT SEQUENCE — a clean, cinematic logo reveal with lightweight CSS motion */
+<style id="battleforge-rift-loader-v4">
+/* QUIET POWER — minimal, premium reveal; no box, orbit clutter or heavy effects */
 .launch-screen{
-  gap:12px!important;
+  gap:9px!important;
+  overflow:hidden!important;
   background:
-    radial-gradient(ellipse at 50% 44%,rgba(114,103,255,.34),transparent 31%),
-    radial-gradient(ellipse at 18% 22%,rgba(72,220,255,.16),transparent 34%),
-    radial-gradient(ellipse at 82% 78%,rgba(244,103,213,.15),transparent 36%),
-    #070918!important;
-  animation:launchExit .72s 2.25s cubic-bezier(.7,0,.2,1) forwards!important;
-  overflow:hidden;
+    radial-gradient(ellipse at 50% 43%,rgba(113,101,255,.24),transparent 32%),
+    radial-gradient(ellipse at 50% 56%,rgba(65,204,255,.10),transparent 48%),
+    #080a18!important;
+  animation:launchExit .65s 1.8s cubic-bezier(.7,0,.2,1) forwards!important;
 }
 .launch-screen:before{
-  opacity:.19!important;background-size:68px 68px!important;
-  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 67%)!important;
+  opacity:.10!important;
+  background-size:76px 76px!important;
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 62%)!important;
 }
-.launch-screen:after{
-  width:min(76vw,540px)!important;
-  border-color:rgba(135,210,255,.3)!important;
-  box-shadow:0 0 0 12px rgba(110,110,255,.055),0 0 0 36px rgba(110,110,255,.04),0 0 0 76px rgba(110,110,255,.025),inset 0 0 90px rgba(90,210,255,.08)!important;
-  animation:riftPortal 3.2s ease-in-out infinite!important;
-}
+.launch-screen:after{display:none!important}
 .launch-brand{
-  width:min(88vw,470px)!important;height:290px!important;
+  position:relative!important;
+  width:min(88vw,440px)!important;
+  height:250px!important;
+  min-height:0!important;
+  flex:none!important;
   isolation:isolate!important;
 }
 .launch-brand:before{
-  width:220px!important;height:220px!important;aspect-ratio:1;
-  border-radius:50%!important;border:1px solid rgba(120,224,255,.42)!important;
-  box-shadow:0 0 0 14px rgba(123,107,255,.08),0 0 0 34px rgba(123,107,255,.045),0 0 0 62px rgba(123,107,255,.025),inset 0 0 45px rgba(112,218,255,.12)!important;
-  animation:riftCore 2.8s ease-in-out infinite!important;
+  content:""!important;
+  position:absolute!important;
+  z-index:0!important;
+  left:50%!important;top:50%!important;
+  width:300px!important;height:190px!important;
+  border:0!important;border-radius:50%!important;
+  background:radial-gradient(ellipse,rgba(130,116,255,.24) 0%,rgba(82,202,255,.11) 38%,transparent 72%)!important;
+  box-shadow:none!important;
+  transform:translate(-50%,-50%)!important;
+  animation:quietGlow 3.4s ease-in-out infinite!important;
 }
 .launch-brand:after{
-  content:""!important;position:absolute!important;z-index:1!important;
-  width:290px!important;height:290px!important;border-radius:50%!important;
-  border:1px dashed rgba(230,174,255,.34)!important;
-  box-shadow:0 0 32px rgba(117,196,255,.1)!important;
-  transform:rotateX(66deg) rotateZ(0deg)!important;
-  animation:riftOrbit 8s linear infinite!important;
+  content:""!important;
+  position:absolute!important;
+  z-index:2!important;
+  left:50%!important;top:50%!important;
+  width:min(76vw,330px)!important;height:1px!important;
+  border:0!important;border-radius:50%!important;
+  background:linear-gradient(90deg,transparent,rgba(119,225,255,.0),rgba(151,222,255,.72),rgba(202,165,255,.6),transparent)!important;
+  box-shadow:0 0 16px rgba(123,202,255,.35)!important;
+  transform:translate(-50%,-50%)!important;
+  animation:quietSweep 2.6s ease-in-out infinite!important;
   pointer-events:none!important;
 }
-.launch-brand .brand-orbit{width:350px!important;border-color:rgba(121,222,255,.64)!important;animation-duration:12s!important}
-.launch-brand .brand-orbit-two{width:285px!important;border-color:rgba(226,155,255,.55)!important;animation-duration:9s!important}
-.launch-brand .brand-orbit-three{width:220px!important;border-color:rgba(255,255,255,.28)!important;animation-duration:16s!important}
+.launch-brand .brand-orbit,
+.launch-brand .launch-spark,
+.launch-brand .forge-fragment,
+.launch-brand .launch-coordinate,
+.launch-brand .launch-scan{display:none!important}
 .launch-brand .brand-logo-plate{
-  width:min(78vw,330px)!important;padding:0!important;background:transparent!important;
-  box-shadow:none!important;border:0!important;transform:none!important;
-  animation:riftLogoReveal 1.05s cubic-bezier(.16,1,.3,1) both!important;
+  position:relative!important;z-index:4!important;
+  width:min(76vw,300px)!important;
+  padding:0!important;background:transparent!important;
+  border:0!important;outline:0!important;box-shadow:none!important;
+  transform:none!important;
+  animation:quietLogo 1.05s cubic-bezier(.16,1,.3,1) both!important;
 }
 .launch-brand .brand-logo-plate:before{display:none!important}
 .launch-brand .brand-logo-plate img{
-  width:100%!important;filter:drop-shadow(0 0 12px rgba(119,218,255,.34)) drop-shadow(0 0 35px rgba(160,112,255,.34))!important;
+  display:block!important;width:100%!important;height:auto!important;
+  filter:drop-shadow(0 0 12px rgba(113,210,255,.25)) drop-shadow(0 8px 24px rgba(125,99,255,.25))!important;
 }
-.launch-spark{z-index:5!important;box-shadow:0 0 12px 3px rgba(120,220,255,.85)!important}
-.forge-fragment{width:30px!important;height:48px!important;animation-duration:2.15s!important}
-.launch-scan{width:min(88vw,520px)!important;animation-duration:2.1s!important;opacity:.9}
-.launch-coordinate{font-size:8px!important;color:rgba(226,232,255,.78)!important}
 .launch-word{
-  margin-top:-13px!important;font-size:12px!important;letter-spacing:.32em!important;
-  text-shadow:0 0 22px rgba(131,199,255,.35)!important;
-  animation:riftWord 1s .35s both!important;
+  margin-top:-8px!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  letter-spacing:.34em!important;
+  color:rgba(247,248,255,.94)!important;
+  text-shadow:0 0 20px rgba(131,178,255,.2)!important;
+  animation:quietText .8s .22s both!important;
 }
-.launch-line{width:190px!important;height:2px!important;background:rgba(255,255,255,.18)!important}
-.launch-line span{animation:launchLoad 1.9s .2s cubic-bezier(.2,.7,.2,1) both!important;background:linear-gradient(90deg,#75e6ff,#a99aff,#f2a8e9)!important;box-shadow:0 0 12px rgba(131,206,255,.8)}
-.launch-caption{letter-spacing:.22em!important;animation:riftWord .8s .55s both!important}
-@keyframes riftPortal{0%,100%{transform:scale(.94);opacity:.55}50%{transform:scale(1.04);opacity:1}}
-@keyframes riftCore{0%,100%{transform:scale(.94);opacity:.5}50%{transform:scale(1.08);opacity:1}}
-@keyframes riftOrbit{to{transform:rotateX(66deg) rotateZ(360deg)}}
-@keyframes riftLogoReveal{0%{opacity:0;transform:translateY(18px) scale(.78);filter:blur(12px)}65%{opacity:1;filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes riftWord{from{opacity:0;transform:translateY(9px);letter-spacing:.48em}to{opacity:1;transform:translateY(0)}}
+.launch-line{
+  width:156px!important;height:2px!important;
+  background:rgba(255,255,255,.13)!important;
+  border-radius:2px!important;
+  overflow:hidden!important;
+}
+.launch-line span{
+  background:linear-gradient(90deg,#77e4ff,#9b91ff,#e7a9f0)!important;
+  box-shadow:0 0 10px rgba(129,207,255,.55)!important;
+  animation:launchLoad 1.5s .15s ease both!important;
+}
+.launch-caption{
+  font-size:7px!important;letter-spacing:.2em!important;
+  color:rgba(218,224,255,.65)!important;
+  animation:quietText .7s .35s both!important;
+}
+@keyframes quietGlow{0%,100%{opacity:.62;transform:translate(-50%,-50%) scale(.92)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes quietSweep{0%,100%{opacity:.12;transform:translate(-72%,-50%) scaleX(.6)}50%{opacity:.8;transform:translate(-28%,-50%) scaleX(1)}}
+@keyframes quietLogo{from{opacity:0;transform:translateY(12px) scale(.94);filter:blur(7px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes quietText{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:650px){
- .launch-brand{width:94vw!important;height:250px!important}
- .launch-brand:before{width:165px!important;height:165px!important}
- .launch-brand:after{width:225px!important;height:225px!important}
- .launch-brand .brand-orbit{width:275px!important}
- .launch-brand .brand-orbit-two{width:225px!important}
- .launch-brand .brand-orbit-three{width:175px!important}
- .launch-brand .brand-logo-plate{width:min(78vw,280px)!important}
- .launch-coordinate{font-size:6px!important}
- .forge-fragment{width:22px!important;height:34px!important}
- .launch-word{font-size:10px!important;letter-spacing:.25em!important}
+ .launch-brand{width:94vw!important;height:220px!important}
+ .launch-brand:before{width:245px!important;height:160px!important}
+ .launch-brand .brand-logo-plate{width:min(78vw,270px)!important}
+ .launch-word{font-size:10px!important;letter-spacing:.28em!important}
+ .launch-caption{font-size:6px!important}
 }
 @media(prefers-reduced-motion:reduce){
  .launch-screen{animation:none!important;display:none!important}
  .launch-brand:before,.launch-brand:after,.launch-word,.launch-caption,.launch-brand .brand-logo-plate{animation:none!important}
- .forge-fragment,.launch-scan{display:none!important}
 }
 </style>
 
