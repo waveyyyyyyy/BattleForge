@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f7fb"><meta name="description" content="BattleForge — competitive tournaments for Free Fire and many more games.">
+<meta name="theme-color" content="#f7f8ff"><meta name="description" content="BattleForge — Free Fire community tournaments, player profiles, match chat, rankings and wallet activity.">
 <meta property="og:title" content="BattleForge — Play with intent"><meta property="og:description" content="Solo. Duo. Squad. Find your arena.">
 <title>BattleForge — Play with intent</title><link rel="icon" href="assets/battleforge-logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,30 +138,1508 @@ body{position:relative}
   html,body{overflow-x:clip}
   .hero-grid,.hero,.section,.social-hub,.blueprint,.download-band,main,footer{max-width:100%;}
 }
+
+/* HERO HEADLINE — centered, even rhythm, no hanging offsets */
+.hero-left{align-items:stretch}
+.hero-left>div:first-child{width:100%;max-width:100%}
+.hero h1{
+  width:100%;
+  max-width:none;
+  margin:clamp(34px,5vw,58px) auto 34px;
+  padding:0 10px;
+  text-align:center;
+  font-size:clamp(64px,8.4vw,116px);
+  line-height:.94;
+  letter-spacing:-.065em;
+  font-kerning:normal;
+  overflow-wrap:normal;
+  word-break:normal;
+}
+.hero h1 span{
+  display:block;
+  margin:0;
+  padding:0;
+  color:var(--blue);
+  line-height:.94;
+}
+@media(max-width:900px){
+  .hero h1{font-size:clamp(62px,10vw,92px);margin:38px auto 30px;letter-spacing:-.06em}
+}
+@media(max-width:650px){
+  .hero-left{align-items:center}
+  .hero-left>div:first-child{width:100%}
+  .hero h1{
+    font-size:clamp(54px,13.8vw,82px);
+    line-height:.98;
+    letter-spacing:-.055em;
+    margin:32px auto 28px;
+    padding:0 4px;
+  }
+  .hero h1 span{margin:0;line-height:.98}
+}
+
+
+/* MOBILE HERO VISIBILITY + PROPORTION FIX */
+@media(max-width:650px){
+  .hero{background:#f5f7fb!important}
+  .hero-grid{display:flex!important;flex-direction:column!important;min-height:0!important}
+  .hero-left{
+    display:flex!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    min-height:0!important;
+    padding:38px 20px 28px!important;
+    gap:0!important;
+  }
+  .hero-left>div:first-child{width:100%!important;max-width:none!important}
+  .hero .meta{font-size:9px!important;color:#566176!important}
+  .hero h1{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:30px auto 30px!important;
+    padding:0!important;
+    color:#101828!important;
+    -webkit-text-fill-color:#101828!important;
+    -webkit-text-stroke:0 transparent!important;
+    text-shadow:none!important;
+    filter:none!important;
+    opacity:1!important;
+    font-family:var(--display)!important;
+    font-size:clamp(54px,14.4vw,88px)!important;
+    font-weight:normal!important;
+    line-height:.98!important;
+    letter-spacing:-.065em!important;
+    text-align:center!important;
+    overflow:visible!important;
+  }
+  .hero h1 span{
+    display:block!important;
+    margin:0!important;
+    padding:0!important;
+    color:#174ff5!important;
+    -webkit-text-fill-color:#174ff5!important;
+    -webkit-text-stroke:0 transparent!important;
+    text-shadow:none!important;
+    filter:none!important;
+    opacity:1!important;
+    line-height:.98!important;
+  }
+  .hero-bottom{display:block!important;margin:0!important}
+  .hero-copy{max-width:100%!important;color:#4f5b70!important;font-size:13px!important;line-height:1.75!important}
+  .hero-cta{justify-content:center!important;margin-top:20px!important}
+  .hero-cta .button{min-height:52px!important;padding:15px 24px!important;font-size:11px!important}
+  .hero-bottom>.text-link{display:flex!important;width:max-content!important;margin:12px auto 0!important}
+  .hero-right{min-height:360px!important;height:360px!important}
+  .brand-motion{min-height:360px!important;height:360px!important}
+  .brand-logo-plate{width:min(76%,330px)!important}
+}
+
+
+/* HERO TYPE RESET: keep each word intact and readable */
+.hero h1 .hero-word{display:block;margin:0;padding:0;white-space:nowrap;word-break:keep-all;overflow-wrap:normal}
+.hero h1 .hero-word:not(.hero-accent){color:inherit}
+@media(max-width:650px){
+  .hero-left{padding:34px 18px 26px!important}
+  .hero h1{
+    width:100%!important;max-width:none!important;
+    margin:26px auto 28px!important;padding:0!important;
+    text-align:center!important;
+    font-family:Arial,Helvetica,sans-serif!important;
+    font-size:clamp(48px,12.5vw,62px)!important;
+    font-weight:800!important;line-height:1.02!important;
+    letter-spacing:-.055em!important;
+    color:#111827!important;-webkit-text-fill-color:#111827!important;
+    text-shadow:none!important;-webkit-text-stroke:0!important;
+    word-break:normal!important;overflow-wrap:normal!important;
+  }
+  .hero h1 .hero-word{display:block!important;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;color:#111827!important;-webkit-text-fill-color:#111827!important;line-height:1.02!important}
+  .hero h1 .hero-accent{color:#174ff5!important;-webkit-text-fill-color:#174ff5!important}
+}
+
+
+/* SIRI-INSPIRED VISUAL SYSTEM — luminous gradients, soft glass, fluid colour */
+:root{
+  --blue:#6658e8;
+  --blue-dark:#4d42c8;
+  --ink:#17182d;
+  --muted:#69708a;
+  --paper:#f7f8ff;
+  --line:rgba(111,112,168,.18);
+  --siri-violet:#8d62f5;
+  --siri-cyan:#54d8ed;
+  --siri-pink:#f18acb;
+}
+body{
+  background:
+    radial-gradient(ellipse at 12% 7%,rgba(151,132,255,.12),transparent 30%),
+    radial-gradient(ellipse at 88% 22%,rgba(91,211,239,.10),transparent 28%),
+    var(--paper)!important;
+  color:var(--ink)!important;
+}
+header{
+  background:rgba(250,250,255,.78)!important;
+  border-bottom:1px solid rgba(120,119,175,.16)!important;
+  box-shadow:0 8px 35px rgba(77,73,145,.045);
+}
+.navlinks a:hover,.foot-links a:hover{color:#755de9!important}
+.button,.download-inner .button{
+  color:#fff!important;
+  background:linear-gradient(110deg,#6658e8 0%,#9a63ee 48%,#e28bcf 100%)!important;
+  border:0!important;border-radius:999px!important;
+  box-shadow:0 10px 28px rgba(117,91,226,.25);
+}
+.button:hover,.download-inner .button:hover{
+  background:linear-gradient(110deg,#5849d8,#8854df,#d978c0)!important;
+  transform:translateY(-2px)!important;
+  box-shadow:0 14px 34px rgba(117,91,226,.32)!important;
+}
+.hero{
+  background:
+    radial-gradient(ellipse at 18% 40%,rgba(159,133,255,.16),transparent 42%),
+    radial-gradient(ellipse at 76% 70%,rgba(96,220,235,.13),transparent 38%),
+    #f8f8ff!important;
+}
+.hero-right{
+  background:
+    radial-gradient(ellipse at 22% 25%,rgba(255,255,255,.9),transparent 22%),
+    radial-gradient(ellipse at 75% 78%,rgba(100,222,238,.88),transparent 33%),
+    linear-gradient(135deg,#6c5ce7 0%,#9a65ec 42%,#df8acb 72%,#68d7e8 100%)!important;
+}
+.hero-right:before{
+  background:
+    radial-gradient(circle at 50% 48%,rgba(255,255,255,.55),transparent 2%),
+    radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.18),transparent 55%)!important;
+  background-size:auto!important;
+  mask-image:none!important;
+}
+.hero-right:after{
+  width:min(78%,560px)!important;
+  aspect-ratio:1!important;height:auto!important;
+  border:1px solid rgba(255,255,255,.48)!important;
+  border-radius:50%!important;
+  background:conic-gradient(from 20deg,rgba(255,255,255,.05),rgba(90,229,240,.82),rgba(176,107,246,.8),rgba(247,145,211,.85),rgba(255,255,255,.25),rgba(90,229,240,.82))!important;
+  filter:blur(26px) saturate(1.2)!important;
+  opacity:.78!important;
+  box-shadow:0 0 65px rgba(255,255,255,.42),0 0 130px rgba(151,105,242,.38)!important;
+  animation:siriAura 9s ease-in-out infinite alternate!important;
+}
+@keyframes siriAura{0%{transform:scale(.9) rotate(-12deg);filter:blur(26px) hue-rotate(0deg)}100%{transform:scale(1.08) rotate(18deg);filter:blur(34px) hue-rotate(35deg)}}
+.poster{
+  border-radius:26px!important;
+  border:1px solid rgba(255,255,255,.75)!important;
+  background:rgba(255,255,255,.76)!important;
+  backdrop-filter:blur(22px) saturate(1.3)!important;
+  box-shadow:0 28px 70px rgba(50,39,126,.24)!important;
+  transform:rotate(1deg)!important;
+}
+.poster-art{border-radius:17px!important;background:linear-gradient(145deg,#f1eaff,#dffaff)!important}
+.marquee{background:linear-gradient(100deg,#5146c9,#8060e7,#bd71d4)!important;border:0!important}
+.marquee b{color:#c9f8ff!important}
+.section,.section.white,.inside-section{
+  background:rgba(255,255,255,.58)!important;
+}
+.manifesto-card,.format-row,.step,.ledger-row,.feature-item,.social-card,.support-inner{
+  border-color:rgba(111,112,168,.17)!important;
+}
+.manifesto-card{
+  border-radius:24px!important;
+  box-shadow:0 14px 40px rgba(77,73,145,.07);
+}
+.manifesto-card:nth-child(1){background:linear-gradient(145deg,#f0edff,#e7faff)!important;color:#24213e}
+.manifesto-card:nth-child(2){background:linear-gradient(145deg,#6c5ce7,#a46be9)!important}
+.manifesto-card:nth-child(3){background:linear-gradient(145deg,#242345,#51427d)!important}
+.format-row{border-radius:16px;padding-left:16px!important;padding-right:16px!important}
+.format-row:hover{background:rgba(143,120,239,.09)!important}
+.format-row .plus{color:#715de8!important;border-color:rgba(113,93,232,.35)!important}
+.blueprint{
+  background:
+    radial-gradient(ellipse at 15% 15%,rgba(255,255,255,.24),transparent 34%),
+    radial-gradient(ellipse at 85% 80%,rgba(89,225,237,.4),transparent 34%),
+    linear-gradient(125deg,#5e53d9,#8a60e7 52%,#bd72d5)!important;
+}
+.blueprint:before{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.16),transparent 58%)!important}
+.bounty{
+  border-radius:26px!important;
+  background:rgba(255,255,255,.15)!important;
+  backdrop-filter:blur(18px)!important;
+  box-shadow:0 22px 55px rgba(47,35,120,.2)!important;
+  transform:rotate(-1deg)!important;
+}
+.step .big,.ledger-row .n,.section-label b,.feature-item>b{color:#7961e9!important}
+.download-band{
+  background:
+    radial-gradient(ellipse at 80% 0%,rgba(105,216,239,.28),transparent 35%),
+    linear-gradient(115deg,#272344,#40366d 58%,#6250a4)!important;
+}
+.download-inner h2 span{color:#c6b7ff!important}
+.faq-list details,.faq-list summary{border-color:rgba(111,112,168,.18)!important}
+summary:after,details a{color:#765de8!important}
+footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
+.feature-visual{
+  border-radius:26px!important;
+  box-shadow:0 24px 55px rgba(80,70,160,.18)!important;
+  transform:none!important;
+  background:linear-gradient(145deg,#272344,#4b3d7d 65%,#6255a8)!important;
+}
+.feature-visual:before{background:radial-gradient(ellipse at 85% 10%,rgba(100,218,241,.18),transparent 45%)!important}
+.screen-avatar{background:linear-gradient(135deg,#6b5ce7,#c17ce9)!important;box-shadow:0 8px 20px rgba(120,90,230,.28)!important}
+.loop-panel{
+  border-radius:26px!important;
+  background:linear-gradient(125deg,#272344,#51417e)!important;
+}
+.loop-number{color:#a99aff!important}
+.loop-tab.active{background:linear-gradient(110deg,#6658e8,#a36ce9)!important;border-radius:13px!important}
+.arena-display{border-radius:24px!important;background:linear-gradient(145deg,#f0edff,#e5faff)!important}
+.arena-display:before{background:radial-gradient(ellipse at 80% 20%,rgba(117,94,232,.12),transparent 50%)!important}
+.arena-tab.active{color:#6b58df!important;background:rgba(130,105,238,.10)!important}
+.social-hub{background:linear-gradient(135deg,#f1efff,#e9faff)!important}
+.social-card{border-radius:22px!important;box-shadow:0 12px 32px rgba(77,73,145,.06)}
+.social-card.soon{background:linear-gradient(135deg,#282445,#55447e)!important}
+.launch-screen{
+  background:
+    radial-gradient(ellipse at 25% 25%,rgba(103,225,240,.8),transparent 32%),
+    radial-gradient(ellipse at 80% 75%,rgba(225,127,216,.8),transparent 36%),
+    linear-gradient(135deg,#594fd3,#9864e9)!important;
+}
+.launch-mark{border-radius:24px!important;transform:rotate(-5deg)!important;box-shadow:0 16px 40px rgba(40,25,120,.22)!important}
+.page-progress span{background:linear-gradient(90deg,#6658e8,#d987d2,#61d9ed)!important}
+@media(max-width:650px){
+  .hero-right{min-height:360px!important}
+  .poster{transform:none!important}
+  .manifesto-card{border-radius:19px!important}
+  .social-card{border-radius:18px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-right:after{animation:none!important}
+}
+
+
+/* HEADLINE HIERARCHY — bold black + Siri spectrum accent */
+.hero h1,
+.social-head h2{
+  color:#171526!important;
+  -webkit-text-fill-color:#171526!important;
+  font-family:'Archivo Black',Impact,sans-serif!important;
+  font-weight:900!important;
+  text-shadow:none!important;
+  -webkit-text-stroke:0!important;
+}
+.hero h1 .hero-word{
+  color:#171526!important;
+  -webkit-text-fill-color:#171526!important;
+  font-family:'Archivo Black',Impact,sans-serif!important;
+  font-weight:900!important;
+  letter-spacing:-.055em!important;
+  line-height:.98!important;
+  margin:0!important;
+  white-space:nowrap!important;
+}
+.hero h1 .hero-accent,
+.social-head h2 em{
+  color:#7558e8!important;
+  background:linear-gradient(100deg,#6658e8 0%,#a15fe8 48%,#e18acb 72%,#55cfe7 100%)!important;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  -webkit-text-fill-color:transparent!important;
+  font-style:normal!important;
+}
+.social-head h2{
+  font-weight:900!important;
+  letter-spacing:-.055em!important;
+  line-height:.98!important;
+}
+.social-head h2 em{font-weight:900!important}
+@media(max-width:650px){
+  .hero h1{
+    font-size:clamp(52px,13.8vw,76px)!important;
+    font-weight:900!important;
+    letter-spacing:-.055em!important;
+    line-height:1!important;
+    margin:26px auto 28px!important;
+  }
+  .hero h1 .hero-word{font-size:inherit!important;font-weight:900!important;line-height:1!important}
+  .social-head h2{
+    font-size:clamp(46px,12.5vw,66px)!important;
+    font-weight:900!important;
+    letter-spacing:-.055em!important;
+    line-height:1!important;
+  }
+}
+
+
+/* BATTLEFORGE REACTOR — replace the floating logo card with a dimensional arena */
+.hero-right{
+  position:relative;isolation:isolate;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 48%,rgba(255,255,255,.98) 0%,rgba(228,224,255,.88) 24%,transparent 57%),
+    radial-gradient(ellipse at 18% 82%,rgba(86,218,238,.28),transparent 36%),
+    radial-gradient(ellipse at 86% 18%,rgba(224,125,220,.28),transparent 38%),
+    linear-gradient(145deg,#30265f 0%,#51439a 42%,#29264e 100%)!important;
+}
+.hero-right:before{
+  opacity:.28!important;
+  background:linear-gradient(90deg,rgba(255,255,255,.15) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.15) 1px,transparent 1px)!important;
+  background-size:42px 42px!important;
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 75%)!important;
+}
+.hero-right:after{display:none!important}
+.brand-motion.forge-reactor{
+  --reactor-size:min(76%,520px);
+  position:relative;z-index:2;width:100%;height:100%;min-height:620px;
+  display:grid;place-items:center;isolation:isolate;perspective:1000px;overflow:hidden;
+}
+.reactor-backdrop{
+  position:absolute;width:var(--reactor-size);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.94) 0%,rgba(185,174,255,.5) 24%,rgba(99,217,238,.16) 48%,transparent 70%);
+  filter:blur(12px);animation:reactorPulse 5s ease-in-out infinite;
+}
+.reactor-ring{
+  position:absolute;left:50%;top:50%;border-radius:50%;transform-style:preserve-3d;
+  border:1px solid rgba(255,255,255,.62);box-shadow:0 0 22px rgba(128,108,255,.24),inset 0 0 20px rgba(255,255,255,.12);
+}
+.ring-outer{width:var(--reactor-size);aspect-ratio:1;transform:translate(-50%,-50%) rotateX(68deg) rotateZ(0deg);animation:reactorSpin 18s linear infinite}
+.ring-middle{width:calc(var(--reactor-size)*.79);aspect-ratio:1;border-color:rgba(103,226,244,.9);border-style:dashed;transform:translate(-50%,-50%) rotateX(72deg) rotateZ(25deg);animation:reactorSpinReverse 13s linear infinite}
+.ring-inner{width:calc(var(--reactor-size)*.59);aspect-ratio:1;border-width:2px;border-color:rgba(237,166,255,.85);transform:translate(-50%,-50%) rotateX(58deg) rotateZ(-20deg);animation:reactorSpin 10s linear infinite}
+.reactor-ribbon{
+  position:absolute;left:50%;top:50%;width:calc(var(--reactor-size)*.83);height:calc(var(--reactor-size)*.28);
+  border:8px solid transparent;border-top-color:#9d8aff;border-bottom-color:#64e5ed;
+  border-radius:50%;filter:drop-shadow(0 0 9px rgba(129,108,255,.75));
+  transform-style:preserve-3d;mix-blend-mode:screen;
+}
+.ribbon-one{transform:translate(-50%,-50%) rotate(32deg) rotateX(58deg);animation:ribbonOrbit 7s ease-in-out infinite}
+.ribbon-two{width:calc(var(--reactor-size)*.72);height:calc(var(--reactor-size)*.38);border-top-color:#ff9be2;border-bottom-color:#8c79ff;transform:translate(-50%,-50%) rotate(-48deg) rotateX(62deg);animation:ribbonOrbitTwo 9s ease-in-out infinite}
+.ribbon-three{width:calc(var(--reactor-size)*.94);height:calc(var(--reactor-size)*.18);border-width:5px;border-top-color:#b8f8ff;border-bottom-color:#a18aff;transform:translate(-50%,-50%) rotate(82deg) rotateX(72deg);animation:ribbonOrbit 11s ease-in-out infinite reverse}
+.reactor-core{
+  position:relative;z-index:5;width:calc(var(--reactor-size)*.42);aspect-ratio:1;
+  display:grid;place-items:center;transform-style:preserve-3d;
+  animation:reactorCoreFloat 6s ease-in-out infinite;
+}
+.core-glass{
+  position:absolute;inset:-13%;border-radius:30%;
+  background:linear-gradient(145deg,rgba(255,255,255,.84),rgba(205,194,255,.2) 42%,rgba(94,222,239,.3));
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:0 0 0 9px rgba(255,255,255,.08),0 0 45px rgba(157,132,255,.6),inset 0 0 30px rgba(255,255,255,.8);
+  backdrop-filter:blur(8px);transform:rotate(45deg) rotateX(12deg);
+}
+.reactor-core img{
+  position:relative;z-index:2;width:116%;height:auto;
+  filter:drop-shadow(0 8px 12px rgba(39,35,96,.28)) drop-shadow(0 0 16px rgba(255,255,255,.9));
+  transform:translateZ(35px);
+}
+.reactor-shard{
+  position:absolute;z-index:4;width:clamp(25px,4vw,52px);height:clamp(45px,7vw,82px);
+  background:linear-gradient(145deg,#fff 0%,#b9b0ff 38%,#7c70eb 62%,#61e0ec 100%);
+  clip-path:polygon(50% 0,100% 72%,50% 100%,0 72%);
+  filter:drop-shadow(0 8px 12px rgba(38,30,112,.28));
+}
+.shard-one{left:21%;top:25%;transform:rotate(28deg);animation:shardOne 8s ease-in-out infinite}
+.shard-two{right:19%;top:31%;width:30px;height:56px;transform:rotate(68deg);background:linear-gradient(145deg,#fff,#f1a5e8 48%,#927aff);animation:shardTwo 7s ease-in-out infinite}
+.shard-three{left:24%;bottom:24%;width:24px;height:45px;transform:rotate(-35deg);background:linear-gradient(145deg,#fff,#65e2ef);animation:shardThree 9s ease-in-out infinite}
+.shard-four{right:23%;bottom:22%;width:38px;height:66px;transform:rotate(120deg);background:linear-gradient(145deg,#fff,#a38aff,#64dce9);animation:shardOne 10s ease-in-out infinite reverse}
+.reactor-particle{position:absolute;z-index:3;width:5px;height:5px;border-radius:50%;background:#fff;box-shadow:0 0 12px 3px rgba(188,170,255,.9);animation:particleDrift 5s ease-in-out infinite}
+.particle-one{left:17%;top:48%}.particle-two{right:18%;top:52%;animation-delay:-1.2s}.particle-three{left:37%;top:18%;animation-delay:-2.4s}.particle-four{right:34%;bottom:17%;animation-delay:-.8s}.particle-five{left:28%;bottom:35%;width:3px;height:3px;animation-delay:-3s}.particle-six{right:29%;top:27%;width:3px;height:3px;animation-delay:-1.7s}
+.reactor-caption{position:absolute;z-index:6;font:8px var(--mono);letter-spacing:.16em;color:rgba(255,255,255,.8)}
+.reactor-caption-left{left:7%;bottom:12%}.reactor-caption-right{right:7%;top:12%;writing-mode:vertical-rl}
+@keyframes reactorPulse{0%,100%{transform:scale(.88);opacity:.65}50%{transform:scale(1.12);opacity:1}}
+@keyframes reactorSpin{to{transform:translate(-50%,-50%) rotateX(68deg) rotateZ(360deg)}}
+@keyframes reactorSpinReverse{to{transform:translate(-50%,-50%) rotateX(72deg) rotateZ(-335deg)}}
+@keyframes ribbonOrbit{0%,100%{margin-top:-8px}50%{margin-top:8px}}
+@keyframes ribbonOrbitTwo{0%,100%{margin-left:-8px}50%{margin-left:8px}}
+@keyframes reactorCoreFloat{0%,100%{transform:translateY(0) rotateY(-8deg) rotateX(5deg)}50%{transform:translateY(-12px) rotateY(9deg) rotateX(-4deg)}}
+@keyframes shardOne{0%,100%{translate:0 0;rotate:0deg}50%{translate:8px -16px;rotate:18deg}}
+@keyframes shardTwo{0%,100%{translate:0 0}50%{translate:-10px 12px}}
+@keyframes shardThree{0%,100%{translate:0 0}50%{translate:12px -9px}}
+@keyframes particleDrift{0%,100%{transform:translate3d(0,0,0);opacity:.35}50%{transform:translate3d(12px,-20px,0);opacity:1}}
+@media(max-width:900px){.brand-motion.forge-reactor{min-height:580px;--reactor-size:min(78%,480px)}}
+@media(max-width:650px){
+ .brand-motion.forge-reactor{min-height:390px;height:390px;--reactor-size:min(82vw,340px)}
+ .reactor-core{width:43%}
+ .reactor-caption{font-size:6px}
+ .reactor-caption-left{left:5%;bottom:7%}.reactor-caption-right{right:5%;top:7%}
+ .shard-one{left:13%;top:22%}.shard-two{right:12%;top:26%}
+ .shard-three{left:15%;bottom:20%}.shard-four{right:13%;bottom:18%}
+}
+@media(prefers-reduced-motion:reduce){
+ .reactor-backdrop,.reactor-ring,.reactor-ribbon,.reactor-core,.reactor-shard,.reactor-particle{animation:none!important}
+}
+
+
+/* SEAMLESS HERO — remove the rectangular display panel and boxed logo */
+.hero{
+  background:
+    radial-gradient(ellipse at 78% 48%,rgba(126,105,245,.16),transparent 32%),
+    radial-gradient(ellipse at 88% 70%,rgba(82,215,235,.12),transparent 27%),
+    radial-gradient(ellipse at 72% 20%,rgba(235,139,215,.10),transparent 25%),
+    #f7f8ff!important;
+}
+.hero-grid{position:relative;isolation:isolate}
+.hero-right{
+  background:transparent!important;
+  color:var(--ink)!important;
+  overflow:visible!important;
+  min-height:620px!important;
+  position:relative!important;
+}
+.hero-right:before,.hero-right:after{display:none!important}
+.brand-motion.forge-reactor{
+  overflow:visible!important;
+  background:transparent!important;
+  min-height:620px!important;
+}
+.reactor-backdrop{
+  width:86%!important;
+  background:
+    radial-gradient(circle,rgba(255,255,255,.96) 0%,rgba(174,158,255,.30) 28%,rgba(91,218,237,.13) 48%,transparent 70%)!important;
+}
+.reactor-core{
+  width:44%!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.core-glass{
+  inset:-42%!important;
+  border-radius:50%!important;
+  transform:none!important;
+  border:1px solid rgba(255,255,255,.85)!important;
+  background:
+    radial-gradient(circle at 34% 26%,rgba(255,255,255,.94),rgba(185,170,255,.24) 42%,rgba(83,218,236,.10) 70%,transparent 73%)!important;
+  box-shadow:0 0 0 1px rgba(135,117,255,.10),0 0 32px rgba(133,112,255,.22),0 0 75px rgba(86,218,237,.13)!important;
+  backdrop-filter:none!important;
+}
+.reactor-core img{
+  width:100%!important;
+  filter:drop-shadow(0 10px 18px rgba(48,39,110,.22))!important;
+}
+.reactor-caption{color:rgba(65,57,120,.7)!important}
+.reactor-caption-left{left:3%!important;bottom:12%!important}
+.reactor-caption-right{right:3%!important;top:12%!important}
+.reactor-shard{filter:drop-shadow(0 4px 8px rgba(88,73,180,.18))!important}
+@media(max-width:900px){
+ .hero-right,.brand-motion.forge-reactor{min-height:580px!important}
+}
+@media(max-width:650px){
+ .hero{background:
+   radial-gradient(ellipse at 50% 78%,rgba(126,105,245,.14),transparent 43%),
+   radial-gradient(ellipse at 80% 92%,rgba(82,215,235,.12),transparent 30%),
+   #f7f8ff!important}
+ .hero-right{min-height:370px!important;height:370px!important;overflow:hidden!important}
+ .brand-motion.forge-reactor{min-height:370px!important;height:370px!important;overflow:hidden!important}
+ .reactor-core{width:40%!important}
+ .core-glass{inset:-50%!important}
+ .reactor-caption{color:rgba(65,57,120,.65)!important}
+}
+
+
+/* REQUESTED MICRO-FIX: remove only the outline/frame around the existing hero animation. */
+.hero-right,
+.brand-motion.forge-reactor {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+/* CINEMATIC FORGE ENTRY — lightweight, GPU-friendly */
+.launch-screen{
+  isolation:isolate;overflow:hidden;gap:13px;
+  background:
+    radial-gradient(ellipse at 50% 46%,rgba(101,91,255,.27),transparent 34%),
+    radial-gradient(ellipse at 18% 18%,rgba(75,220,255,.20),transparent 35%),
+    radial-gradient(ellipse at 82% 82%,rgba(241,105,211,.18),transparent 36%),
+    linear-gradient(145deg,#080b20 0%,#17133d 48%,#080b20 100%)!important;
+  animation:launchExit .7s 1.65s cubic-bezier(.7,0,.2,1) forwards;
+}
+.launch-screen:before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.24;
+  background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);
+  background-size:54px 54px;
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 72%);
+}
+.launch-screen:after{
+  content:"";position:absolute;z-index:-1;width:min(82vw,620px);aspect-ratio:1;border-radius:50%;
+  border:1px solid rgba(148,139,255,.18);
+  box-shadow:0 0 0 22px rgba(115,106,255,.035),0 0 0 54px rgba(115,106,255,.025),inset 0 0 80px rgba(90,210,255,.045);
+  animation:forgePulse 3.8s ease-in-out infinite;
+}
+.launch-brand{width:min(82vw,430px)!important;height:245px!important;min-height:0!important;flex:none!important}
+.launch-brand:before{
+  width:160px!important;border-color:rgba(142,220,255,.38)!important;
+  box-shadow:0 0 0 22px rgba(117,105,255,.09),0 0 0 48px rgba(117,105,255,.055),0 0 0 78px rgba(117,105,255,.025)!important;
+}
+.launch-brand .brand-orbit{width:285px!important;border-color:rgba(130,224,255,.56)!important;animation-duration:19s}
+.launch-brand .brand-orbit-two{width:230px!important;border-color:rgba(220,151,255,.48)!important;animation-duration:14s}
+.launch-brand .brand-orbit-three{width:180px!important;border-color:rgba(255,255,255,.22)!important;animation-duration:27s}
+.launch-brand .brand-logo-plate{
+  width:min(76vw,315px)!important;padding:0!important;background:transparent!important;
+  box-shadow:none!important;border:0!important;transform:none!important;
+  animation:forgeLogoFloat 4.2s ease-in-out infinite!important;
+}
+.launch-brand .brand-logo-plate:before{display:none!important}
+.launch-brand .brand-logo-plate img{
+  width:100%;filter:brightness(0) invert(1) drop-shadow(0 0 16px rgba(104,218,255,.42))!important;
+}
+.launch-spark{position:absolute;z-index:4;display:block;width:7px;height:7px;border-radius:50%;background:#a8f3ff;box-shadow:0 0 10px 3px rgba(104,218,255,.65);will-change:transform}
+.spark-one{animation:sparkOrbit 5.5s linear infinite}
+.spark-two{width:5px;height:5px;background:#f2a9ff;box-shadow:0 0 11px 3px rgba(218,129,255,.7);animation:sparkOrbit 7s linear infinite reverse}
+.spark-three{width:4px;height:4px;background:#fff;animation:sparkOrbit 8.5s linear infinite}
+.launch-word{font:600 12px var(--mono)!important;letter-spacing:.34em!important;color:#fff!important;text-shadow:0 0 22px rgba(126,201,255,.4)}
+.launch-line{width:190px!important;height:2px!important;background:rgba(255,255,255,.16)!important;border-radius:9px;overflow:hidden}
+.launch-line span{background:linear-gradient(90deg,#63e5ff,#9b8aff,#f19de5)!important;box-shadow:0 0 12px rgba(118,206,255,.65)}
+.launch-caption{font:8px var(--mono)!important;letter-spacing:.2em!important;color:#c9c9f4!important}
+.launch-caption span{color:#83eaff;padding:0 5px}
+@keyframes forgePulse{0%,100%{transform:scale(.94);opacity:.55}50%{transform:scale(1.06);opacity:1}}
+@keyframes forgeLogoFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-9px) scale(1.018)}}
+@keyframes sparkOrbit{from{transform:rotate(0deg) translateX(154px) rotate(0deg)}to{transform:rotate(360deg) translateX(154px) rotate(-360deg)}}
+@media(max-width:650px){
+ .launch-brand{width:310px!important;height:210px!important}
+ .launch-brand .brand-orbit{width:235px!important}
+ .launch-brand .brand-orbit-two{width:190px!important}
+ .launch-brand .brand-orbit-three{width:150px!important}
+ .launch-brand .brand-logo-plate{width:245px!important}
+ .launch-screen:after{width:88vw}
+ .spark-one{animation-duration:6s}.spark-two{animation-duration:7.5s}.spark-three{animation-duration:9s}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-screen{animation:none!important;display:none!important}
+ .launch-screen:after,.launch-spark,.launch-brand .brand-logo-plate{animation:none!important}
+}
+
+
+/* FORGE SEQUENCE II — kinetic shards + dimensional energy field */
+.launch-brand{isolation:isolate!important}
+.launch-brand:after{
+ content:"";position:absolute;z-index:1;left:50%;top:50%;width:105px;height:105px;
+ border:1px solid rgba(143,227,255,.72);border-radius:50%;
+ transform:translate(-50%,-50%) scale(.35);opacity:0;
+ box-shadow:0 0 30px rgba(99,219,255,.22),inset 0 0 24px rgba(125,114,255,.2);
+ animation:forgeShockwave 2.15s cubic-bezier(.12,.72,.2,1) infinite;
+}
+.launch-brand .brand-logo-plate{z-index:5!important}
+.launch-brand .brand-orbit{z-index:2}
+.launch-brand .brand-orbit-two{border-style:solid!important;border-width:1px!important}
+.launch-brand .brand-orbit-three{border-style:dotted!important}
+.forge-fragment{
+ position:absolute;z-index:4;left:50%;top:50%;width:36px;height:54px;
+ opacity:0;will-change:transform,opacity;
+ background:linear-gradient(145deg,rgba(126,231,255,.95),rgba(140,113,255,.25));
+ clip-path:polygon(50% 0,100% 72%,58% 100%,0 48%);
+ filter:drop-shadow(0 0 9px rgba(115,211,255,.55));
+ animation:forgeFragment 2.8s cubic-bezier(.2,.7,.2,1) infinite;
+}
+.fragment-a{--sx:-145px;--sy:-95px;--ex:-205px;--ey:-140px;animation-delay:0s}
+.fragment-b{--sx:145px;--sy:-105px;--ex:210px;--ey:-155px;transform:scale(.72);animation-delay:.24s;background:linear-gradient(145deg,#f4a8ff,rgba(140,113,255,.2))}
+.fragment-c{--sx:-175px;--sy:65px;--ex:-225px;--ey:95px;transform:scale(.58);animation-delay:.48s}
+.fragment-d{--sx:170px;--sy:75px;--ex:220px;--ey:110px;transform:scale(.82);animation-delay:.72s;background:linear-gradient(145deg,#fff,rgba(99,219,255,.2))}
+.fragment-e{--sx:0px;--sy:-145px;--ex:0px;--ey:-195px;transform:scale(.48);animation-delay:.96s}
+.fragment-f{--sx:0px;--sy:145px;--ex:0px;--ey:195px;transform:scale(.64);animation-delay:1.2s;background:linear-gradient(145deg,#f4a8ff,rgba(140,113,255,.2))}
+.launch-coordinate{
+ position:absolute;z-index:6;top:50%;font:7px/1.8 var(--mono);letter-spacing:.13em;
+ color:rgba(222,226,255,.72);text-align:left;transform:translateY(-50%);
+}
+.coordinate-left{left:0}
+.coordinate-right{right:0;text-align:right}
+.launch-scan{
+ position:absolute;z-index:3;left:50%;top:50%;width:min(74vw,390px);height:1px;
+ transform:translate(-50%,-50%) rotate(-22deg);
+ background:linear-gradient(90deg,transparent,rgba(125,232,255,.9),rgba(210,164,255,.75),transparent);
+ box-shadow:0 0 14px rgba(111,221,255,.55);
+ animation:forgeScan 2.7s ease-in-out infinite;pointer-events:none;
+}
+@keyframes forgeShockwave{
+ 0%{transform:translate(-50%,-50%) scale(.35);opacity:0}
+ 18%{opacity:.85}
+ 75%,100%{transform:translate(-50%,-50%) scale(3.8);opacity:0}
+}
+@keyframes forgeFragment{
+ 0%,12%{opacity:0;transform:translate(calc(-50% + var(--sx)),calc(-50% + var(--sy))) rotate(-35deg) scale(.35)}
+ 32%{opacity:.95}
+ 68%{opacity:.72}
+ 100%{opacity:0;transform:translate(calc(-50% + var(--ex)),calc(-50% + var(--ey))) rotate(85deg) scale(.12)}
+}
+@keyframes forgeScan{
+ 0%,100%{opacity:0;transform:translate(-70%,-50%) rotate(-22deg)}
+ 35%,68%{opacity:.75}
+ 55%{transform:translate(-30%,-50%) rotate(-22deg)}
+}
+@media(max-width:650px){
+ .launch-coordinate{font-size:6px;top:auto;bottom:2px;transform:none}
+ .coordinate-left{left:5px}.coordinate-right{right:5px}
+ .forge-fragment{width:25px;height:38px}
+ .fragment-a{--sx:-112px;--sy:-78px;--ex:-145px;--ey:-105px}
+ .fragment-b{--sx:112px;--sy:-78px;--ex:145px;--ey:-105px}
+ .fragment-c{--sx:-118px;--sy:48px;--ex:-150px;--ey:68px}
+ .fragment-d{--sx:118px;--sy:48px;--ex:150px;--ey:68px}
+ .fragment-e{--sy:-112px;--ey:-145px}
+ .fragment-f{--sy:112px;--ey:145px}
+ .launch-scan{width:82vw}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-brand:after,.forge-fragment,.launch-scan{animation:none!important;display:none!important}
+}
+
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
+<link rel="stylesheet" href="assets/apple-inspired.css?v=20261128-headingfix1">
+
+<style id="reactor-performance-pass">
+/* REACTOR V2 — cinematic look, compositor-friendly motion */
+.hero-right{
+  background:
+    radial-gradient(ellipse at 50% 50%,rgba(127,111,255,.28),transparent 42%),
+    radial-gradient(ellipse at 82% 18%,rgba(91,220,239,.18),transparent 34%),
+    linear-gradient(145deg,#29234f,#51428d 52%,#242044)!important;
+}
+.hero-right:before{opacity:.16!important}
+.brand-motion.forge-reactor{
+  contain:layout paint;
+  perspective:none!important;
+  transform:translateZ(0);
+}
+.reactor-backdrop{
+  filter:none!important;
+  background:radial-gradient(circle,rgba(255,255,255,.72),rgba(164,146,255,.22) 38%,transparent 70%)!important;
+  animation:reactorPulseLite 7s ease-in-out infinite!important;
+}
+.reactor-ring{
+  box-shadow:0 0 10px rgba(128,108,255,.18)!important;
+  transform-style:flat!important;
+}
+.ring-outer{animation:ringTurnA 32s linear infinite!important}
+.ring-middle{animation:ringTurnB 24s linear infinite!important}
+.ring-inner{animation:ringTurnC 19s linear infinite!important}
+.reactor-ribbon{
+  filter:none!important;mix-blend-mode:normal!important;
+  border-width:5px!important;opacity:.82;
+}
+.ribbon-one{animation:ribbonDriftA 12s ease-in-out infinite!important}
+.ribbon-two{animation:ribbonDriftB 15s ease-in-out infinite!important}
+.ribbon-three{animation:none!important;opacity:.48}
+.reactor-core{animation:coreHover 7s ease-in-out infinite!important;transform-style:flat!important}
+.core-glass{backdrop-filter:none!important;box-shadow:0 0 0 5px rgba(255,255,255,.07),0 0 24px rgba(157,132,255,.32)!important}
+.reactor-core img{filter:drop-shadow(0 4px 5px rgba(25,20,70,.28))!important;transform:none!important}
+.reactor-shard{filter:none!important}
+.shard-one{animation:shardDriftA 11s ease-in-out infinite!important}
+.shard-two{animation:shardDriftB 13s ease-in-out infinite!important}
+.shard-three{animation:shardDriftA 14s ease-in-out infinite reverse!important}
+.shard-four{animation:none!important;opacity:.72}
+.reactor-particle{box-shadow:0 0 6px 1px rgba(188,170,255,.65)!important;animation:particleLite 8s ease-in-out infinite!important}
+@keyframes reactorPulseLite{0%,100%{opacity:.58;transform:scale(.96)}50%{opacity:.9;transform:scale(1.04)}}
+@keyframes ringTurnA{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes ringTurnB{to{transform:translate(-50%,-50%) rotate(-360deg)}}
+@keyframes ringTurnC{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes ribbonDriftA{0%,100%{transform:translate(-50%,-50%) rotate(32deg) scale(1)}50%{transform:translate(-50%,-50%) rotate(42deg) scale(1.035)}}
+@keyframes ribbonDriftB{0%,100%{transform:translate(-50%,-50%) rotate(-48deg) scale(1)}50%{transform:translate(-50%,-50%) rotate(-38deg) scale(1.04)}}
+@keyframes coreHover{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes shardDriftA{0%,100%{transform:translate3d(0,0,0) rotate(24deg)}50%{transform:translate3d(0,-9px,0) rotate(34deg)}}
+@keyframes shardDriftB{0%,100%{transform:translate3d(0,0,0) rotate(68deg)}50%{transform:translate3d(0,8px,0) rotate(78deg)}}
+@keyframes particleLite{0%,100%{transform:translate3d(0,0,0);opacity:.45}50%{transform:translate3d(5px,-8px,0);opacity:.85}}
+@media(max-width:650px){
+ .brand-motion.forge-reactor{min-height:350px!important;height:350px!important;--reactor-size:min(78vw,300px)!important}
+ .reactor-ring{box-shadow:0 0 5px rgba(128,108,255,.14)!important}
+ .ring-middle{border-style:solid!important}
+ .ribbon-three,.shard-four,.particle-four,.particle-five,.particle-six{display:none!important}
+ .reactor-ribbon{border-width:3px!important}
+ .reactor-shard{width:18px!important;height:32px!important}
+ .reactor-particle{width:3px!important;height:3px!important}
+ .reactor-caption{font-size:6px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .reactor-backdrop,.reactor-ring,.reactor-ribbon,.reactor-core,.reactor-shard,.reactor-particle{animation:none!important}
+}
+
+/* FINAL HERO FRAME FIX — preserve the reactor animation; remove only its rectangular backdrop. */
+.hero-right {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+.hero-right::before,
+.hero-right::after {
+  content: none !important;
+  display: none !important;
+}
+.brand-motion.forge-reactor {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+</style>
+
+<style id="battleforge-white-prism-motion-upgrade">
+/* WHITE PRISM / MOTION UPGRADE — flowing colour ribbons, not orbit rings */
+.launch-brand .white-ribbon{
+  position:absolute;left:50%;top:50%;z-index:2;pointer-events:none;
+  width:clamp(150px,43vw,245px);height:34px;border-radius:100%;
+  opacity:0;mix-blend-mode:multiply;will-change:transform,opacity;
+  background:linear-gradient(90deg,transparent 0%,rgba(88,220,247,.08) 12%,rgba(88,220,247,.78) 38%,rgba(159,135,255,.82) 62%,rgba(255,147,213,.7) 84%,transparent 100%);
+  clip-path:polygon(0 52%,15% 25%,38% 10%,62% 22%,83% 70%,100% 42%,94% 58%,76% 88%,53% 62%,30% 48%,10% 76%);
+  filter:blur(.25px);
+}
+.launch-brand .ribbon-a{animation:prismRibbonA 2.8s .05s cubic-bezier(.2,.7,.2,1) both}
+.launch-brand .ribbon-b{
+  width:clamp(130px,38vw,215px);height:27px;
+  background:linear-gradient(90deg,transparent,rgba(255,151,216,.7),rgba(165,143,255,.8),rgba(87,220,247,.7),transparent);
+  animation:prismRibbonB 2.65s .18s cubic-bezier(.2,.7,.2,1) both;
+}
+.launch-brand .ribbon-c{
+  width:clamp(110px,31vw,180px);height:21px;
+  background:linear-gradient(90deg,transparent,rgba(119,221,249,.65),rgba(186,151,255,.72),transparent);
+  animation:prismRibbonC 2.4s .32s cubic-bezier(.2,.7,.2,1) both;
+}
+.launch-brand .ribbon-d{
+  width:clamp(105px,28vw,165px);height:18px;
+  background:linear-gradient(90deg,transparent,rgba(255,172,220,.66),rgba(154,143,255,.7),transparent);
+  animation:prismRibbonD 2.5s .42s cubic-bezier(.2,.7,.2,1) both;
+}
+.launch-brand .brand-logo-plate{z-index:5!important}
+.launch-brand .forge-fragment{z-index:4!important}
+.launch-word{
+  background:linear-gradient(100deg,#25213d 10%,#6f61c9 34%,#299eb7 52%,#bd5c9e 70%,#25213d 90%);
+  background-size:220% 100%;background-clip:text;-webkit-background-clip:text;
+  color:transparent!important;animation:prismWordFlow 3.2s .3s ease-in-out infinite!important;
+}
+@keyframes prismRibbonA{
+  0%{opacity:0;transform:translate(-95%,-80%) rotate(-28deg) scale(.45)}
+  22%{opacity:.8}
+  58%{opacity:.62;transform:translate(-50%,-105%) rotate(18deg) scale(1.05)}
+  100%{opacity:0;transform:translate(-8%,-20%) rotate(48deg) scale(.72)}
+}
+@keyframes prismRibbonB{
+  0%{opacity:0;transform:translate(-8%,20%) rotate(35deg) scale(.4)}
+  25%{opacity:.78}
+  65%{opacity:.55;transform:translate(-50%,-2%) rotate(-22deg) scale(1.05)}
+  100%{opacity:0;transform:translate(-92%,-85%) rotate(-48deg) scale(.7)}
+}
+@keyframes prismRibbonC{
+  0%{opacity:0;transform:translate(-75%,85%) rotate(8deg) scale(.3)}
+  35%{opacity:.65;transform:translate(-50%,38%) rotate(-18deg) scale(1)}
+  100%{opacity:0;transform:translate(-20%,-110%) rotate(-40deg) scale(.65)}
+}
+@keyframes prismRibbonD{
+  0%{opacity:0;transform:translate(-20%,-115%) rotate(-12deg) scale(.35)}
+  38%{opacity:.62;transform:translate(-50%,-42%) rotate(22deg) scale(1)}
+  100%{opacity:0;transform:translate(-80%,95%) rotate(52deg) scale(.62)}
+}
+@keyframes prismWordFlow{0%,100%{background-position:100% 50%}50%{background-position:0 50%}}
+@media(max-width:650px){
+ .launch-brand .white-ribbon{height:24px}
+ .launch-brand .ribbon-b{height:20px}
+ .launch-brand .ribbon-c{height:16px}
+ .launch-brand .ribbon-d{height:14px}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-brand .white-ribbon{display:none!important;animation:none!important}
+ .launch-word{background:none!important;color:#25213d!important}
+}
+</style>
+
+
+<style id="battleforge-white-prism-bloom-upgrade">
+/* A kinetic glass-flower burst: organic petals, no frame or orbit geometry */
+.launch-brand .prism-petal{
+  position:absolute;left:50%;top:50%;z-index:1;pointer-events:none;
+  width:clamp(66px,19vw,112px);height:clamp(145px,38vw,205px);
+  border-radius:58% 42% 62% 38% / 48% 55% 45% 52%;
+  opacity:0;transform-origin:50% 88%;mix-blend-mode:multiply;
+  border:1px solid rgba(255,255,255,.82);
+  background:linear-gradient(155deg,rgba(94,224,247,.06),rgba(100,210,255,.32) 28%,rgba(165,139,255,.24) 64%,rgba(255,157,218,.08));
+  box-shadow:inset 0 0 18px rgba(255,255,255,.65),0 5px 28px rgba(126,145,235,.10);
+  will-change:transform,opacity;
+}
+.launch-brand .petal-a{animation:glassPetalA 2.65s .04s cubic-bezier(.16,.8,.2,1) both}
+.launch-brand .petal-b{background:linear-gradient(155deg,rgba(255,159,219,.08),rgba(255,153,210,.30),rgba(166,140,255,.22));animation:glassPetalB 2.7s .09s cubic-bezier(.16,.8,.2,1) both}
+.launch-brand .petal-c{background:linear-gradient(155deg,rgba(161,143,255,.06),rgba(157,136,255,.3),rgba(91,221,246,.18));animation:glassPetalC 2.55s .14s cubic-bezier(.16,.8,.2,1) both}
+.launch-brand .petal-d{background:linear-gradient(155deg,rgba(94,224,247,.05),rgba(94,224,247,.28),rgba(255,158,216,.18));animation:glassPetalD 2.65s .19s cubic-bezier(.16,.8,.2,1) both}
+.launch-brand .petal-e{width:clamp(48px,13vw,76px);height:clamp(112px,29vw,158px);animation:glassPetalE 2.45s .24s cubic-bezier(.16,.8,.2,1) both}
+.launch-brand .petal-f{width:clamp(48px,13vw,76px);height:clamp(112px,29vw,158px);background:linear-gradient(155deg,rgba(255,159,219,.06),rgba(255,159,219,.3),rgba(156,138,255,.18));animation:glassPetalF 2.5s .29s cubic-bezier(.16,.8,.2,1) both}
+@keyframes glassPetalA{0%{opacity:0;transform:translate(-50%,-48%) rotate(-8deg) scale(.12,.25)}32%{opacity:.82}72%{opacity:.48;transform:translate(-50%,-90%) rotate(-28deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-110%) rotate(-42deg) scale(.8,.8)}}
+@keyframes glassPetalB{0%{opacity:0;transform:translate(-50%,-48%) rotate(52deg) scale(.12,.25)}35%{opacity:.78}72%{opacity:.42;transform:translate(-50%,-90%) rotate(24deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-110%) rotate(8deg) scale(.8,.8)}}
+@keyframes glassPetalC{0%{opacity:0;transform:translate(-50%,-48%) rotate(112deg) scale(.12,.25)}34%{opacity:.78}72%{opacity:.42;transform:translate(-50%,-90%) rotate(84deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-110%) rotate(68deg) scale(.8,.8)}}
+@keyframes glassPetalD{0%{opacity:0;transform:translate(-50%,-48%) rotate(172deg) scale(.12,.25)}34%{opacity:.78}72%{opacity:.42;transform:translate(-50%,-90%) rotate(144deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-110%) rotate(128deg) scale(.8,.8)}}
+@keyframes glassPetalE{0%{opacity:0;transform:translate(-50%,-48%) rotate(232deg) scale(.12,.25)}36%{opacity:.72}72%{opacity:.38;transform:translate(-50%,-88%) rotate(204deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-106%) rotate(188deg) scale(.78,.8)}}
+@keyframes glassPetalF{0%{opacity:0;transform:translate(-50%,-48%) rotate(292deg) scale(.12,.25)}36%{opacity:.72}72%{opacity:.38;transform:translate(-50%,-88%) rotate(264deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-106%) rotate(248deg) scale(.78,.8)}}
+@media(max-width:650px){.launch-brand .prism-petal{height:clamp(118px,35vw,165px)}}
+@media(prefers-reduced-motion:reduce){.launch-brand .prism-petal{display:none!important;animation:none!important}}
+</style>
+
+
+<style id="battleforge-full-cinematic-intro">
+/* FULL CINEMATIC INTRO — one coordinated scene, not a single added effect */
+.launch-screen{
+  background:#fff!important;color:#17152d!important;gap:8px!important;
+  overflow:hidden!important;isolation:isolate!important;
+  animation:launchExit .72s 3.55s cubic-bezier(.7,0,.2,1) forwards!important;
+}
+.launch-world{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;isolation:isolate}
+.launch-world:before{
+  content:"";position:absolute;inset:-20%;z-index:-2;
+  background:
+    radial-gradient(ellipse at 15% 18%,rgba(76,220,247,.22),transparent 31%),
+    radial-gradient(ellipse at 84% 25%,rgba(255,126,205,.18),transparent 32%),
+    radial-gradient(ellipse at 54% 92%,rgba(148,124,255,.2),transparent 38%),
+    linear-gradient(135deg,#fff 0%,#f9fbff 48%,#fff 100%);
+  animation:worldBreath 4.2s ease-in-out both;
+}
+.launch-world:after{
+  content:"";position:absolute;inset:-50%;z-index:-1;opacity:.55;
+  background:conic-gradient(from 35deg at 50% 50%,transparent 0 18%,rgba(93,219,247,.14) 22%,transparent 28% 48%,rgba(255,143,210,.13) 54%,transparent 61% 78%,rgba(155,135,255,.15) 84%,transparent 91%);
+  animation:worldTurn 18s linear infinite;
+}
+.launch-backtype{
+  position:absolute;left:50%;top:50%;width:100%;transform:translate(-50%,-50%);
+  text-align:center;font:900 clamp(92px,19vw,250px)/.68 "Archivo Black",Impact,sans-serif;
+  letter-spacing:-.095em;color:transparent;-webkit-text-stroke:1px rgba(35,31,72,.105);
+  opacity:0;animation:backtypeReveal 3.4s .08s cubic-bezier(.16,1,.3,1) both;
+}
+.launch-backtype em{font-style:normal;background:linear-gradient(90deg,rgba(87,216,244,.22),rgba(151,130,255,.22),rgba(255,144,207,.22));background-clip:text;-webkit-background-clip:text;-webkit-text-stroke:0}
+.launch-kicker,.launch-bottomline{
+  position:absolute;left:clamp(18px,5vw,70px);right:clamp(18px,5vw,70px);
+  display:flex;align-items:center;justify-content:space-between;
+  font:700 8px/1.4 var(--mono);letter-spacing:.18em;color:#77758f;
+}
+.launch-kicker{top:clamp(22px,5vh,52px);opacity:0;animation:microReveal .55s .22s ease both}
+.launch-kicker i{height:1px;flex:1;max-width:100px;margin:0 18px;background:linear-gradient(90deg,#6bdcf2,#a18aff,#ff9bd5)}
+.launch-bottomline{bottom:clamp(22px,5vh,52px);opacity:0;animation:microReveal .55s 1.1s ease both}
+.launch-bottomline span:nth-child(2){color:#9995ad}
+.launch-side-note{
+  position:absolute;top:50%;font:700 7px/1.9 var(--mono);letter-spacing:.16em;color:#9a97ad;
+  opacity:0;animation:microReveal .6s .65s ease both;
+}
+.launch-side-note b{color:#5d587d;font-size:8px}
+.note-left{left:clamp(18px,5vw,70px);transform:translateY(-50%)}
+.note-right{right:clamp(18px,5vw,70px);transform:translateY(-50%);text-align:right}
+.launch-sweep{
+  position:absolute;left:50%;top:50%;width:min(115vw,1300px);height:clamp(34px,8vw,88px);
+  border-radius:100%;filter:blur(13px);opacity:0;transform-origin:center;
+  mix-blend-mode:multiply;will-change:transform,opacity;
+}
+.sweep-one{background:linear-gradient(90deg,transparent,rgba(92,221,246,.5),rgba(151,133,255,.38),transparent);animation:sweepAcrossA 3.3s .05s cubic-bezier(.16,.7,.2,1) both}
+.sweep-two{height:clamp(22px,5vw,56px);background:linear-gradient(90deg,transparent,rgba(255,147,211,.46),rgba(151,133,255,.32),transparent);animation:sweepAcrossB 3.25s .22s cubic-bezier(.16,.7,.2,1) both}
+.sweep-three{height:clamp(12px,3vw,30px);filter:blur(5px);background:linear-gradient(90deg,transparent,rgba(104,217,245,.52),rgba(255,153,211,.45),transparent);animation:sweepAcrossC 3.1s .4s cubic-bezier(.16,.7,.2,1) both}
+.launch-sparkscape{position:absolute;inset:0}
+.world-particle{position:absolute;left:50%;top:50%;width:4px;height:4px;border-radius:50%;opacity:0;background:#79dff2;box-shadow:0 0 14px currentColor;animation:particleBurst 2.6s cubic-bezier(.15,.72,.2,1) both}
+.particle-1{--px:-42vw;--py:-27vh;animation-delay:.05s}.particle-2{--px:38vw;--py:-31vh;animation-delay:.12s;background:#ff9bd5}
+.particle-3{--px:-45vw;--py:24vh;animation-delay:.19s;background:#a08aff}.particle-4{--px:43vw;--py:27vh;animation-delay:.26s}
+.particle-5{--px:-26vw;--py:-39vh;animation-delay:.33s;background:#ff9bd5}.particle-6{--px:24vw;--py:39vh;animation-delay:.4s;background:#a08aff}
+.particle-7{--px:-49vw;--py:-4vh;animation-delay:.47s}.particle-8{--px:49vw;--py:2vh;animation-delay:.54s;background:#ff9bd5}
+.particle-9{--px:-15vw;--py:42vh;animation-delay:.61s;background:#a08aff}.particle-10{--px:16vw;--py:-42vh;animation-delay:.68s}
+.particle-11{--px:-34vw;--py:14vh;animation-delay:.75s;background:#ff9bd5}.particle-12{--px:33vw;--py:-13vh;animation-delay:.82s;background:#a08aff}
+.particle-13{--px:-8vw;--py:-34vh;animation-delay:.89s}.particle-14{--px:8vw;--py:35vh;animation-delay:.96s;background:#ff9bd5}
+.particle-15{--px:-40vw;--py:-17vh;animation-delay:1.03s;background:#a08aff}.particle-16{--px:40vw;--py:18vh;animation-delay:1.1s}
+.launch-brand{
+  position:relative!important;z-index:3!important;width:min(92vw,490px)!important;height:255px!important;
+  min-height:0!important;flex:none!important;overflow:visible!important;isolation:isolate!important;
+}
+.launch-brand:before{
+  width:min(76vw,390px)!important;height:230px!important;border:0!important;border-radius:50%!important;
+  background:radial-gradient(ellipse,rgba(255,255,255,.96),rgba(89,221,246,.21) 28%,rgba(159,132,255,.19) 52%,rgba(255,147,211,.13) 68%,transparent 78%)!important;
+  box-shadow:none!important;animation:worldBloom 2.1s .12s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand:after{display:none!important}
+.launch-brand .brand-orbit,.launch-brand .white-ribbon,.launch-brand .prism-petal,
+.launch-brand .launch-coordinate,.launch-brand .launch-scan{display:none!important}
+.launch-brand .brand-logo-plate{
+  position:relative!important;z-index:6!important;width:min(78vw,330px)!important;
+  padding:0!important;background:transparent!important;border:0!important;outline:0!important;
+  box-shadow:none!important;transform:none!important;
+  animation:logoAssemble 1.35s .35s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand .brand-logo-plate:before{display:none!important}
+.launch-brand .brand-logo-plate img{
+  width:100%!important;height:auto!important;
+  filter:drop-shadow(0 12px 18px rgba(75,78,145,.13)) drop-shadow(0 0 28px rgba(103,207,244,.25))!important;
+}
+.launch-brand .launch-spark{z-index:5!important;width:7px!important;height:7px!important}
+.launch-brand .forge-fragment{
+  z-index:4!important;width:clamp(15px,3vw,30px)!important;height:clamp(26px,5vw,48px)!important;
+  filter:drop-shadow(0 4px 10px rgba(125,133,221,.18))!important;
+  clip-path:polygon(50% 0,100% 70%,65% 100%,0 42%)!important;
+}
+.launch-word{
+  position:relative;z-index:4;margin-top:-5px!important;
+  font:900 clamp(11px,1.5vw,14px)/1 var(--display)!important;
+  letter-spacing:.42em!important;color:#282440!important;text-shadow:none!important;
+  opacity:0;animation:wordReveal .75s 1.05s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-line{
+  position:relative;z-index:4;width:min(220px,54vw)!important;height:2px!important;
+  background:#e9e8f2!important;border-radius:8px!important;overflow:hidden!important;
+}
+.launch-line span{
+  background:linear-gradient(90deg,#62dff2,#9c8bff,#ff9bd4)!important;
+  box-shadow:0 0 12px rgba(153,139,255,.28)!important;
+}
+.launch-caption{
+  position:relative;z-index:4;font-size:7px!important;letter-spacing:.22em!important;
+  color:#77748f!important;text-shadow:none!important;opacity:0;animation:microReveal .6s 1.45s ease both;
+}
+.launch-caption span{color:#a08bff!important}
+@keyframes worldBreath{0%{transform:scale(1.12);opacity:.55}100%{transform:scale(1);opacity:1}}
+@keyframes worldTurn{to{transform:rotate(360deg)}}
+@keyframes backtypeReveal{0%{opacity:0;letter-spacing:-.16em;transform:translate(-50%,-46%) scale(.88)}35%{opacity:.72}100%{opacity:.48;letter-spacing:-.095em;transform:translate(-50%,-50%) scale(1)}}
+@keyframes microReveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sweepAcrossA{0%{opacity:0;transform:translate(-70%,-50%) rotate(-24deg) scaleX(.2)}30%{opacity:.7}70%{opacity:.4;transform:translate(-50%,-50%) rotate(18deg) scaleX(1.15)}100%{opacity:0;transform:translate(-24%,-50%) rotate(28deg) scaleX(.6)}}
+@keyframes sweepAcrossB{0%{opacity:0;transform:translate(-25%,-50%) rotate(32deg) scaleX(.18)}32%{opacity:.66}72%{opacity:.38;transform:translate(-50%,-50%) rotate(-18deg) scaleX(1.1)}100%{opacity:0;transform:translate(-78%,-50%) rotate(-30deg) scaleX(.6)}}
+@keyframes sweepAcrossC{0%{opacity:0;transform:translate(-55%,-50%) rotate(8deg) scaleX(.1)}36%{opacity:.8}68%{opacity:.45;transform:translate(-50%,-50%) rotate(-9deg) scaleX(1.1)}100%{opacity:0;transform:translate(-45%,-50%) rotate(-18deg) scaleX(.4)}}
+@keyframes particleBurst{0%{opacity:0;transform:translate(0,0) scale(.2)}22%{opacity:.95}75%{opacity:.65}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(.65)}}
+@keyframes worldBloom{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
+@keyframes logoAssemble{0%{opacity:0;clip-path:inset(50% 50% 50% 50%);transform:scale(.72) rotate(-7deg);filter:blur(12px)}45%{opacity:1;clip-path:inset(0);transform:scale(1.08) rotate(2deg);filter:blur(0)}72%{transform:scale(.97) rotate(-1deg)}100%{opacity:1;clip-path:inset(0);transform:scale(1) rotate(0)}}
+@keyframes wordReveal{from{opacity:0;letter-spacing:.8em;filter:blur(5px)}to{opacity:1;letter-spacing:.42em;filter:blur(0)}}
+@media(max-width:650px){
+ .launch-brand{width:100vw!important;height:220px!important}
+ .launch-brand .brand-logo-plate{width:min(78vw,300px)!important}
+ .launch-side-note{top:auto;bottom:11%;font-size:6px}
+ .note-left{left:18px;transform:none}.note-right{right:18px;transform:none}
+ .launch-bottomline{font-size:6px;letter-spacing:.1em;bottom:24px}
+ .launch-kicker{font-size:6px;letter-spacing:.1em;top:24px}
+ .launch-backtype{font-size:clamp(78px,21vw,145px)}
+ .launch-sweep{width:150vw}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-screen{animation:none!important;display:none!important}
+ .launch-world *,.launch-world:before,.launch-world:after,.launch-brand:before,
+ .launch-brand .brand-logo-plate,.launch-brand .launch-spark,.launch-brand .forge-fragment,
+ .launch-word,.launch-caption{animation:none!important}
+ .launch-world{display:none!important}
+ .launch-brand .brand-logo-plate,.launch-word{opacity:1!important}
+}
+</style>
+
+
+<style id="battleforge-cinematic-composition-v2">
+/* CINEMATIC COMPOSITION V2 — coordinated full-scene choreography */
+.launch-screen{
+  animation:launchExit .68s 4.08s cubic-bezier(.7,0,.2,1) forwards!important;
+  gap:7px!important;
+}
+.launch-world:before{
+  inset:-24%!important;
+  background:
+    radial-gradient(ellipse at 12% 22%,rgba(65,218,247,.25),transparent 29%),
+    radial-gradient(ellipse at 88% 20%,rgba(255,116,197,.21),transparent 30%),
+    radial-gradient(ellipse at 50% 92%,rgba(151,119,255,.22),transparent 36%),
+    linear-gradient(132deg,#fff 0%,#f7faff 48%,#fff 100%)!important;
+  animation:worldBreath 4.6s ease-in-out both,worldDrift 8s 1s ease-in-out infinite alternate!important;
+}
+.launch-backtype{
+  top:49%!important;
+  font-size:clamp(106px,21vw,286px)!important;
+  line-height:.66!important;
+  letter-spacing:-.105em!important;
+  -webkit-text-stroke:1px rgba(35,31,72,.13)!important;
+  animation:backtypeReveal 3.85s .08s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-backtype em{
+  background:linear-gradient(95deg,rgba(78,210,242,.32),rgba(145,121,255,.32),rgba(255,130,199,.32))!important;
+  background-clip:text!important;-webkit-background-clip:text!important;
+}
+.launch-kicker{top:clamp(20px,4.5vh,48px)!important}
+.launch-bottomline{bottom:clamp(20px,4.5vh,48px)!important}
+.launch-side-note{color:#85819d!important}
+.launch-sweep{filter:blur(9px)!important}
+.sweep-one{animation:sweepAcrossA 3.8s .08s cubic-bezier(.16,.7,.2,1) both!important}
+.sweep-two{animation:sweepAcrossB 3.65s .28s cubic-bezier(.16,.7,.2,1) both!important}
+.sweep-three{animation:sweepAcrossC 3.5s .48s cubic-bezier(.16,.7,.2,1) both!important}
+.world-particle{animation-duration:3.15s!important}
+.launch-brand{
+  width:min(94vw,520px)!important;height:275px!important;
+  transform:translateY(-1.5vh)!important;
+}
+.launch-brand:before{
+  width:min(82vw,420px)!important;height:245px!important;
+  background:radial-gradient(ellipse,rgba(255,255,255,.98) 0%,rgba(79,220,247,.25) 25%,rgba(156,127,255,.22) 49%,rgba(255,139,208,.16) 68%,transparent 79%)!important;
+  animation:worldBloom 2.55s .15s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand .brand-orbit{display:none!important}
+.launch-brand .prism-petal,
+.launch-brand .white-ribbon{display:block!important}
+.launch-brand .prism-petal{
+  z-index:1!important;mix-blend-mode:screen!important;
+  box-shadow:inset 0 0 22px rgba(255,255,255,.8),0 8px 25px rgba(126,145,235,.12)!important;
+  animation-duration:3.15s!important;
+}
+.launch-brand .white-ribbon{
+  z-index:2!important;mix-blend-mode:screen!important;
+  filter:drop-shadow(0 4px 9px rgba(127,133,242,.12))!important;
+  animation-duration:3.2s!important;
+}
+.launch-brand .forge-fragment{
+  z-index:4!important;
+  box-shadow:0 5px 18px rgba(115,117,204,.12)!important;
+  animation-duration:3.2s!important;
+}
+.launch-brand .brand-logo-plate{
+  z-index:6!important;width:min(80vw,340px)!important;
+  animation:logoAssemble 1.5s .52s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand .brand-logo-plate img{
+  filter:drop-shadow(0 14px 20px rgba(75,78,145,.14)) drop-shadow(0 0 32px rgba(103,207,244,.3))!important;
+}
+.launch-word{
+  margin-top:-11px!important;
+  font-size:clamp(12px,1.7vw,15px)!important;
+  letter-spacing:.46em!important;
+  animation:wordReveal .9s 1.22s cubic-bezier(.16,1,.3,1) both,prismWordFlow 3.2s 2.1s ease-in-out infinite!important;
+}
+.launch-line{width:min(235px,58vw)!important;height:3px!important}
+.launch-caption{animation:microReveal .65s 1.58s ease both!important}
+@keyframes worldDrift{
+  from{transform:translate3d(-1.5%,0,0) scale(1)}
+  to{transform:translate3d(1.5%,1%,0) scale(1.04)}
+}
+@media(max-width:650px){
+  .launch-screen{animation:launchExit .62s 4.08s cubic-bezier(.7,0,.2,1) forwards!important}
+  .launch-backtype{font-size:clamp(82px,22vw,152px)!important;line-height:.72!important}
+  .launch-brand{height:228px!important;transform:translateY(-1vh)!important}
+  .launch-brand:before{width:94vw!important;height:190px!important}
+  .launch-brand .brand-logo-plate{width:min(82vw,300px)!important}
+  .launch-side-note{bottom:13%!important;top:auto!important}
+  .launch-bottomline{font-size:5.5px!important;letter-spacing:.08em!important}
+  .launch-kicker{font-size:5.5px!important;letter-spacing:.09em!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .launch-screen{animation:none!important;display:none!important}
+  .launch-world,.launch-brand .prism-petal,.launch-brand .white-ribbon{display:none!important}
+}
+</style>
+
+<style id="battleforge-background-word-position-fix">
+/* Keep the oversized background title anchored to the exact visual centre. */
+.launch-backtype{
+  left:50%!important;top:50%!important;width:100%!important;
+  display:block!important;text-align:center!important;
+  transform:translate(-50%,-50%)!important;
+  animation:bfBacktypeCentered 1.1s .08s ease-out both!important;
+}
+@keyframes bfBacktypeCentered{
+  from{opacity:0;transform:translate(-50%,-47%) scale(.97)}
+  to{opacity:.48;transform:translate(-50%,-50%) scale(1)}
+}
+@media(max-width:650px){
+  .launch-backtype{top:50%!important;font-size:clamp(76px,20vw,142px)!important;line-height:.76!important;letter-spacing:-.105em!important}
+}
+</style>
+
+<style id="battleforge-angular-energy-upgrade">
+/* Remove the flower-like petals completely; replace them with sharp arena geometry. */
+.launch-brand .prism-petal{display:none!important}
+.launch-brand .white-ribbon{display:block!important}
+.launch-brand:after{
+  content:"";position:absolute;z-index:3;pointer-events:none;
+  width:min(88vw,430px);height:210px;left:50%;top:50%;
+  transform:translate(-50%,-50%) rotate(-8deg) scaleX(.72);
+  opacity:0;
+  background:
+    linear-gradient(112deg,transparent 0 12%,rgba(65,218,247,.0) 20%,rgba(65,218,247,.32) 27%,rgba(151,119,255,.22) 36%,transparent 43% 100%),
+    linear-gradient(112deg,transparent 0 58%,rgba(255,116,197,.25) 65%,rgba(151,119,255,.2) 72%,transparent 80%);
+  clip-path:polygon(0 44%,38% 8%,100% 26%,67% 50%,100% 72%,45% 92%);
+  animation:bfShardPass 1.45s .35s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes bfShardPass{
+  0%{opacity:0;transform:translate(-58%,-50%) rotate(-8deg) scaleX(.45)}
+  38%{opacity:.9}
+  100%{opacity:.38;transform:translate(-50%,-50%) rotate(-8deg) scaleX(1)}
+}
+.launch-backtype{
+  font-size:clamp(112px,22vw,300px)!important;
+  -webkit-text-stroke:1px rgba(35,31,72,.16)!important;
+}
+.launch-backtype em{
+  background:linear-gradient(90deg,rgba(65,218,247,.52),rgba(151,119,255,.5),rgba(255,116,197,.48))!important;
+  background-clip:text!important;-webkit-background-clip:text!important;
+}
+.launch-kicker i{max-width:150px!important}
+.launch-word{
+  font-weight:900!important;letter-spacing:.52em!important;
+  text-shadow:0 2px 18px rgba(151,119,255,.14)!important;
+}
+.launch-line{
+  background:linear-gradient(90deg,transparent,#55d9f1 22%,#9c83ff 54%,#ff8cc9 78%,transparent)!important;
+  border-radius:99px!important;
+}
+.launch-line span{background:linear-gradient(90deg,#55d9f1,#9c83ff,#ff8cc9)!important}
+@media(max-width:650px){
+  .launch-brand:after{width:96vw;height:170px}
+  .launch-backtype{font-size:clamp(76px,20vw,142px)!important}
+  .launch-word{letter-spacing:.34em!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .launch-brand:after{display:none!important}
+}
+</style>
+
+<style id="battleforge-background-title-and-cinematic-upgrade">
+/* Restore the giant BattleForge wordmark and build a richer visual-only ignition. */
+.launch-backtype{
+  display:block!important;position:absolute!important;z-index:1!important;
+  left:50%!important;top:50%!important;width:100%!important;
+  text-align:center!important;pointer-events:none!important;
+  font-size:clamp(112px,23vw,310px)!important;line-height:.72!important;
+  letter-spacing:-.105em!important;font-weight:950!important;
+  color:rgba(30,34,65,.10)!important;
+  -webkit-text-stroke:1.2px rgba(43,48,88,.22)!important;
+  text-shadow:0 12px 38px rgba(109,112,178,.08)!important;
+  transform:translate(-50%,-50%)!important;
+  animation:bfCinematicType 1.15s .08s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-backtype em{
+  font-style:normal!important;
+  color:transparent!important;
+  background:linear-gradient(95deg,rgba(74,214,241,.48),rgba(145,125,255,.54) 48%,rgba(255,129,199,.5))!important;
+  -webkit-background-clip:text!important;background-clip:text!important;
+  -webkit-text-stroke:1px rgba(122,112,201,.17)!important;
+}
+.launch-brand{z-index:3!important}
+.launch-brand:after{
+  content:"";display:block!important;position:absolute;z-index:2;
+  left:50%;top:50%;width:min(96vw,510px);height:270px;
+  pointer-events:none;opacity:0;
+  clip-path:polygon(0 48%,17% 35%,28% 4%,43% 31%,56% 0,72% 29%,88% 12%,100% 48%,84% 65%,72% 94%,55% 70%,41% 100%,26% 72%,12% 88%);
+  background:
+    linear-gradient(115deg,transparent 0 8%,rgba(81,220,245,.55) 17%,transparent 29% 100%),
+    linear-gradient(65deg,transparent 0 34%,rgba(153,126,255,.52) 46%,transparent 57% 100%),
+    linear-gradient(115deg,transparent 0 68%,rgba(255,137,207,.58) 78%,transparent 90% 100%);
+  filter:drop-shadow(0 0 18px rgba(122,143,255,.22));
+  transform:translate(-50%,-50%) scale(.72) rotate(-7deg);
+  animation:bfCrystalCrown 2.35s .18s cubic-bezier(.16,1,.3,1) both;
+}
+.launch-brand .launch-blade{z-index:4!important}
+.launch-brand .brand-logo-plate{z-index:7!important}
+.launch-world:after{
+  opacity:.86!important;
+  background:conic-gradient(from 20deg,
+    transparent 0 7%,rgba(76,220,245,.3) 9%,transparent 14% 24%,
+    rgba(153,125,255,.28) 29%,transparent 35% 48%,
+    rgba(255,130,202,.26) 53%,transparent 60% 72%,
+    rgba(76,220,245,.22) 77%,transparent 84% 94%,rgba(153,125,255,.2) 98%,transparent)!important;
+}
+.launch-brand:before{
+  width:min(92vw,480px)!important;height:290px!important;
+  background:
+    radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.98) 0 12%,rgba(90,220,246,.34) 24%,rgba(151,126,255,.23) 46%,rgba(255,140,210,.18) 65%,transparent 80%)!important;
+}
+@keyframes bfCinematicType{
+  0%{opacity:0;transform:translate(-50%,-46%) scale(.94);filter:blur(8px)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0)}
+}
+@keyframes bfCrystalCrown{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.52) rotate(-15deg)}
+  32%{opacity:.92;transform:translate(-50%,-50%) scale(1.06) rotate(2deg)}
+  68%{opacity:.55;transform:translate(-50%,-50%) scale(1) rotate(0)}
+  100%{opacity:.12;transform:translate(-50%,-50%) scale(1.14) rotate(5deg)}
+}
+@media(max-width:650px){
+ .launch-backtype{font-size:clamp(78px,21vw,148px)!important;line-height:.76!important;letter-spacing:-.11em!important}
+ .launch-brand:after{width:108vw;height:220px}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-backtype,.launch-brand:after{animation:none!important}
+ .launch-brand:after{opacity:.12!important}
+}
+</style>
+
+
+<style id="battleforge-kinetic-identity-loader">
+/* KINETIC IDENTITY — typography and moving colour architecture, not ambient effects */
+.launch-screen{
+  position:fixed!important;inset:0!important;z-index:1000!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  overflow:hidden!important;isolation:isolate!important;gap:0!important;
+  color:#111827!important;background:#fbfcff!important;
+  animation:launchExit .72s 2.82s cubic-bezier(.7,0,.2,1) forwards!important;
+}
+.launch-world{position:absolute!important;inset:0!important;z-index:0!important;overflow:hidden!important;isolation:isolate!important;background:#fbfcff!important}
+.launch-world:before{
+  content:""!important;position:absolute!important;inset:-2%!important;z-index:0!important;
+  background:
+    linear-gradient(118deg,transparent 0 43%,#2457f5 43% 59%,transparent 59%),
+    linear-gradient(118deg,transparent 0 61%,#a58bff 61% 72%,transparent 72%),
+    linear-gradient(118deg,transparent 0 75%,#ff8fc8 75% 84%,transparent 84%),
+    #fbfcff!important;
+  clip-path:polygon(100% 0,100% 100%,100% 100%,100% 0);
+  animation:bfColourCurtain 1.25s .08s cubic-bezier(.16,1,.3,1) forwards!important;
+}
+.launch-world:after{
+  content:""!important;position:absolute!important;inset:0!important;z-index:1!important;
+  background:linear-gradient(112deg,transparent 0 34%,#111827 34% 37%,transparent 37% 100%)!important;
+  clip-path:inset(0 100% 0 0);
+  animation:bfBlackCut .85s .24s cubic-bezier(.16,1,.3,1) forwards!important;
+}
+.launch-backtype{
+  display:block!important;position:absolute!important;z-index:2!important;
+  left:50%!important;top:50%!important;width:100%!important;
+  transform:translate(-50%,-50%)!important;text-align:center!important;
+  font:900 clamp(82px,18.8vw,250px)/.69 "Archivo Black",Impact,sans-serif!important;
+  letter-spacing:-.105em!important;color:#111827!important;
+  -webkit-text-stroke:0!important;opacity:.12!important;text-shadow:none!important;
+  animation:bfTypeBuild .8s .08s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-backtype em{
+  color:#2457f5!important;background:none!important;
+  -webkit-text-fill-color:#2457f5!important;-webkit-text-stroke:0!important;
+}
+.launch-kicker,.launch-bottomline,.launch-side-note,.launch-sweep,.launch-sparkscape{display:none!important}
+.launch-brand{
+  position:relative!important;z-index:4!important;isolation:isolate!important;
+  width:min(96vw,650px)!important;height:330px!important;min-height:0!important;
+  flex:none!important;overflow:visible!important;perspective:1000px!important;
+}
+.launch-brand:before,.launch-brand:after{
+  content:""!important;display:block!important;position:absolute!important;z-index:1!important;
+  left:50%!important;top:50%!important;width:min(112vw,780px)!important;height:clamp(34px,7vw,76px)!important;
+  border-radius:0!important;box-shadow:none!important;filter:none!important;pointer-events:none!important;
+}
+.launch-brand:before{
+  background:#2457f5!important;
+  clip-path:polygon(0 0,100% 0,88% 100%,0 72%)!important;
+  transform:translate(-50%,-50%) rotate(-21deg) translateX(-125vw)!important;
+  animation:bfBandLeft 1.18s .18s cubic-bezier(.16,1,.3,1) forwards!important;
+}
+.launch-brand:after{
+  background:#ff8fc8!important;
+  clip-path:polygon(12% 0,100% 28%,100% 100%,0 100%)!important;
+  transform:translate(-50%,-50%) rotate(19deg) translateX(125vw)!important;
+  animation:bfBandRight 1.18s .25s cubic-bezier(.16,1,.3,1) forwards!important;
+}
+.launch-brand .brand-orbit,.launch-brand .launch-spark,.launch-brand .forge-fragment,
+.launch-brand .launch-coordinate,.launch-brand .launch-scan,.launch-brand .prism-petal,
+.launch-brand .white-ribbon{display:none!important}
+.launch-brand .launch-blade{
+  display:block!important;position:absolute!important;left:50%!important;top:50%!important;
+  z-index:3!important;width:clamp(86px,20vw,190px)!important;height:clamp(15px,3.4vw,27px)!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;filter:none!important;
+  opacity:0!important;clip-path:polygon(0 0,100% 0,78% 100%,0 100%)!important;
+  background:#111827!important;animation:bfRibbonSnap .95s cubic-bezier(.2,.8,.2,1) both!important;
+}
+.launch-brand .blade-1{--tx:-38vw;--ty:-112px;--rot:-32deg;background:#2457f5!important;animation-delay:.18s!important}
+.launch-brand .blade-2{--tx:38vw;--ty:-96px;--rot:32deg;background:#a58bff!important;animation-delay:.27s!important}
+.launch-brand .blade-3{--tx:-39vw;--ty:112px;--rot:28deg;background:#ff8fc8!important;animation-delay:.34s!important}
+.launch-brand .blade-4{--tx:39vw;--ty:104px;--rot:-28deg;background:#111827!important;animation-delay:.42s!important}
+.launch-brand .blade-5{--tx:-10vw;--ty:-158px;--rot:90deg;background:#2457f5!important;animation-delay:.30s!important}
+.launch-brand .blade-6{--tx:10vw;--ty:158px;--rot:90deg;background:#a58bff!important;animation-delay:.38s!important}
+.launch-brand .blade-7,.launch-brand .blade-8{display:none!important}
+.launch-brand .brand-logo-plate{
+  position:absolute!important;left:50%!important;top:50%!important;z-index:6!important;
+  display:block!important;width:min(70vw,365px)!important;padding:0!important;
+  margin:0!important;background:transparent!important;border:0!important;border-radius:0!important;
+  outline:0!important;box-shadow:none!important;
+  transform:translate(-50%,-50%) rotateY(-72deg) rotateZ(-7deg) scale(.68)!important;
+  opacity:0!important;animation:bfEmblemReveal .95s 1.02s cubic-bezier(.16,1,.3,1) forwards!important;
+}
+.launch-brand .brand-logo-plate:before{display:none!important;content:none!important}
+.launch-brand .brand-logo-plate img{
+  display:block!important;width:100%!important;height:auto!important;
+  filter:none!important;
+}
+.launch-word,.launch-caption{display:none!important}
+.launch-line{
+  position:absolute!important;left:50%!important;top:calc(50% + 188px)!important;
+  z-index:7!important;transform:translateX(-50%)!important;
+  width:min(230px,54vw)!important;height:4px!important;
+  border-radius:0!important;background:#e4e7f0!important;overflow:hidden!important;
+}
+.launch-line span{
+  display:block!important;width:100%!important;height:100%!important;
+  background:linear-gradient(90deg,#2457f5 0 48%,#a58bff 48% 75%,#ff8fc8 75%)!important;
+  box-shadow:none!important;transform:scaleX(0)!important;transform-origin:left!important;
+  animation:bfProgress .95s .65s cubic-bezier(.16,1,.3,1) forwards!important;
+}
+@keyframes bfColourCurtain{0%{clip-path:polygon(100% 0,100% 100%,100% 100%,100% 0)}100%{clip-path:polygon(100% 0,100% 100%,0 100%,0 0)}}
+@keyframes bfBlackCut{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0 0 0)}}
+@keyframes bfTypeBuild{0%{opacity:0;clip-path:inset(0 0 100% 0);letter-spacing:-.16em}100%{opacity:.12;clip-path:inset(0);letter-spacing:-.105em}}
+@keyframes bfBandLeft{0%{transform:translate(-50%,-50%) rotate(-21deg) translateX(-125vw)}58%{transform:translate(-50%,-50%) rotate(-21deg) translateX(0)}100%{transform:translate(-50%,-50%) rotate(-21deg) translateX(-46vw)}}
+@keyframes bfBandRight{0%{transform:translate(-50%,-50%) rotate(19deg) translateX(125vw)}58%{transform:translate(-50%,-50%) rotate(19deg) translateX(0)}100%{transform:translate(-50%,-50%) rotate(19deg) translateX(46vw)}}
+@keyframes bfRibbonSnap{0%{opacity:0;transform:translate(-50%,-50%) translate(var(--tx),var(--ty)) rotate(var(--rot)) scaleX(.2)}55%{opacity:1}100%{opacity:.92;transform:translate(-50%,-50%) translate(var(--tx),var(--ty)) rotate(var(--rot)) scaleX(1)}}
+@keyframes bfEmblemReveal{0%{opacity:0;transform:translate(-50%,-50%) rotateY(-72deg) rotateZ(-7deg) scale(.68)}65%{opacity:1;transform:translate(-50%,-50%) rotateY(8deg) rotateZ(2deg) scale(1.06)}100%{opacity:1;transform:translate(-50%,-50%) rotateY(0) rotateZ(0) scale(1)}}
+@keyframes bfProgress{to{transform:scaleX(1)}}
+@media(max-width:650px){
+ .launch-brand{width:100vw!important;height:260px!important}
+ .launch-brand:before,.launch-brand:after{width:145vw!important;height:34px!important}
+ .launch-brand .brand-logo-plate{width:min(76vw,290px)!important}
+ .launch-brand .blade-1{--tx:-35vw;--ty:-82px;--rot:-32deg}
+ .launch-brand .blade-2{--tx:35vw;--ty:-72px;--rot:32deg}
+ .launch-brand .blade-3{--tx:-35vw;--ty:82px;--rot:28deg}
+ .launch-brand .blade-4{--tx:35vw;--ty:74px;--rot:-28deg}
+ .launch-brand .blade-5{--tx:-8vw;--ty:-118px;--rot:90deg}
+ .launch-brand .blade-6{--tx:8vw;--ty:118px;--rot:90deg}
+ .launch-line{top:calc(50% + 150px)!important}
+ .launch-backtype{font-size:clamp(68px,19vw,142px)!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-screen{animation:none!important;display:none!important}
+ .launch-world:before,.launch-world:after,.launch-backtype,
+ .launch-brand:before,.launch-brand:after,.launch-brand .launch-blade,
+ .launch-brand .brand-logo-plate,.launch-line span{animation:none!important}
+}
+
+/* VISIBILITY FIX — keep the actual BattleForge identity unmistakable */
+.launch-screen{background:#fbfcff!important;opacity:1!important}
+.launch-world{z-index:0!important;background:#fbfcff!important}
+.launch-backtype{
+  display:block!important;visibility:visible!important;opacity:.24!important;
+  color:#111827!important;-webkit-text-fill-color:#111827!important;
+  -webkit-text-stroke:1px rgba(17,24,39,.18)!important;
+  text-shadow:none!important;z-index:3!important;
+  font-size:clamp(94px,21vw,280px)!important;
+}
+.launch-backtype em{
+  color:#2457f5!important;-webkit-text-fill-color:#2457f5!important;
+  opacity:1!important;
+}
+.launch-brand{z-index:5!important;opacity:1!important;visibility:visible!important}
+.launch-brand .brand-logo-plate{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  width:min(78vw,430px)!important;
+  transform:translate(-50%,-50%) rotateY(0) rotateZ(0) scale(1)!important;
+  animation:bfLogoVisible .7s .28s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand .brand-logo-plate img{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  width:100%!important;height:auto!important;filter:none!important;
+}
+@keyframes bfLogoVisible{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.78)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+@media(max-width:650px){
+  .launch-backtype{font-size:clamp(78px,23vw,158px)!important;line-height:.76!important}
+  .launch-brand .brand-logo-plate{width:min(84vw,330px)!important}
+}
+
+
+/* BATTLEFORGE TYPE-ONLY LOADER — replace every previous loader visual */
+.launch-screen.bf-type-loader{
+  position:fixed!important;inset:0!important;z-index:1000!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  flex-direction:column!important;gap:0!important;overflow:hidden!important;
+  background:#fff!important;color:#080808!important;isolation:isolate!important;
+  pointer-events:none!important;
+  animation:bfTypeExit .48s 3.35s cubic-bezier(.76,0,.24,1) forwards!important;
+}
+.bf-type-stack{
+  position:relative!important;display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:center!important;
+  width:100%!important;padding:0 4vw!important;line-height:.77!important;
+  font-family:"Archivo Black",Impact,sans-serif!important;font-weight:950!important;
+  letter-spacing:-.105em!important;text-align:center!important;
+}
+.bf-type-stack span{
+  display:block!important;white-space:nowrap!important;
+  font-family:"Archivo Black",Impact,sans-serif!important;font-weight:950!important;
+  font-size:clamp(76px,19vw,230px)!important;line-height:.78!important;
+  letter-spacing:-.105em!important;
+}
+.bf-type-battle{
+  color:#080808!important;-webkit-text-fill-color:#080808!important;
+  animation:bfBattleImpact 1.18s cubic-bezier(.16,1,.3,1) both!important;
+}
+.bf-type-forge{
+  color:#2457f5!important;-webkit-text-fill-color:#2457f5!important;
+  animation:bfForgeImpact 1.22s .12s cubic-bezier(.16,1,.3,1) both!important;
+}
+.bf-type-rule{
+  display:block!important;width:min(54vw,330px)!important;height:5px!important;
+  margin-top:clamp(22px,4vh,42px)!important;
+  background:linear-gradient(90deg,#080808 0 50%,#2457f5 50% 100%)!important;
+  transform:scaleX(0)!important;transform-origin:center!important;
+  animation:bfRuleStrike .55s 1.08s cubic-bezier(.16,1,.3,1) forwards!important;
+}
+.launch-screen.bf-type-loader .bf-type-tagline{
+  display:block!important;position:relative!important;z-index:5!important;
+  margin-top:clamp(22px,4vh,38px)!important;padding:10px 18px!important;
+  color:#080808!important;-webkit-text-fill-color:#080808!important;
+  background:#fff!important;border-bottom:3px solid #2457f5!important;
+  font:900 clamp(13px,2.8vw,19px)/1.1 "Manrope",Arial,sans-serif!important;
+  letter-spacing:.22em!important;text-align:center!important;text-transform:uppercase!important;
+  opacity:0!important;visibility:hidden!important;transform:translateY(22px) scale(.9)!important;
+  animation:bfIntentReveal .72s 1.55s cubic-bezier(.16,1,.3,1) forwards!important;
+}
+@keyframes bfIntentReveal{
+  0%{opacity:0;visibility:visible;transform:translateY(22px) scale(.9);clip-path:inset(0 50% 0 50%)}
+  65%{opacity:1;visibility:visible;transform:translateY(-3px) scale(1.04);clip-path:inset(0)}
+  100%{opacity:1;visibility:visible;transform:translateY(0) scale(1);clip-path:inset(0)}
+}
+@keyframes bfBattleImpact{
+  0%{opacity:0;transform:translate3d(-110vw,0,0) skewX(-22deg) scaleX(1.3);clip-path:inset(0 100% 0 0)}
+  52%{opacity:1;transform:translate3d(3.5vw,0,0) skewX(7deg) scaleX(1.02);clip-path:inset(0)}
+  70%{transform:translate3d(-1.2vw,0,0) skewX(-3deg)}
+  86%{transform:translate3d(.5vw,0,0) skewX(1deg)}
+  100%{opacity:1;transform:translate3d(0,0,0) skewX(0)}
+}
+@keyframes bfForgeImpact{
+  0%{opacity:0;transform:translate3d(110vw,0,0) skewX(22deg) scaleX(1.3);clip-path:inset(0 0 0 100%)}
+  48%{opacity:1;transform:translate3d(-3.5vw,0,0) skewX(-7deg) scaleX(1.02);clip-path:inset(0)}
+  68%{transform:translate3d(1.2vw,0,0) skewX(3deg)}
+  84%{transform:translate3d(-.5vw,0,0) skewX(-1deg)}
+  100%{opacity:1;transform:translate3d(0,0,0) skewX(0)}
+}
+@keyframes bfRuleStrike{
+  0%{transform:scaleX(0);opacity:0}
+  55%{transform:scaleX(1.12);opacity:1}
+  100%{transform:scaleX(1);opacity:1}
+}
+@keyframes bfTypeExit{
+  to{opacity:0;visibility:hidden;transform:translateY(-3vh);pointer-events:none}
+}
+@media(max-width:650px){
+ .bf-type-stack span{font-size:clamp(62px,19vw,126px)!important;letter-spacing:-.11em!important}
+ .bf-type-rule{height:4px!important;width:58vw!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-screen.bf-type-loader{animation:bfTypeExit .48s 3.35s cubic-bezier(.76,0,.24,1) forwards!important}
+ .bf-type-battle,.bf-type-forge,.bf-type-rule{animation:none!important;opacity:1!important;transform:none!important;clip-path:none!important}
+ .launch-screen.bf-type-loader .bf-type-tagline{animation:bfIntentReveal .72s 1.55s cubic-bezier(.16,1,.3,1) forwards!important}
+}
+
+
+/* PLAY WITH INTENT — timed visibility, never persistent */
+.launch-screen.bf-type-loader .bf-type-tagline{display:block!important;opacity:0!important;visibility:hidden!important;position:relative!important;z-index:20!important;transform:translateY(12px)!important;clip-path:none!important;animation:none!important;margin-top:clamp(22px,4vh,38px)!important;padding:13px 20px!important;background:#174ff5!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:2px solid #174ff5!important;border-radius:2px!important;font:900 clamp(14px,3.2vw,21px)/1.15 "Manrope",Arial,sans-serif!important;letter-spacing:.18em!important;text-align:center!important;box-shadow:7px 7px 0 #101828!important}
+.launch-screen.bf-type-loader .bf-type-tagline.bf-intent-visible{opacity:1!important;visibility:visible!important;transform:translateY(0)!important;transition:opacity .28s ease,transform .28s ease!important}
+</style>
 </head>
 <body>
-<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">INITIALIZING PLAYER SYSTEM</div></div>
+<div class="launch-screen bf-type-loader" aria-hidden="true">
+  <div class="bf-type-stack">
+    <span class="bf-type-battle">BATTLE</span>
+    <span class="bf-type-forge">FORGE</span>
+  </div>
+  <span class="bf-type-rule"></span>
+  <span class="bf-type-tagline">PLAY WITH INTENT</span>
+</div>
+<script>(()=>{const loader=document.querySelector('.launch-screen.bf-type-loader');if(!loader)return;const intent=loader.querySelector('.bf-type-tagline');window.setTimeout(()=>{if(intent&&loader.isConnected)intent.classList.add('bf-intent-visible')},1550);window.setTimeout(()=>{if(loader.isConnected)loader.remove()},3350)})();</script>
 <div class="page-progress" aria-hidden="true"><span id="page-progress-bar"></span></div>
 <header><div class="wrap nav"><a class="logo" href="#top" aria-label="BattleForge home"><img src="assets/battleforge-logo.svg" alt="BattleForge"></a>
 <nav class="navlinks" id="navlinks"><a href="#identity">Manifesto</a><a href="#formats">Formats</a><a href="#inside">Inside BF</a><a href="#rewards">Rewards</a><a href="#how">How it works</a><a href="#faq">Info</a></nav>
-<div class="nav-action"><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-apk-538/BattleForge.apk">GET THE APP <span class="arr">↗</span></a><button class="menu" id="menu" aria-label="Open menu" aria-expanded="false">☰</button></div></div></header>
+<div class="nav-action"><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-release-553/BattleForge.apk">GET THE APP <span class="arr">↗</span></a><button class="menu" id="menu" aria-label="Open menu" aria-expanded="false">☰</button></div></div></header>
 <main id="top">
 <section class="hero"><div class="hero-grid wrap">
-<div class="hero-left"><div><div class="meta">Independent gaming culture / Est. 2026</div><h1>PLAY<br>WITH<span>INTENT.</span></h1></div><div class="hero-bottom"><div><div class="hero-copy">A competitive home for Free Fire and many more games. Find your format, bring your people and make every match count.</div><div class="hero-cta"><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-apk-538/BattleForge.apk">ENTER BATTLEFORGE <span class="arr">↗</span></a></div></div><a class="text-link" href="#identity">SCROLL TO EXPLORE <span>↓</span></a></div></div>
-<div class="hero-right"><div class="brand-motion" aria-label="Animated official BattleForge app logo">
-  <div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div>
-  <div class="brand-orbit brand-orbit-three"></div>
-  <div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt="BattleForge official app logo"></div>
-  
-  
+<div class="hero-left"><div><div class="meta">Independent gaming culture / Est. 2026</div><h1><span class="hero-word">PLAY</span><span class="hero-word">WITH</span><span class="hero-word hero-accent">INTENT.</span></h1></div><div class="hero-bottom"><div><div class="hero-copy">A competitive home for Free Fire and many more games. Find your format, bring your people and make every match count.</div><div class="hero-cta"><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-release-553/BattleForge.apk">ENTER BATTLEFORGE <span class="arr">↗</span></a></div></div><a class="text-link" href="#identity">SCROLL TO EXPLORE <span>↓</span></a></div></div>
+<div class="hero-right"><div class="brand-motion forge-reactor" role="img" aria-label="BattleForge emblem inside a dimensional animated energy arena">
+  <div class="reactor-backdrop" aria-hidden="true"></div>
+  <div class="reactor-ring ring-outer" aria-hidden="true"></div>
+  <div class="reactor-ring ring-middle" aria-hidden="true"></div>
+  <div class="reactor-ring ring-inner" aria-hidden="true"></div>
+  <div class="reactor-ribbon ribbon-one" aria-hidden="true"></div>
+  <div class="reactor-ribbon ribbon-two" aria-hidden="true"></div>
+  <div class="reactor-ribbon ribbon-three" aria-hidden="true"></div>
+  <div class="reactor-shard shard-one" aria-hidden="true"></div>
+  <div class="reactor-shard shard-two" aria-hidden="true"></div>
+  <div class="reactor-shard shard-three" aria-hidden="true"></div>
+  <div class="reactor-shard shard-four" aria-hidden="true"></div>
+  <i class="reactor-particle particle-one" aria-hidden="true"></i><i class="reactor-particle particle-two" aria-hidden="true"></i><i class="reactor-particle particle-three" aria-hidden="true"></i><i class="reactor-particle particle-four" aria-hidden="true"></i><i class="reactor-particle particle-five" aria-hidden="true"></i><i class="reactor-particle particle-six" aria-hidden="true"></i>
+  <div class="reactor-core" aria-hidden="true"><div class="core-glass"></div><img src="assets/battleforge-logo.svg" alt=""></div>
+  <div class="reactor-caption reactor-caption-left" aria-hidden="true">BF / REACTOR 001</div>
+  <div class="reactor-caption reactor-caption-right" aria-hidden="true">POWERED BY PLAY</div>
 </div><div class="poster-index">A NEW KIND OF ARENA</div></div>
 </div></section>
 <div class="marquee"><div class="marquee-track"><span>Built for the bold</span><b>✳</b><span>Play with intent</span><b>✳</b><span>Solo / Duo / Squad</span><b>✳</b><span>Make your match matter</span><b>✳</b><span>Built for the bold</span><b>✳</b><span>Play with intent</span><b>✳</b><span>Solo / Duo / Squad</span><b>✳</b><span>Make your match matter</span><b>✳</b></div></div>
-<section class="quick-download" aria-label="Download BattleForge"><div class="wrap quick-download-inner"><div class="quick-download-copy"><span class="quick-download-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/></svg></span><div><div class="quick-download-kicker">ANDROID APP / READY WHEN YOU ARE</div><div class="quick-download-title">YOUR NEXT MATCH IS ONE TAP AWAY.</div></div></div><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-apk-538/BattleForge.apk">DOWNLOAD BATTLEFORGE <span class="arr">↗</span></a></div></section>
+<div class="forge-signal" aria-label="BattleForge community highlights"><span class="forge-signal-tag"><i></i> FORGE SIGNAL</span><span class="forge-signal-copy" aria-live="off">YOUR NEXT MATCH STARTS WITH A SINGLE MOVE.</span><span class="forge-signal-index">BF / 001</span></div>
+<section class="quick-download" aria-label="Download BattleForge"><div class="wrap quick-download-inner"><div class="quick-download-copy"><span class="quick-download-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/></svg></span><div><div class="quick-download-kicker">ANDROID APP / READY WHEN YOU ARE</div><div class="quick-download-title">YOUR NEXT MATCH IS ONE TAP AWAY.</div></div></div><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-release-553/BattleForge.apk">DOWNLOAD APK 1.2.553 <span class="arr">↗</span></a></div></section>
 <section class="section white" id="identity"><div class="wrap"><div class="intro-grid"><div><div class="section-label"><b>01 / THE POINT OF VIEW</b> — NOT JUST ANOTHER LOBBY</div><h2 class="section-title">THE GAME IS<br>THE <em>WHOLE</em><br>POINT.</h2></div><p class="intro-note">BattleForge is designed around the moments that matter: choosing your match, competing with purpose and seeing your progress clearly. No fake hype. Just a focused place to play.</p></div>
-<div class="manifesto"><article class="manifesto-card"><span class="no">A / COMPETE</span><span class="ghost-number">01</span><p>Pick the format that fits your playstyle. Your next match is waiting in the arena.</p><h3>MAKE<br>YOUR MOVE.</h3></article><article class="manifesto-card"><span class="no">B / PROGRESS</span><span class="ghost-number">02</span><p>Verified match results, player stats and leaderboard progress.</p><h3>OWN<br>YOUR RUN.</h3></article><article class="manifesto-card"><span class="no">C / CLARITY</span><span class="ghost-number">03</span><p>Wallet categories and request history presented clearly inside the app.</p><h3>EVERYTHING<br>IN VIEW.</h3></article></div></div></section>
+<div class="manifesto"><article class="manifesto-card"><span class="no">A / COMPETE</span><span class="ghost-number">01</span><p>Pick the format that fits your playstyle. Your next match is waiting in the arena.</p><h3>MAKE<br>YOUR MOVE.</h3></article><article class="manifesto-card"><span class="no">B / PROGRESS</span><span class="ghost-number">02</span><p>Verified match results, player stats and leaderboard progress.</p><h3>OWN<br>YOUR RUN.</h3></article><article class="manifesto-card"><span class="no">C / CLARITY</span><span class="ghost-number">03</span><p>Wallet categories and request history presented clearly inside the app.</p><h3>EVERYTHING<br>IN VIEW.</h3></article></div><div class="achievement-showcase"><div class="achievement-heading"><span>THE FORGE COLLECTION / CONCEPT BADGES</span><b>✳</b></div><div class="achievement-grid"><article class="achievement-card"><span class="achievement-icon">✦</span><div><b>FIRST DROP</b><small>Start your BattleForge journey</small></div><span class="achievement-lock">01</span></article><article class="achievement-card"><span class="achievement-icon">⌁</span><div><b>THE STRATEGIST</b><small>Plan your route to the arena</small></div><span class="achievement-lock">02</span></article><article class="achievement-card"><span class="achievement-icon">✧</span><div><b>SQUAD SIGNAL</b><small>Bring your people together</small></div><span class="achievement-lock">03</span></article></div></div>
+</div></section>
 <section class="section" id="formats"><div class="wrap"><div class="formats-head"><div><div class="section-label"><b>02 / CHOOSE YOUR FORM</b> — THREE WAYS IN</div><h2 class="section-title">WHAT'S<br>YOUR <em>MODE?</em></h2></div><p>Different ways to compete. Tournament availability, entry fees and rules are always shown inside the app before you join.</p></div>
 <div class="arena-selector">
   <div class="arena-tabs" role="tablist" aria-label="Choose tournament format">
@@ -170,7 +1648,7 @@ body{position:relative}
     <button class="arena-tab" type="button" role="tab" aria-selected="false" data-mode="squad"><span>03</span> SQUAD <i>↗</i></button>
   </div>
   <div class="arena-display" id="arena-display" aria-live="polite">
-    <div class="arena-display-copy"><div class="arena-display-label" id="arena-label">FORMAT 01 / INDEPENDENT</div><h3 id="arena-name">GO<br>ALONE.</h3><p id="arena-description">One player. Your decisions. Your responsibility. Enter a Solo tournament and let your gameplay speak.</p><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-apk-538/BattleForge.apk">FIND YOUR MATCH <span class="arr">↗</span></a></div>
+    <div class="arena-display-copy"><div class="arena-display-label" id="arena-label">FORMAT 01 / INDEPENDENT</div><h3 id="arena-name">GO<br>ALONE.</h3><p id="arena-description">One player. Your decisions. Your responsibility. Enter a Solo tournament and let your gameplay speak.</p><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-release-553/BattleForge.apk">FIND YOUR MATCH <span class="arr">↗</span></a></div>
     <div class="arena-glyph" id="arena-glyph" aria-hidden="true"><span class="glyph-back"></span><span class="glyph-mid"></span><span class="glyph-front">01</span><span class="glyph-caption">PLAYER / ONE</span></div>
     <div class="arena-display-index" id="arena-index">BF—01</div>
   </div>
@@ -179,11 +1657,15 @@ body{position:relative}
 <div class="inside-heading"><div><div class="section-label"><b>03 / INSIDE THE FORGE</b> — MORE THAN THE MATCH</div><h2 class="section-title">YOUR GAME.<br>YOUR <em>HQ.</em></h2></div><p class="inside-intro">The match is only one part of the story. Keep your player identity, progress, conversations and important updates close.</p></div>
 <div class="feature-showcase"><div class="feature-visual"><div class="screen-top"><span>YOUR BATTLEFORGE PROFILE</span><span class="screen-live"><i></i> PLAYER VIEW</span></div><div class="screen-profile"><div class="screen-avatar">BF</div><div><small>YOUR PROFILE</small><strong>YOUR PLAYER CARD</strong><span>Username · Match record</span></div><b class="screen-arrow">↗</b></div><div class="screen-stats"><div><small>PERFORMANCE</small><b>TRACK</b><span>Match history</span></div><div><small>COMMUNITY</small><b>CONNECT</b><span>Match chat</span></div><div><small>PROGRESS</small><b>CLIMB</b><span>Leaderboards</span></div></div><div class="screen-bottom"><span>YOUR ARENA / YOUR RECORD</span><span>PLAYER PROFILE</span></div><div class="screen-stamp">PLAYER<br>ONE</div></div>
 <div class="feature-list">
-<article class="feature-item"><span>01 / IDENTITY</span><div><h3>YOUR PLAYER CARD.</h3><p>A unique app ID, username, profile details and a home for your player stats.</p></div><b>↗</b></article>
-<article class="feature-item"><span>02 / RANKINGS</span><div><h3>SEE THE CLIMB.</h3><p>Follow match results and leaderboard progress across the competition.</p></div><b>↗</b></article>
-<article class="feature-item"><span>03 / CHAT</span><div><h3>STAY IN THE GAME.</h3><p>Match chat and BLAZE help keep useful conversations and app guidance close.</p></div><b>↗</b></article>
-<article class="feature-item"><span>04 / SIGNALS</span><div><h3>DON'T MISS THE DROP.</h3><p>Get important tournament and match updates through in-app notifications.</p></div><b>↗</b></article>
-</div></div><div class="inside-ribbon"><span>PLAYER FIRST</span><b>✳</b><span>BUILT AROUND THE MATCH</span><b>✳</b><span>EVERY DETAIL IN REACH</span><b>✳</b><span>PLAYER FIRST</span></div>
+<article class="feature-item"><span>01 / PLAYER IDENTITY</span><div><h3>YOUR PLAYER CARD.</h3><p>Your unique BattleForge Player ID, username, profile details, avatar presets and social links in one place.</p></div><b>↗</b></article>
+<article class="feature-item"><span>02 / KILL RANKS</span><div><h3>SHOW YOUR PROGRESS.</h3><p>Track lifetime kills, earn rank badges and follow verified match earnings on the leaderboard.</p></div><b>↗</b></article>
+<article class="feature-item"><span>03 / MATCH CHAT</span><div><h3>STAY IN THE GAME.</h3><p>Use match-specific chat, custom reaction icons and BLAZE for quick in-app guidance.</p></div><b>↗</b></article>
+<article class="feature-item"><span>04 / LIVE SIGNALS</span><div><h3>DON’T MISS THE DROP.</h3><p>Get in-app updates for tournaments, room details, results, account activity and announcements.</p></div><b>↗</b></article>
+<article class="feature-item"><span>05 / WALLET CONTROL</span><div><h3>KNOW EVERY MOVE.</h3><p>Review your wallet balance, deposit and withdrawal requests, payment references and transaction history.</p></div><b>↗</b></article>
+<article class="feature-item"><span>06 / DAILY PROGRESS</span><div><h3>BUILD YOUR STREAK.</h3><p>Follow daily match streak progress and use your Player ID as your referral code.</p></div><b>↗</b></article>
+<article class="feature-item"><span>07 / MATCH ARCHIVE</span><div><h3>KEEP THE RECEIPTS.</h3><p>Revisit past matches, published results, score records and available result-review tools.</p></div><b>↗</b></article>
+<article class="feature-item"><span>08 / PLAYER SAFETY</span><div><h3>PLAY WITH CLARITY.</h3><p>Access account notices, moderation updates, match guidance and official support channels.</p></div><b>↗</b></article>
+</div></div></div><div class="inside-ribbon"><span>PLAYER FIRST</span><b>✳</b><span>BUILT AROUND THE MATCH</span><b>✳</b><span>EVERY DETAIL IN REACH</span><b>✳</b><span>PLAYER FIRST</span></div>
 </div></section>
 <section class="social-hub" id="community"><div class="wrap"><div class="social-head"><div><div class="section-label"><b>09 / FIND YOUR PEOPLE</b> — THE BATTLEFORGE COMMUNITY</div><h2>FOLLOW THE<br><em>FORGE.</em></h2></div><p>Follow official BattleForge channels for community updates, announcements and what's happening next in the arena.</p></div><div class="social-grid">
 <a class="social-card" href="https://www.instagram.com/battleforgeff?vrfl=MXAxeXhubTd4OTZrZQ==" target="_blank" rel="noopener noreferrer"><span class="social-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><rect x="4.5" y="4.5" width="23" height="23" rx="7" stroke="currentColor" stroke-width="2.4"/><circle cx="16" cy="16" r="5.4" stroke="currentColor" stroke-width="2.4"/><circle cx="23.2" cy="8.9" r="1.6" fill="currentColor"/></svg></span><span class="social-platform">01 / Instagram</span><strong>Instagram</strong><span class="social-handle">@battleforgeff <b>↗</b></span></a>
@@ -197,12 +1679,12 @@ body{position:relative}
 <div class="loop-tabs" role="tablist" aria-label="BattleForge player journey"><button class="loop-tab active" role="tab" aria-selected="true" data-step="discover"><span>01</span> DISCOVER</button><button class="loop-tab" role="tab" aria-selected="false" data-step="enter"><span>02</span> ENTER</button><button class="loop-tab" role="tab" aria-selected="false" data-step="play"><span>03</span> PLAY</button><button class="loop-tab" role="tab" aria-selected="false" data-step="track"><span>04</span> TRACK</button></div>
 <div class="loop-panel" aria-live="polite"><div class="loop-number" id="loop-number">01</div><div><div class="loop-kicker" id="loop-kicker">FIND YOUR NEXT MATCH</div><h3 id="loop-title">THE ARENA<br>STARTS HERE.</h3><p id="loop-copy">Explore tournaments, compare formats and check the details before choosing where to compete.</p></div><div class="loop-symbol" id="loop-symbol">⌕</div></div>
 </div></section>
-<section class="blueprint" id="rewards"><div class="wrap blueprint-inner"><div><div class="section-label"><b>05 / THE SCORE</b> — PLAY. VERIFY. EARN.</div><h2>SKILL<br>LEAVES A<br><span>TRACE.</span></h2><p>Every tournament has its own scoring and reward structure. Review the published rules, entry details and eligibility before registering. Results are subject to verification.</p></div><div class="bounty"><div class="small">BATTLEFORGE / MATCH REWARDS</div><div class="money">PLAY <span>WITH PURPOSE</span></div><div class="rule"></div><p>Clear tournament details. Verified results. Reward information shown before you join.</p></div></div></section>
+<section class="blueprint" id="rewards"><div class="wrap blueprint-inner"><div><div class="section-label"><b>05 / THE SCORE</b> — PLAY. VERIFY. EARN.</div><h2>SKILL<br>LEAVES A<br><span>TRACE.</span></h2><p>Every tournament has its own scoring and reward structure. Review the published rules, entry details and eligibility before registering. Results are subject to verification.</p></div><div class="bounty"><div class="small">BATTLEFORGE / MATCH REWARDS</div><div class="money">PLAY <span>WITH PURPOSE</span></div><div class="rule"></div><p>Clear tournament details. Verified results. Reward information shown before you join.</p><button class="vault-trigger" type="button" aria-expanded="false" aria-controls="reward-vault"><span>✦</span> OPEN THE REWARD VAULT <b>↗</b></button><div class="reward-vault" id="reward-vault" hidden><span class="vault-kicker">BATTLEFORGE / REWARD VAULT</span><strong>EVERY MATCH HAS ITS OWN STORY.</strong><p>Prize pools, eligibility, scoring and reward breakdowns are shown on each tournament before registration. Check the in-app details before you enter.</p><a href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-release-553/BattleForge.apk">EXPLORE IN THE APP ↗</a></div></div></div></section>
 <section class="section white" id="how"><div class="wrap"><div class="section-label"><b>06 / THE ROUTE IN</b> — SIMPLE BY DESIGN</div><h2 class="section-title">THREE MOVES.<br>THEN <em>PLAY.</em></h2><div class="steps-grid"><article class="step"><div class="big">01</div><h3>Get in</h3><p>Download the Android app and create your player account with a unique username.</p></article><article class="step"><div class="big">02</div><h3>Lock your match</h3><p>Review the format, entry fee, room details and tournament rules before registering.</p></article><article class="step"><div class="big">03</div><h3>Make it count</h3><p>Play your match, then follow verified results, stats and eligible earnings in the app.</p></article></div></div></section>
-<section class="section" id="wallet"><div class="wrap wallet-grid"><div class="wallet-copy"><div class="section-label"><b>07 / WALLET NOTES</b> — KNOW YOUR ACTIVITY</div><h2 class="section-title">CLEAR<br>BY <em>DESIGN.</em></h2><p>Your wallet brings together balance information, payment requests, match earnings and transaction history.</p></div><div class="ledger"><div class="ledger-row"><span class="n">01</span><div><b>Wallet balance</b><p>View your available balance and recent wallet activity.</p></div><span class="mark">BALANCE</span></div><div class="ledger-row"><span class="n">02</span><div><b>Payment requests</b><p>Follow deposit and withdrawal request status from your account.</p></div><span class="mark">TRACKABLE</span></div><div class="ledger-row"><span class="n">03</span><div><b>Match earnings</b><p>Keep up with verified results and eligible rewards in the app.</p></div><span class="mark">RESULTS</span></div></div></div></section>
-<section class="download-band"><div class="wrap download-inner"><div><h2>THE ARENA<br>IS <span>CALLING.</span></h2><p>BattleForge for Android. Your next match starts here.</p></div><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-apk-538/BattleForge.apk">DOWNLOAD THE APP <span class="arr">↗</span></a></div></section>
+<section class="section" id="wallet"><div class="wrap wallet-grid"><div class="wallet-copy"><div class="section-label"><b>07 / WALLET NOTES</b> — KNOW YOUR ACTIVITY</div><h2 class="section-title">CLEAR<br>BY <em>DESIGN.</em></h2><p>Your wallet brings together balance information, deposit requests, withdrawal requests, payment references, verified match earnings and transaction history.</p></div><div class="ledger"><div class="ledger-row"><span class="n">01</span><div><b>Wallet balance</b><p>See your balance, wallet categories and recent ledger activity.</p></div><span class="mark">BALANCE</span></div><div class="ledger-row"><span class="n">02</span><div><b>Payment requests</b><p>Submit payment details and a UTR/reference for manual verification. Minimum deposit: ₹30.</p></div><span class="mark">TRACKABLE</span></div><div class="ledger-row"><span class="n">03</span><div><b>Match earnings</b><p>Request eligible match-earning withdrawals from ₹100; a 2% processing fee applies. Requests are reviewed manually.</p></div><span class="mark">RESULTS</span></div></div></div></section>
+<section class="download-band"><div class="wrap download-inner"><div><h2>THE ARENA<br>IS <span>CALLING.</span></h2><p>BattleForge Android APK · Version 1.2.553 · Production-signed release #553. Earlier debug-signed installs may require uninstalling first; uninstalling can erase local app data.</p></div><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-release-553/BattleForge.apk">DOWNLOAD APK 1.2.553 <span class="arr">↗</span></a></div></section>
 <section class="section white" id="faq"><div class="wrap faq-layout"><div><div class="section-label"><b>08 / FIELD GUIDE</b></div><h2 class="section-title">GOOD TO<br><em>KNOW.</em></h2></div><div class="faq-list">
-<details><summary>Which games does BattleForge support?</summary><p>BattleForge supports Free Fire and many more games. Available games and tournaments are shown inside the app.</p></details>
+<details><summary>Which games does BattleForge support?</summary><p>BattleForge currently focuses on Free Fire. Available tournaments and formats are shown inside the app.</p></details>
 <details><summary>Which formats are available?</summary><p>Solo, Duo and Squad formats are supported. Tournaments open for registration are shown in the app.</p></details>
 <details><summary>How are rewards calculated?</summary><p>Rewards follow each tournament's published scoring and verification rules. Check the tournament page before joining.</p></details>
 <details><summary>How do wallet requests work?</summary><p>Deposit and withdrawal requests are reviewed by the BattleForge team. You can follow request status and transaction history inside the app. All requests are subject to the rules and verification checks shown in the app.</p></details>
@@ -233,6 +1715,7 @@ arenaTabs.forEach(tab=>tab.addEventListener('click',()=>{
 }));
 (()=>{const bar=document.getElementById('page-progress-bar');let ticking=false;const update=()=>{const max=document.documentElement.scrollHeight-innerHeight;bar.style.transform='scaleX('+(max>0?scrollY/max:0)+')';ticking=false};addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(update);ticking=true;}},{passive:true});update();})();
 const loopData={discover:{n:'01',k:'FIND YOUR NEXT MATCH',t:'THE ARENA<br>STARTS HERE.',p:'Explore tournaments, compare formats and check the details before choosing where to compete.',symbol:'⌕'},enter:{n:'02',k:'MAKE YOUR CALL',t:'PICK YOUR<br>FORMAT.',p:'Choose Solo, Duo or Squad. Review the entry details, rules and room information before you lock in.',symbol:'↗'},play:{n:'03',k:'SHOW UP AND PLAY',t:'MAKE THE<br>MOMENT COUNT.',p:'Compete in your match, stay connected and follow the instructions shared for your tournament.',symbol:'✳'},track:{n:'04',k:'FOLLOW YOUR PROGRESS',t:'KEEP THE<br>RECEIPTS.',p:'Check verified results, leaderboard movement, player stats and your account activity in one place.',symbol:'⌁'}};document.querySelectorAll('.loop-tab').forEach(tab=>tab.addEventListener('click',()=>{const d=loopData[tab.dataset.step];if(!d)return;document.querySelectorAll('.loop-tab').forEach(t=>{const active=t===tab;t.classList.toggle('active',active);t.setAttribute('aria-selected',String(active));});const panel=document.querySelector('.loop-panel');panel.classList.add('loop-changing');setTimeout(()=>{document.getElementById('loop-number').textContent=d.n;document.getElementById('loop-kicker').textContent=d.k;document.getElementById('loop-title').innerHTML=d.t;document.getElementById('loop-copy').textContent=d.p;document.getElementById('loop-symbol').textContent=d.symbol;panel.classList.remove('loop-changing');},140);}));</script>
-<a class="floating-download" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-apk-538/BattleForge.apk" aria-label="Download BattleForge for Android"><span class="floating-download-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/></svg></span><span class="floating-download-copy"><small>ANDROID APP</small><strong>GET BATTLEFORGE</strong></span><span class="arr">↗</span></a>
+<a class="floating-download" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-release-553/BattleForge.apk" aria-label="Download BattleForge for Android"><span class="floating-download-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/></svg></span><span class="floating-download-copy"><small>ANDROID APP</small><strong>GET BATTLEFORGE</strong></span><span class="arr">↗</span></a>
 <script src="assets/immersive-3d.js?v=20261118-reveal1" defer></script>
+<script src="assets/apple-inspired.js?v=20261128-headingfix1" defer></script>
 </body></html>
