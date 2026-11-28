@@ -1,9 +1,9 @@
 name: Build BattleForge Android APK
-run-name: BattleForge APK build - ${{ github.ref_name }}
+run-name: BattleForge APK release - ${{ github.ref_name }} @ ${{ github.sha }}
 on:
   workflow_dispatch:
   push:
-    branches: [main, "feature/payment-minimums-earned-withdrawal-policy", "feature/wallet-profile-payment-ids", "admin-portal-website-apk-490"]
+    branches: ["admin-portal-website-apk-490"]
 permissions:
   contents: write
 jobs:
@@ -12,6 +12,19 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
+      - name: Verify release source and app version
+        run: |
+          test "$GITHUB_REF_NAME" = "admin-portal-website-apk-490"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          package = json.loads(Path("package.json").read_text())
+          app = Path("app.js").read_text()
+          assert package["version"] == "1.2.2", f"Unexpected source version: {package['version']}"
+          assert "APP_FALLBACK_VERSION" in app, "App version marker is missing"
+          print(f"Verified BattleForge app source: {package['version']}")
+          PY
+          echo "Source commit: $GITHUB_SHA"
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
