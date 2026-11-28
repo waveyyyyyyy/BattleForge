@@ -138,6 +138,46 @@ body{position:relative}
   html,body{overflow-x:clip}
   .hero-grid,.hero,.section,.social-hub,.blueprint,.download-band,main,footer{max-width:100%;}
 }
+
+/* HERO HEADLINE — centered, even rhythm, no hanging offsets */
+.hero-left{align-items:stretch}
+.hero-left>div:first-child{width:100%;max-width:100%}
+.hero h1{
+  width:100%;
+  max-width:none;
+  margin:clamp(34px,5vw,58px) auto 34px;
+  padding:0 10px;
+  text-align:center;
+  font-size:clamp(64px,8.4vw,116px);
+  line-height:.94;
+  letter-spacing:-.065em;
+  font-kerning:normal;
+  overflow-wrap:normal;
+  word-break:normal;
+}
+.hero h1 span{
+  display:block;
+  margin:0;
+  padding:0;
+  color:var(--blue);
+  line-height:.94;
+}
+@media(max-width:900px){
+  .hero h1{font-size:clamp(62px,10vw,92px);margin:38px auto 30px;letter-spacing:-.06em}
+}
+@media(max-width:650px){
+  .hero-left{align-items:center}
+  .hero-left>div:first-child{width:100%}
+  .hero h1{
+    font-size:clamp(54px,13.8vw,82px);
+    line-height:.98;
+    letter-spacing:-.055em;
+    margin:32px auto 28px;
+    padding:0 4px;
+  }
+  .hero h1 span{margin:0;line-height:.98}
+}
+
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
 <link rel="stylesheet" href="assets/apple-inspired.css?v=20261128-headingfix1">
