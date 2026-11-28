@@ -317,8 +317,8 @@ jobs:
         run: |
           set -euo pipefail
           TAG="battleforge-release-${BUILD_NUMBER}"
-          gh release create "$TAG" BattleForge.apk release-apk-sha256.txt release-signature.txt \\
-            --title "BattleForge signed Android release #${BUILD_NUMBER}" \\
+          gh release create "$TAG" BattleForge.apk release-apk-sha256.txt release-signature.txt \
+            --title "BattleForge signed Android release #${BUILD_NUMBER}" \
             --notes "Production-signed BattleForge APK. Signature verification passed in GitHub Actions. SHA-256 and signing certificate details are attached."
       - name: Prepare debug APK artifact
         if: ${{ inputs.release != true }}
