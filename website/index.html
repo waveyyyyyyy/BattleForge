@@ -1516,7 +1516,7 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
   flex-direction:column!important;gap:0!important;overflow:hidden!important;
   background:#fff!important;color:#080808!important;isolation:isolate!important;
   pointer-events:none!important;
-  animation:bfTypeExit .48s 2.55s cubic-bezier(.76,0,.24,1) forwards!important;
+  animation:bfTypeExit .48s 3.35s cubic-bezier(.76,0,.24,1) forwards!important;
 }
 .bf-type-stack{
   position:relative!important;display:flex!important;flex-direction:column!important;
@@ -1546,17 +1546,20 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
   transform:scaleX(0)!important;transform-origin:center!important;
   animation:bfRuleStrike .55s 1.08s cubic-bezier(.16,1,.3,1) forwards!important;
 }
-.bf-type-tagline{
-  display:block!important;margin-top:clamp(18px,3vh,30px)!important;
-  color:#596273!important;font:500 clamp(9px,1.8vw,12px)/1.2 "DM Mono",monospace!important;
-  letter-spacing:.28em!important;text-transform:uppercase!important;
-  opacity:0!important;transform:translateY(14px) scale(.94)!important;
-  animation:bfIntentReveal .62s 1.42s cubic-bezier(.16,1,.3,1) forwards!important;
+.launch-screen.bf-type-loader .bf-type-tagline{
+  display:block!important;position:relative!important;z-index:5!important;
+  margin-top:clamp(22px,4vh,38px)!important;padding:10px 18px!important;
+  color:#080808!important;-webkit-text-fill-color:#080808!important;
+  background:#fff!important;border-bottom:3px solid #2457f5!important;
+  font:900 clamp(13px,2.8vw,19px)/1.1 "Manrope",Arial,sans-serif!important;
+  letter-spacing:.22em!important;text-align:center!important;text-transform:uppercase!important;
+  opacity:0!important;visibility:hidden!important;transform:translateY(22px) scale(.9)!important;
+  animation:bfIntentReveal .72s 1.55s cubic-bezier(.16,1,.3,1) forwards!important;
 }
 @keyframes bfIntentReveal{
-  0%{opacity:0;transform:translateY(14px) scale(.94);letter-spacing:.48em}
-  65%{opacity:1;transform:translateY(-2px) scale(1.02);letter-spacing:.28em}
-  100%{opacity:1;transform:translateY(0) scale(1);letter-spacing:.28em}
+  0%{opacity:0;visibility:visible;transform:translateY(22px) scale(.9);clip-path:inset(0 50% 0 50%)}
+  65%{opacity:1;visibility:visible;transform:translateY(-3px) scale(1.04);clip-path:inset(0)}
+  100%{opacity:1;visibility:visible;transform:translateY(0) scale(1);clip-path:inset(0)}
 }
 @keyframes bfBattleImpact{
   0%{opacity:0;transform:translate3d(-110vw,0,0) skewX(-22deg) scaleX(1.3);clip-path:inset(0 100% 0 0)}
