@@ -1,6 +1,12 @@
 name: Build BattleForge Android APK
 on:
   workflow_dispatch:
+    inputs:
+      release:
+        description: "Build and publish a production-signed APK (requires the four Android signing secrets)"
+        required: true
+        type: boolean
+        default: false
   push:
     branches: [main, "feature/payment-minimums-earned-withdrawal-policy", "admin-portal-overhaul"]
 concurrency:
@@ -236,19 +242,26 @@ jobs:
           chmod +x android/gradlew
           cd android
           ./gradlew assembleDebug
-      - name: Build and verify signed release APK when keystore secrets are configured
+      - name: Build and verify signed release APK
+        if: ${{ inputs.release == true }}
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
-            echo "::warning::Signed release skipped. Add ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD GitHub Actions secrets."
-            exit 0
-          fi
-          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/android/app/battleforge-upload.jks"
-          export ANDROID_KEYSTORE_PATH="$GITHUB_WORKSPACE/android/app/battleforge-upload.jks"
+          set -euo pipefail
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing required GitHub Actions secret: $name"
+              exit 1
+            fi
+          done
+          umask 077
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/battleforge-upload.jks"
+          trap 'rm -f "$ANDROID_KEYSTORE_PATH"' EXIT
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_PATH"
+          test -s "$ANDROID_KEYSTORE_PATH"
           python - <<'PY'
           from pathlib import Path
           import re
@@ -278,11 +291,14 @@ jobs:
           APK="app/build/outputs/apk/release/app-release.apk"
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
           test -n "$APKSIGNER"
-          "$APKSIGNER" verify --verbose --print-certs "$APK"
-          sha256sum "$APK" > "$GITHUB_WORKSPACE/release-apk-sha256.txt"
+          "$APKSIGNER" verify --verbose --print-certs "$APK" | tee "$GITHUB_WORKSPACE/release-signature.txt"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)"
+          test -n "$AAPT"
+          "$AAPT" dump badging "$APK" | grep -F "package: name='com.battleforge.arena'"
+          sha256sum "$APK" | tee "$GITHUB_WORKSPACE/release-apk-sha256.txt"
           cp "$APK" "$GITHUB_WORKSPACE/BattleForge-release.apk"
       - name: Upload signed release APK
-        if: ${{ success() && hashFiles('BattleForge-release.apk') != '' }}
+        if: ${{ success() && inputs.release == true }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: BattleForge-signed-release-APK
@@ -290,20 +306,27 @@ jobs:
             BattleForge-release.apk
             release-apk-sha256.txt
           if-no-files-found: error
-      - name: Prepare customer-facing APK filename
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk BattleForge.apk
-      - name: Publish direct APK download
+      - name: Prepare signed production APK
+        if: ${{ inputs.release == true }}
+        run: cp BattleForge-release.apk BattleForge.apk
+      - name: Publish signed production APK
+        if: ${{ inputs.release == true }}
         env:
           GH_TOKEN: ${{ github.token }}
           BUILD_NUMBER: ${{ github.run_number }}
         run: |
-          TAG="battleforge-apk-${BUILD_NUMBER}"
-          gh release create "$TAG" BattleForge.apk \
-            --title "BattleForge Android APK build #${BUILD_NUMBER}" \
-            --notes "Direct APK download for BattleForge build #${BUILD_NUMBER}. Install this APK on Android."
-      - name: Upload APK artifact
+          set -euo pipefail
+          TAG="battleforge-release-${BUILD_NUMBER}"
+          gh release create "$TAG" BattleForge.apk release-apk-sha256.txt release-signature.txt \\
+            --title "BattleForge signed Android release #${BUILD_NUMBER}" \\
+            --notes "Production-signed BattleForge APK. Signature verification passed in GitHub Actions. SHA-256 and signing certificate details are attached."
+      - name: Prepare debug APK artifact
+        if: ${{ inputs.release != true }}
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk BattleForge-debug.apk
+      - name: Upload debug APK artifact
+        if: ${{ inputs.release != true }}
         uses: actions/upload-artifact@v4
         with:
-          name: BattleForge-APK
-          path: BattleForge.apk
+          name: BattleForge-debug-APK
+          path: BattleForge-debug.apk
           if-no-files-found: error
