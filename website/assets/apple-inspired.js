@@ -64,6 +64,9 @@
     }
     node.parentNode.replaceChild(frag,node);
    }else if(node.nodeType===Node.ELEMENT_NODE && !['SCRIPT','STYLE'].includes(node.tagName)){
+    // Keep gradient-highlighted words intact: splitting them into inline-block characters
+    // prevents background-clip:text from painting reliably on mobile browsers.
+    if(node.tagName==='EM'||(node.tagName==='SPAN'&&node.parentElement?.matches('.hero h1')))return;
     Array.from(node.childNodes).forEach(child=>split(child,state));
    }
   };
