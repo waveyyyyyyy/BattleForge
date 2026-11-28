@@ -8,7 +8,7 @@ on:
         type: boolean
         default: false
   push:
-    branches: [main, "feature/payment-minimums-earned-withdrawal-policy", "admin-portal-overhaul"]
+    branches: ["feature/payment-minimums-earned-withdrawal-policy", "admin-portal-overhaul"]
 concurrency:
   group: battleforge-android-${{ github.ref }}
   cancel-in-progress: true
@@ -317,15 +317,15 @@ jobs:
         run: |
           set -euo pipefail
           TAG="battleforge-release-${BUILD_NUMBER}"
-          gh release create "$TAG" BattleForge.apk release-apk-sha256.txt release-signature.txt \\
-            --title "BattleForge signed Android release #${BUILD_NUMBER}" \\
+          gh release create "$TAG" BattleForge.apk release-apk-sha256.txt release-signature.txt \
+            --title "BattleForge signed Android release #${BUILD_NUMBER}" \
             --notes "Production-signed BattleForge APK. Signature verification passed in GitHub Actions. SHA-256 and signing certificate details are attached."
       - name: Prepare debug APK artifact
         if: ${{ inputs.release != true }}
         run: cp android/app/build/outputs/apk/debug/app-debug.apk BattleForge-debug.apk
       - name: Upload debug APK artifact
         if: ${{ inputs.release != true }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: BattleForge-debug-APK
           path: BattleForge-debug.apk
