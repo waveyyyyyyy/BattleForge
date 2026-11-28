@@ -1201,9 +1201,162 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 @media(prefers-reduced-motion:reduce){.launch-brand .prism-petal{display:none!important;animation:none!important}}
 </style>
 
+
+<style id="battleforge-full-cinematic-intro">
+/* FULL CINEMATIC INTRO — one coordinated scene, not a single added effect */
+.launch-screen{
+  background:#fff!important;color:#17152d!important;gap:8px!important;
+  overflow:hidden!important;isolation:isolate!important;
+  animation:launchExit .72s 3.55s cubic-bezier(.7,0,.2,1) forwards!important;
+}
+.launch-world{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;isolation:isolate}
+.launch-world:before{
+  content:"";position:absolute;inset:-20%;z-index:-2;
+  background:
+    radial-gradient(ellipse at 15% 18%,rgba(76,220,247,.22),transparent 31%),
+    radial-gradient(ellipse at 84% 25%,rgba(255,126,205,.18),transparent 32%),
+    radial-gradient(ellipse at 54% 92%,rgba(148,124,255,.2),transparent 38%),
+    linear-gradient(135deg,#fff 0%,#f9fbff 48%,#fff 100%);
+  animation:worldBreath 4.2s ease-in-out both;
+}
+.launch-world:after{
+  content:"";position:absolute;inset:-50%;z-index:-1;opacity:.55;
+  background:conic-gradient(from 35deg at 50% 50%,transparent 0 18%,rgba(93,219,247,.14) 22%,transparent 28% 48%,rgba(255,143,210,.13) 54%,transparent 61% 78%,rgba(155,135,255,.15) 84%,transparent 91%);
+  animation:worldTurn 18s linear infinite;
+}
+.launch-backtype{
+  position:absolute;left:50%;top:50%;width:100%;transform:translate(-50%,-50%);
+  text-align:center;font:900 clamp(92px,19vw,250px)/.68 "Archivo Black",Impact,sans-serif;
+  letter-spacing:-.095em;color:transparent;-webkit-text-stroke:1px rgba(35,31,72,.105);
+  opacity:0;animation:backtypeReveal 3.4s .08s cubic-bezier(.16,1,.3,1) both;
+}
+.launch-backtype em{font-style:normal;background:linear-gradient(90deg,rgba(87,216,244,.22),rgba(151,130,255,.22),rgba(255,144,207,.22));background-clip:text;-webkit-background-clip:text;-webkit-text-stroke:0}
+.launch-kicker,.launch-bottomline{
+  position:absolute;left:clamp(18px,5vw,70px);right:clamp(18px,5vw,70px);
+  display:flex;align-items:center;justify-content:space-between;
+  font:700 8px/1.4 var(--mono);letter-spacing:.18em;color:#77758f;
+}
+.launch-kicker{top:clamp(22px,5vh,52px);opacity:0;animation:microReveal .55s .22s ease both}
+.launch-kicker i{height:1px;flex:1;max-width:100px;margin:0 18px;background:linear-gradient(90deg,#6bdcf2,#a18aff,#ff9bd5)}
+.launch-bottomline{bottom:clamp(22px,5vh,52px);opacity:0;animation:microReveal .55s 1.1s ease both}
+.launch-bottomline span:nth-child(2){color:#9995ad}
+.launch-side-note{
+  position:absolute;top:50%;font:700 7px/1.9 var(--mono);letter-spacing:.16em;color:#9a97ad;
+  opacity:0;animation:microReveal .6s .65s ease both;
+}
+.launch-side-note b{color:#5d587d;font-size:8px}
+.note-left{left:clamp(18px,5vw,70px);transform:translateY(-50%)}
+.note-right{right:clamp(18px,5vw,70px);transform:translateY(-50%);text-align:right}
+.launch-sweep{
+  position:absolute;left:50%;top:50%;width:min(115vw,1300px);height:clamp(34px,8vw,88px);
+  border-radius:100%;filter:blur(13px);opacity:0;transform-origin:center;
+  mix-blend-mode:multiply;will-change:transform,opacity;
+}
+.sweep-one{background:linear-gradient(90deg,transparent,rgba(92,221,246,.5),rgba(151,133,255,.38),transparent);animation:sweepAcrossA 3.3s .05s cubic-bezier(.16,.7,.2,1) both}
+.sweep-two{height:clamp(22px,5vw,56px);background:linear-gradient(90deg,transparent,rgba(255,147,211,.46),rgba(151,133,255,.32),transparent);animation:sweepAcrossB 3.25s .22s cubic-bezier(.16,.7,.2,1) both}
+.sweep-three{height:clamp(12px,3vw,30px);filter:blur(5px);background:linear-gradient(90deg,transparent,rgba(104,217,245,.52),rgba(255,153,211,.45),transparent);animation:sweepAcrossC 3.1s .4s cubic-bezier(.16,.7,.2,1) both}
+.launch-sparkscape{position:absolute;inset:0}
+.world-particle{position:absolute;left:50%;top:50%;width:4px;height:4px;border-radius:50%;opacity:0;background:#79dff2;box-shadow:0 0 14px currentColor;animation:particleBurst 2.6s cubic-bezier(.15,.72,.2,1) both}
+.particle-1{--px:-42vw;--py:-27vh;animation-delay:.05s}.particle-2{--px:38vw;--py:-31vh;animation-delay:.12s;background:#ff9bd5}
+.particle-3{--px:-45vw;--py:24vh;animation-delay:.19s;background:#a08aff}.particle-4{--px:43vw;--py:27vh;animation-delay:.26s}
+.particle-5{--px:-26vw;--py:-39vh;animation-delay:.33s;background:#ff9bd5}.particle-6{--px:24vw;--py:39vh;animation-delay:.4s;background:#a08aff}
+.particle-7{--px:-49vw;--py:-4vh;animation-delay:.47s}.particle-8{--px:49vw;--py:2vh;animation-delay:.54s;background:#ff9bd5}
+.particle-9{--px:-15vw;--py:42vh;animation-delay:.61s;background:#a08aff}.particle-10{--px:16vw;--py:-42vh;animation-delay:.68s}
+.particle-11{--px:-34vw;--py:14vh;animation-delay:.75s;background:#ff9bd5}.particle-12{--px:33vw;--py:-13vh;animation-delay:.82s;background:#a08aff}
+.particle-13{--px:-8vw;--py:-34vh;animation-delay:.89s}.particle-14{--px:8vw;--py:35vh;animation-delay:.96s;background:#ff9bd5}
+.particle-15{--px:-40vw;--py:-17vh;animation-delay:1.03s;background:#a08aff}.particle-16{--px:40vw;--py:18vh;animation-delay:1.1s}
+.launch-brand{
+  position:relative!important;z-index:3!important;width:min(92vw,490px)!important;height:255px!important;
+  min-height:0!important;flex:none!important;overflow:visible!important;isolation:isolate!important;
+}
+.launch-brand:before{
+  width:min(76vw,390px)!important;height:230px!important;border:0!important;border-radius:50%!important;
+  background:radial-gradient(ellipse,rgba(255,255,255,.96),rgba(89,221,246,.21) 28%,rgba(159,132,255,.19) 52%,rgba(255,147,211,.13) 68%,transparent 78%)!important;
+  box-shadow:none!important;animation:worldBloom 2.1s .12s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand:after{display:none!important}
+.launch-brand .brand-orbit,.launch-brand .white-ribbon,.launch-brand .prism-petal,
+.launch-brand .launch-coordinate,.launch-brand .launch-scan{display:none!important}
+.launch-brand .brand-logo-plate{
+  position:relative!important;z-index:6!important;width:min(78vw,330px)!important;
+  padding:0!important;background:transparent!important;border:0!important;outline:0!important;
+  box-shadow:none!important;transform:none!important;
+  animation:logoAssemble 1.35s .35s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand .brand-logo-plate:before{display:none!important}
+.launch-brand .brand-logo-plate img{
+  width:100%!important;height:auto!important;
+  filter:drop-shadow(0 12px 18px rgba(75,78,145,.13)) drop-shadow(0 0 28px rgba(103,207,244,.25))!important;
+}
+.launch-brand .launch-spark{z-index:5!important;width:7px!important;height:7px!important}
+.launch-brand .forge-fragment{
+  z-index:4!important;width:clamp(15px,3vw,30px)!important;height:clamp(26px,5vw,48px)!important;
+  filter:drop-shadow(0 4px 10px rgba(125,133,221,.18))!important;
+  clip-path:polygon(50% 0,100% 70%,65% 100%,0 42%)!important;
+}
+.launch-word{
+  position:relative;z-index:4;margin-top:-5px!important;
+  font:900 clamp(11px,1.5vw,14px)/1 var(--display)!important;
+  letter-spacing:.42em!important;color:#282440!important;text-shadow:none!important;
+  opacity:0;animation:wordReveal .75s 1.05s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-line{
+  position:relative;z-index:4;width:min(220px,54vw)!important;height:2px!important;
+  background:#e9e8f2!important;border-radius:8px!important;overflow:hidden!important;
+}
+.launch-line span{
+  background:linear-gradient(90deg,#62dff2,#9c8bff,#ff9bd4)!important;
+  box-shadow:0 0 12px rgba(153,139,255,.28)!important;
+}
+.launch-caption{
+  position:relative;z-index:4;font-size:7px!important;letter-spacing:.22em!important;
+  color:#77748f!important;text-shadow:none!important;opacity:0;animation:microReveal .6s 1.45s ease both;
+}
+.launch-caption span{color:#a08bff!important}
+@keyframes worldBreath{0%{transform:scale(1.12);opacity:.55}100%{transform:scale(1);opacity:1}}
+@keyframes worldTurn{to{transform:rotate(360deg)}}
+@keyframes backtypeReveal{0%{opacity:0;letter-spacing:-.16em;transform:translate(-50%,-46%) scale(.88)}35%{opacity:.72}100%{opacity:.48;letter-spacing:-.095em;transform:translate(-50%,-50%) scale(1)}}
+@keyframes microReveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sweepAcrossA{0%{opacity:0;transform:translate(-70%,-50%) rotate(-24deg) scaleX(.2)}30%{opacity:.7}70%{opacity:.4;transform:translate(-50%,-50%) rotate(18deg) scaleX(1.15)}100%{opacity:0;transform:translate(-24%,-50%) rotate(28deg) scaleX(.6)}}
+@keyframes sweepAcrossB{0%{opacity:0;transform:translate(-25%,-50%) rotate(32deg) scaleX(.18)}32%{opacity:.66}72%{opacity:.38;transform:translate(-50%,-50%) rotate(-18deg) scaleX(1.1)}100%{opacity:0;transform:translate(-78%,-50%) rotate(-30deg) scaleX(.6)}}
+@keyframes sweepAcrossC{0%{opacity:0;transform:translate(-55%,-50%) rotate(8deg) scaleX(.1)}36%{opacity:.8}68%{opacity:.45;transform:translate(-50%,-50%) rotate(-9deg) scaleX(1.1)}100%{opacity:0;transform:translate(-45%,-50%) rotate(-18deg) scaleX(.4)}}
+@keyframes particleBurst{0%{opacity:0;transform:translate(0,0) scale(.2)}22%{opacity:.95}75%{opacity:.65}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(.65)}}
+@keyframes worldBloom{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
+@keyframes logoAssemble{0%{opacity:0;clip-path:inset(50% 50% 50% 50%);transform:scale(.72) rotate(-7deg);filter:blur(12px)}45%{opacity:1;clip-path:inset(0);transform:scale(1.08) rotate(2deg);filter:blur(0)}72%{transform:scale(.97) rotate(-1deg)}100%{opacity:1;clip-path:inset(0);transform:scale(1) rotate(0)}}
+@keyframes wordReveal{from{opacity:0;letter-spacing:.8em;filter:blur(5px)}to{opacity:1;letter-spacing:.42em;filter:blur(0)}}
+@media(max-width:650px){
+ .launch-brand{width:100vw!important;height:220px!important}
+ .launch-brand .brand-logo-plate{width:min(78vw,300px)!important}
+ .launch-side-note{top:auto;bottom:11%;font-size:6px}
+ .note-left{left:18px;transform:none}.note-right{right:18px;transform:none}
+ .launch-bottomline{font-size:6px;letter-spacing:.1em;bottom:24px}
+ .launch-kicker{font-size:6px;letter-spacing:.1em;top:24px}
+ .launch-backtype{font-size:clamp(78px,21vw,145px)}
+ .launch-sweep{width:150vw}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-screen{animation:none!important;display:none!important}
+ .launch-world *,.launch-world:before,.launch-world:after,.launch-brand:before,
+ .launch-brand .brand-logo-plate,.launch-brand .launch-spark,.launch-brand .forge-fragment,
+ .launch-word,.launch-caption{animation:none!important}
+ .launch-world{display:none!important}
+ .launch-brand .brand-logo-plate,.launch-word{opacity:1!important}
+}
+</style>
+
 </head>
 <body>
-<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i><i class="forge-fragment fragment-a"></i><i class="forge-fragment fragment-b"></i><i class="forge-fragment fragment-c"></i><i class="forge-fragment fragment-d"></i><i class="forge-fragment fragment-e"></i><i class="forge-fragment fragment-f"></i><span class="launch-coordinate coordinate-left">BF / 001<br>ARENA SYSTEM</span><span class="launch-coordinate coordinate-right">SYNCING<br>PLAYER ID</span><span class="launch-scan"></span><span class="prism-petal petal-a"></span><span class="prism-petal petal-b"></span><span class="prism-petal petal-c"></span><span class="prism-petal petal-d"></span><span class="prism-petal petal-e"></span><span class="prism-petal petal-f"></span><span class="white-ribbon ribbon-a"></span><span class="white-ribbon ribbon-b"></span><span class="white-ribbon ribbon-c"></span><span class="white-ribbon ribbon-d"></span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
+<div class="launch-screen" aria-hidden="true">
+<div class="launch-world">
+  <div class="launch-backtype">BATTLE<br><em>FORGE</em></div>
+  <div class="launch-kicker"><span>INDEPENDENT GAMING CULTURE</span><i></i><span>EST. 2026</span></div>
+  <div class="launch-sweep sweep-one"></div><div class="launch-sweep sweep-two"></div><div class="launch-sweep sweep-three"></div>
+  <div class="launch-sparkscape"><i class="world-particle particle-1"></i><i class="world-particle particle-2"></i><i class="world-particle particle-3"></i><i class="world-particle particle-4"></i><i class="world-particle particle-5"></i><i class="world-particle particle-6"></i><i class="world-particle particle-7"></i><i class="world-particle particle-8"></i><i class="world-particle particle-9"></i><i class="world-particle particle-10"></i><i class="world-particle particle-11"></i><i class="world-particle particle-12"></i><i class="world-particle particle-13"></i><i class="world-particle particle-14"></i><i class="world-particle particle-15"></i><i class="world-particle particle-16"></i></div>
+  <div class="launch-side-note note-left">A NEW ARENA<br><b>IS FORMING</b></div>
+  <div class="launch-side-note note-right">BUILT FOR<br><b>THE BOLD</b></div>
+  <div class="launch-bottomline"><span>01 / 03</span><span>THE FORGE SEQUENCE</span><span>READY WHEN YOU ARE</span></div>
+</div>
+<div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i><i class="forge-fragment fragment-a"></i><i class="forge-fragment fragment-b"></i><i class="forge-fragment fragment-c"></i><i class="forge-fragment fragment-d"></i><i class="forge-fragment fragment-e"></i><i class="forge-fragment fragment-f"></i><span class="launch-coordinate coordinate-left">BF / 001<br>ARENA SYSTEM</span><span class="launch-coordinate coordinate-right">SYNCING<br>PLAYER ID</span><span class="launch-scan"></span><span class="prism-petal petal-a"></span><span class="prism-petal petal-b"></span><span class="prism-petal petal-c"></span><span class="prism-petal petal-d"></span><span class="prism-petal petal-e"></span><span class="prism-petal petal-f"></span><span class="white-ribbon ribbon-a"></span><span class="white-ribbon ribbon-b"></span><span class="white-ribbon ribbon-c"></span><span class="white-ribbon ribbon-d"></span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
 <div class="page-progress" aria-hidden="true"><span id="page-progress-bar"></span></div>
 <header><div class="wrap nav"><a class="logo" href="#top" aria-label="BattleForge home"><img src="assets/battleforge-logo.svg" alt="BattleForge"></a>
 <nav class="navlinks" id="navlinks"><a href="#identity">Manifesto</a><a href="#formats">Formats</a><a href="#inside">Inside BF</a><a href="#rewards">Rewards</a><a href="#how">How it works</a><a href="#faq">Info</a></nav>
