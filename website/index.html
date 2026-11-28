@@ -1572,6 +1572,99 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
   .launch-brand:after{display:none!important}
 }
 </style>
+
+<style id="battleforge-no-copy-crystal-loader">
+/* CRYSTAL IGNITION — visual-only loading sequence; no decorative copy */
+.launch-kicker,.launch-bottomline,.launch-side-note,.launch-backtype,
+.launch-word,.launch-caption,.launch-brand .launch-coordinate{display:none!important}
+.launch-screen{background:#fff!important;gap:0!important}
+.launch-world:before{
+  inset:-8%!important;
+  background:
+    radial-gradient(ellipse at 18% 22%,rgba(72,220,247,.25),transparent 32%),
+    radial-gradient(ellipse at 82% 24%,rgba(255,126,207,.22),transparent 34%),
+    radial-gradient(ellipse at 50% 82%,rgba(151,125,255,.22),transparent 39%),
+    linear-gradient(135deg,#fff 0%,#f8faff 52%,#fff 100%)!important;
+  animation:crystalAtmosphere 3.4s ease-out both!important;
+}
+.launch-world:after{
+  inset:-55%!important;opacity:.72!important;
+  background:conic-gradient(from 0deg,transparent 0 8%,rgba(86,222,247,.22) 12%,transparent 19% 34%,rgba(164,133,255,.20) 40%,transparent 47% 62%,rgba(255,143,211,.20) 68%,transparent 76% 90%,rgba(86,222,247,.16) 96%,transparent)!important;
+  animation:crystalTurn 10s linear infinite!important;
+}
+.launch-brand{
+  width:min(94vw,520px)!important;height:300px!important;
+  transform:none!important;overflow:visible!important;
+}
+.launch-brand:before{
+  width:min(84vw,430px)!important;height:260px!important;
+  background:radial-gradient(ellipse,rgba(255,255,255,.98) 0%,rgba(75,220,247,.25) 24%,rgba(154,128,255,.22) 49%,rgba(255,139,208,.17) 68%,transparent 80%)!important;
+  animation:crystalCoreGlow 2.6s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand:after{display:none!important}
+.launch-brand .brand-orbit,.launch-brand .prism-petal,.launch-brand .white-ribbon,
+.launch-brand .forge-fragment,.launch-brand .launch-spark,.launch-brand .launch-scan{display:none!important}
+.launch-blade{
+  position:absolute;left:50%;top:50%;z-index:3;display:block;
+  width:clamp(115px,34vw,250px);height:clamp(34px,9vw,66px);
+  opacity:0;pointer-events:none;transform-origin:50% 50%;
+  clip-path:polygon(0 50%,18% 9%,76% 0,100% 50%,76% 100%,18% 91%);
+  background:linear-gradient(105deg,rgba(255,255,255,.06),rgba(89,221,247,.78) 34%,rgba(153,132,255,.68) 68%,rgba(255,151,213,.12));
+  animation:crystalBlade 2.25s cubic-bezier(.16,.8,.2,1) both;
+}
+.blade-1{--angle:-38deg;--dx:-170px;--dy:-112px;animation-delay:.05s}
+.blade-2{--angle:32deg;--dx:175px;--dy:-105px;animation-delay:.13s;background:linear-gradient(105deg,rgba(255,255,255,.05),rgba(255,151,213,.72),rgba(153,132,255,.62))}
+.blade-3{--angle:148deg;--dx:-178px;--dy:95px;animation-delay:.21s}
+.blade-4{--angle:-145deg;--dx:174px;--dy:102px;animation-delay:.29s;background:linear-gradient(105deg,rgba(255,255,255,.05),rgba(255,151,213,.7),rgba(89,221,247,.65))}
+.blade-5{--angle:88deg;--dx:-35px;--dy:-178px;transform:translate(-50%,-50%) rotate(88deg)}
+.blade-6{--angle:-88deg;--dx:38px;--dy:178px;transform:translate(-50%,-50%) rotate(-88deg)}
+.blade-7{--angle:12deg;--dx:-220px;--dy:12px;width:clamp(90px,25vw,180px);height:22px;animation-delay:.37s}
+.blade-8{--angle:192deg;--dx:220px;--dy:-12px;width:clamp(90px,25vw,180px);height:22px;animation-delay:.45s}
+.launch-brand .brand-logo-plate{
+  position:relative!important;z-index:6!important;width:min(80vw,340px)!important;
+  padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;
+  animation:crystalLogo 1.25s .42s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand .brand-logo-plate img{
+  width:100%!important;height:auto!important;
+  filter:drop-shadow(0 8px 12px rgba(82,91,150,.16)) drop-shadow(0 0 25px rgba(95,218,245,.32))!important;
+}
+.launch-line{
+  position:absolute!important;left:50%!important;top:calc(50% + 172px)!important;
+  transform:translateX(-50%)!important;width:min(230px,54vw)!important;height:3px!important;
+  background:#e9eaf4!important;border-radius:99px!important;overflow:hidden!important;
+}
+.launch-line span{background:linear-gradient(90deg,#59dff4,#9c88ff,#ff9bd5)!important}
+@keyframes crystalAtmosphere{0%{transform:scale(1.12);opacity:.5}100%{transform:scale(1);opacity:1}}
+@keyframes crystalTurn{to{transform:rotate(360deg)}}
+@keyframes crystalCoreGlow{0%{opacity:0;transform:translate(-50%,-50%) scale(.45)}55%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}100%{opacity:.88;transform:translate(-50%,-50%) scale(1)}}
+@keyframes crystalBlade{
+  0%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--angle)) scale(.25)}
+  38%{opacity:.88}
+  72%{opacity:.5;transform:translate(-50%,-50%) rotate(var(--angle)) scale(1)}
+  100%{opacity:0;transform:translate(calc(-50% - var(--dx)*.25),calc(-50% - var(--dy)*.25)) rotate(var(--angle)) scale(.45)}
+}
+@keyframes crystalLogo{
+  0%{opacity:0;transform:scale(.62) rotate(-8deg);filter:blur(12px)}
+  48%{opacity:1;transform:scale(1.08) rotate(2deg);filter:blur(0)}
+  76%{transform:scale(.97) rotate(-.5deg)}
+  100%{opacity:1;transform:scale(1) rotate(0)}
+}
+@media(max-width:650px){
+ .launch-brand{height:245px!important}
+ .launch-brand .brand-logo-plate{width:min(78vw,295px)!important}
+ .launch-line{top:calc(50% + 142px)!important}
+ .launch-blade{width:clamp(100px,40vw,175px);height:28px}
+ .blade-1{--dx:-125px;--dy:-85px}.blade-2{--dx:125px;--dy:-82px}
+ .blade-3{--dx:-128px;--dy:75px}.blade-4{--dx:128px;--dy:78px}
+ .blade-5{--dx:-25px;--dy:-135px}.blade-6{--dx:25px;--dy:135px}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-screen{animation:none!important;display:none!important}
+ .launch-world:after,.launch-blade,.launch-brand:before,.launch-brand .brand-logo-plate{animation:none!important}
+}
+</style>
+
 </head>
 <body>
 <div class="launch-screen" aria-hidden="true">
@@ -1584,7 +1677,7 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
   <div class="launch-side-note note-right">BUILT FOR<br><b>THE BOLD</b></div>
   <div class="launch-bottomline"><span>01 / 03</span><span>THE FORGE SEQUENCE</span><span>READY WHEN YOU ARE</span></div>
 </div>
-<div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i><i class="forge-fragment fragment-a"></i><i class="forge-fragment fragment-b"></i><i class="forge-fragment fragment-c"></i><i class="forge-fragment fragment-d"></i><i class="forge-fragment fragment-e"></i><i class="forge-fragment fragment-f"></i><span class="launch-coordinate coordinate-left">BF / 001<br>ARENA SYSTEM</span><span class="launch-coordinate coordinate-right">SYNCING<br>PLAYER ID</span><span class="launch-scan"></span><span class="prism-petal petal-a"></span><span class="prism-petal petal-b"></span><span class="prism-petal petal-c"></span><span class="prism-petal petal-d"></span><span class="prism-petal petal-e"></span><span class="prism-petal petal-f"></span><span class="white-ribbon ribbon-a"></span><span class="white-ribbon ribbon-b"></span><span class="white-ribbon ribbon-c"></span><span class="white-ribbon ribbon-d"></span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
+<div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><i class="launch-blade blade-1"></i><i class="launch-blade blade-2"></i><i class="launch-blade blade-3"></i><i class="launch-blade blade-4"></i><i class="launch-blade blade-5"></i><i class="launch-blade blade-6"></i><i class="launch-blade blade-7"></i><i class="launch-blade blade-8"></i><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i><i class="forge-fragment fragment-a"></i><i class="forge-fragment fragment-b"></i><i class="forge-fragment fragment-c"></i><i class="forge-fragment fragment-d"></i><i class="forge-fragment fragment-e"></i><i class="forge-fragment fragment-f"></i><span class="launch-coordinate coordinate-left">BF / 001<br>ARENA SYSTEM</span><span class="launch-coordinate coordinate-right">SYNCING<br>PLAYER ID</span><span class="launch-scan"></span><span class="prism-petal petal-a"></span><span class="prism-petal petal-b"></span><span class="prism-petal petal-c"></span><span class="prism-petal petal-d"></span><span class="prism-petal petal-e"></span><span class="prism-petal petal-f"></span><span class="white-ribbon ribbon-a"></span><span class="white-ribbon ribbon-b"></span><span class="white-ribbon ribbon-c"></span><span class="white-ribbon ribbon-d"></span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
 <div class="page-progress" aria-hidden="true"><span id="page-progress-bar"></span></div>
 <header><div class="wrap nav"><a class="logo" href="#top" aria-label="BattleForge home"><img src="assets/battleforge-logo.svg" alt="BattleForge"></a>
 <nav class="navlinks" id="navlinks"><a href="#identity">Manifesto</a><a href="#formats">Formats</a><a href="#inside">Inside BF</a><a href="#rewards">Rewards</a><a href="#how">How it works</a><a href="#faq">Info</a></nav>
