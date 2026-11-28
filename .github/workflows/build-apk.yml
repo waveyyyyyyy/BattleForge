@@ -3,7 +3,7 @@ run-name: BattleForge APK build - ${{ github.ref_name }}
 on:
   workflow_dispatch:
   push:
-    branches: [main, "feature/payment-minimums-earned-withdrawal-policy", "feature/wallet-profile-payment-ids"]
+    branches: [main, "feature/payment-minimums-earned-withdrawal-policy", "feature/wallet-profile-payment-ids", "admin-portal-website-apk-490"]
 permissions:
   contents: write
 jobs:
@@ -298,6 +298,7 @@ jobs:
         run: |
           TAG="battleforge-apk-${BUILD_NUMBER}"
           gh release create "$TAG" BattleForge.apk \
+            --target "$GITHUB_SHA" \
             --title "BattleForge Android APK build #${BUILD_NUMBER}" \
             --notes "Direct APK download for BattleForge build #${BUILD_NUMBER}. Install this APK on Android."
       - name: Upload APK artifact
