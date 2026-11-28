@@ -1,12 +1,31 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.0";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+const ALLOWED_ORIGINS = new Set(["https://battleforge-website.vercel.app","https://localhost","capacitor://localhost","ionic://localhost","http://localhost:5173","http://127.0.0.1:5173"]);
+function corsHeaders(req: Request) {
+  const origin = req.headers.get("Origin") || "";
+  return {
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+    ...(ALLOWED_ORIGINS.has(origin) ? { "Access-Control-Allow-Origin": origin } : {}),
+  };
+}
+function json(req: Request, body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders(req), "Content-Type": "application/json; charset=utf-8", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store" } });
+}
+async function rateLimited(client: ReturnType<typeof createClient>, scope: string, identity: string, windowSeconds: number, maxRequests: number) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(scope + ":" + identity));
+  const key = [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
+  const { data, error } = await client.rpc("consume_edge_rate_limit", { p_rate_key: key, p_window_seconds: windowSeconds, p_max_requests: maxRequests });
+  if (error) { console.error("Shared rate limiter unavailable", error.message); return true; }
+  return data === true;
+}
+function getClientKey(req: Request) {
+  return req.headers.get("cf-connecting-ip")?.trim()
+    || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || "unknown";
+}
+
 
 function b64url(input: Uint8Array | string) {
   const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input;
@@ -51,58 +70,91 @@ async function getFcmAccessToken(sa: any) {
 }
 
 Deno.serve(async req => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(req) });
+  if (req.method !== "POST") return json(req, { error: "Method not allowed" }, 405);
+  const contentLength = Number(req.headers.get("content-length") || 0);
+  if (contentLength > 12000) return json(req, { error: "Request is too large" }, 413);
 
   const url = Deno.env.get("SUPABASE_URL");
   const anon = Deno.env.get("SUPABASE_ANON_KEY");
   const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !anon || !service) return json({ error: "Server configuration is incomplete" }, 500);
+  if (!url || !anon || !service) return json(req,{ error: "Server configuration is incomplete" }, 500);
 
-  const auth = req.headers.get("Authorization") || "";
-  const userClient = createClient(url, anon, { global: { headers: { Authorization: auth } } });
-  const { data: { user }, error: userError } = await userClient.auth.getUser();
-  if (userError || !user) return json({ error: "Authentication required" }, 401);
+  const adminClient = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
+  if (await rateLimited(adminClient, "payment-alert-ip", getClientKey(req), 60, 60)) {
+    return json(req, { error: "Too many payment alerts. Please wait before retrying." }, 429);
+  }
+
+  const internalSecret = req.headers.get("x-bf-internal-secret") || "";
+  const isInternal = internalSecret.length > 0;
+  let userId: string | null = null;
+
+  if (isInternal) {
+    if (internalSecret.length > 512) return json(req, { error: "Authentication failed" }, 401);
+    const { data: secretValid, error: secretError } = await adminClient.rpc(
+      "verify_battleforge_payment_webhook_secret",
+      { p_secret: internalSecret },
+    );
+    if (secretError || secretValid !== true) return json(req, { error: "Authentication failed" }, 401);
+    if (await rateLimited(adminClient, "payment-admin-alert-internal", getClientKey(req), 60, 30)) {
+      return json(req, { error: "Too many payment alerts. Please wait before retrying." }, 429);
+    }
+  } else {
+    const auth = req.headers.get("Authorization") || "";
+    const userClient = createClient(url, anon, {
+      global: { headers: { Authorization: auth } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+    if (userError || !user) return json(req, { error: "Authentication required" }, 401);
+    userId = user.id;
+    if (await rateLimited(adminClient, "payment-admin-alert-player", user.id, 600, 8)) {
+      return json(req, { error: "Too many payment alerts. Please wait before retrying." }, 429);
+    }
+  }
 
   let body: any;
-  try { body = await req.json(); } catch { return json({ error: "Invalid JSON body" }, 400); }
+  try {
+    const raw = await req.text();
+    if (new TextEncoder().encode(raw).byteLength > 12000) return json(req, { error: "Request is too large" }, 413);
+    body = JSON.parse(raw);
+  } catch { return json(req, { error: "Invalid JSON body" }, 400); }
   const kind = body.request_type;
   const requestId = String(body.request_id || "");
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!["deposit", "withdrawal"].includes(kind) || !uuidPattern.test(requestId)) {
-    return json({ error: "Invalid request type or ID" }, 400);
+    return json(req,{ error: "Invalid request type or ID" }, 400);
   }
 
-  const adminClient = createClient(url, service);
   const table = kind === "deposit" ? "deposit_requests" : "withdrawal_requests";
   const { data: request, error: requestError } = await adminClient
     .from(table).select("id,user_id,amount,status").eq("id", requestId).maybeSingle();
-  if (requestError || !request || request.user_id !== user.id) {
-    return json({ error: "Request not found for this user" }, 404);
+  if (requestError || !request || (!isInternal && request.user_id !== userId)) {
+    return json(req,{ error: "Request not found for this user" }, 404);
   }
 
   // Deposit submissions are atomically changed to reported_paid after the player enters the UTR.
   const requestStatus = String(request.status || "").toLowerCase();
   const allowedStatuses = kind === "deposit" ? ["pending", "reported_paid"] : ["pending"];
   if (!allowedStatuses.includes(requestStatus)) {
-    return json({ ok: true, sent: 0, reason: "Request is no longer awaiting review" });
+    return json(req,{ ok: true, sent: 0, reason: "Request is no longer awaiting review" });
   }
 
   const { data: admins, error: adminError } = await adminClient.from("admin_users").select("user_id");
-  if (adminError) return json({ error: "Could not load admins" }, 500);
+  if (adminError) return json(req,{ error: "Could not load admins" }, 500);
   const adminIds = [...new Set((admins || []).map((x: any) => x.user_id).filter(Boolean))];
-  if (!adminIds.length) return json({ ok: true, sent: 0, reason: "No admin accounts configured" });
+  if (!adminIds.length) return json(req,{ ok: true, sent: 0, reason: "No admin accounts configured" });
 
   const { data: devices, error: deviceError } = await adminClient
     .from("push_devices").select("token,user_id").in("user_id", adminIds);
-  if (deviceError) return json({ error: "Could not load admin devices" }, 500);
+  if (deviceError) return json(req,{ error: "Could not load admin devices" }, 500);
   const tokens = [...new Set((devices || []).map((x: any) => x.token).filter(Boolean))];
   if (!tokens.length) {
-    return json({ ok: true, sent: 0, reason: "No registered admin devices; admin must sign in and allow notifications" });
+    return json(req,{ ok: true, sent: 0, reason: "No registered admin devices; admin must sign in and allow notifications" });
   }
 
   const raw = Deno.env.get("FIREBASE_SERVICE_ACCOUNT_JSON");
-  if (!raw) return json({ error: "Push notifications are not configured" }, 503);
+  if (!raw) return json(req,{ error: "Push notifications are not configured" }, 503);
   try {
     const sa = JSON.parse(raw);
     const access = await getFcmAccessToken(sa);
@@ -125,9 +177,9 @@ Deno.serve(async req => {
       if (response.ok) sent++;
       else { failed++; console.error("FCM send failed", kind, response.status, await response.text()); }
     }
-    return json({ ok: true, sent, failed, targetCount: tokens.length });
+    return json(req,{ ok: true, sent, failed, targetCount: tokens.length });
   } catch (error) {
     console.error("Admin payment push failed", error);
-    return json({ error: "Could not deliver admin push notification" }, 500);
+    return json(req,{ error: "Could not deliver admin push notification" }, 500);
   }
 });
