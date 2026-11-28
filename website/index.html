@@ -707,6 +707,25 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 @media(prefers-reduced-motion:reduce){
  .reactor-backdrop,.reactor-ring,.reactor-ribbon,.reactor-core,.reactor-shard,.reactor-particle{animation:none!important}
 }
+
+/* FINAL HERO FRAME FIX — preserve the reactor animation; remove only its rectangular backdrop. */
+.hero-right {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+.hero-right::before,
+.hero-right::after {
+  content: none !important;
+  display: none !important;
+}
+.brand-motion.forge-reactor {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
 </style>
 </head>
 <body>
