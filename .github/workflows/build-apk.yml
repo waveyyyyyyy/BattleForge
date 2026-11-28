@@ -1,31 +1,128 @@
 name: Build BattleForge Android APK
 on:
   workflow_dispatch:
+    inputs:
+      release:
+        description: "Build and publish a production-signed APK (requires the four Android signing secrets)"
+        required: true
+        type: boolean
+        default: false
   push:
-    branches: [main, "feature/wallet-profile-payment-ids"]
-permissions:
-  contents: read
+    branches: ["feature/payment-minimums-earned-withdrawal-policy", "admin-portal-overhaul"]
+concurrency:
+  group: battleforge-android-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      actions: read
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: 22
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: 21
       - name: Install dependencies
         run: npm install
+      - name: Audit installed dependencies
+        run: npm audit --audit-level=high
+      - name: Copy app styles into Vite public assets
+        run: |
+          mkdir -p public
+          cp styles.css public/styles.css
+          cp arena-redesign.css public/arena-redesign.css
+          cp interaction-performance.css public/interaction-performance.css
+          cp battleforge-ux-polish.css public/battleforge-ux-polish.css
+          cp battleforge-premium-theme.css public/battleforge-premium-theme.css
+          cp battleforge-neumorphic-theme.css public/battleforge-neumorphic-theme.css
+      - name: Assign a unique version to every APK build
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          package_path = Path("package.json")
+          package = json.loads(package_path.read_text())
+          parts = package["version"].split(".")
+          if len(parts) < 2:
+              raise SystemExit("package.json version must contain major.minor.patch")
+          version = f"{int(parts[0])}.{int(parts[1])}.{int(os.environ['BUILD_NUMBER'])}"
+          package["version"] = version
+          package_path.write_text(json.dumps(package, indent=2) + "\n")
+
+          app_path = Path("app.js")
+          app_source = app_path.read_text()
+          app_source, count = re.subn(
+              r"const APP_FALLBACK_VERSION='[^']+';",
+              f"const APP_FALLBACK_VERSION='{version}';",
+              app_source,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit("Could not set the runtime fallback app version")
+          app_path.write_text(app_source)
+          print(f"Assigned unique APK version {version} for workflow run {os.environ['BUILD_NUMBER']}")
+          PY
       - name: Build web app
         run: npm run build
       - name: Add Android platform
         run: npx cap add android
+      - name: Ensure Android notification runtime permission is declared
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
+          tree = ET.parse(path)
+          root = tree.getroot()
+          android = '{http://schemas.android.com/apk/res/android}'
+          permission = 'android.permission.POST_NOTIFICATIONS'
+          if not any(node.tag == 'uses-permission' and node.get(android + 'name') == permission for node in root):
+              node = ET.Element('uses-permission', {android + 'name': permission})
+              root.insert(0, node)
+          tree.write(path, encoding='utf-8', xml_declaration=True)
+          print('Verified POST_NOTIFICATIONS is declared in AndroidManifest.xml')
+          PY
+      - name: Set Android version from package.json
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          version = json.loads(Path("package.json").read_text())["version"]
+          parts = [int(part) for part in version.split(".")]
+          parts += [0] * (3 - len(parts))
+          # Reserve six digits for the build-number patch so every workflow run
+          # gets a higher Android versionCode than previous builds.
+          if parts[2] >= 1000000 or parts[1] >= 100:
+              raise SystemExit("Version exceeds the supported versionCode range")
+          version_code = parts[0] * 100000000 + parts[1] * 1000000 + parts[2]
+          path = Path("android/app/build.gradle")
+          gradle = path.read_text()
+          if not re.search(r"\bversionCode\s+\d+", gradle):
+              raise SystemExit("Could not find Android versionCode in generated build.gradle")
+          if not re.search(r"\bversionName\s+[\"'][^\"']+[\"']", gradle):
+              raise SystemExit("Could not find Android versionName in generated build.gradle")
+          gradle = re.sub(r"\bversionCode\s+\d+", f"versionCode {version_code}", gradle, count=1)
+          gradle = re.sub(r"\bversionName\s+[\"'][^\"']+[\"']", f'versionName "{version}"', gradle, count=1)
+          path.write_text(gradle)
+          print(f"Configured Android versionName={version}, versionCode={version_code}")
+          PY
       - name: Register native OAuth callback deep link
         run: |
           python - <<'PY'
@@ -57,35 +154,179 @@ jobs:
           PY
       - name: Prepare BattleForge launcher icon
         run: |
-          python -m pip install --user Pillow
+          python -m pip install --user Pillow cairosvg
           python - <<'PY'
           from PIL import Image
           from pathlib import Path
+          from io import BytesIO
+          import cairosvg
 
-          source = Path("IMG_20261023_162105_815.jpg")
+          source = Path("public/assets/battleforge-logo.svg")
           if not source.exists():
-              raise SystemExit("Uploaded BattleForge icon image was not found in the repository root.")
-          image = Image.open(source).convert("RGB")
-          width, height = image.size
-          side = min(width, height)
-          left = (width - side) // 2
-          top = (height - side) // 2
-          image = image.crop((left, top, left + side, top + side))
-          image = image.resize((1024, 1024), Image.Resampling.LANCZOS)
-          Path("assets").mkdir(exist_ok=True)
-          image.save("assets/icon.png", optimize=True)
+              raise SystemExit("Official BattleForge logo SVG is missing.")
+
+          # Render the complete official logo and split it into the emblem
+          # and the complete blue BATTLEFORGE wordmark.
+          svg = source.read_text()
+          png = cairosvg.svg2png(
+              bytestring=svg.encode("utf-8"),
+              output_width=947,
+              output_height=321,
+          )
+          rendered = Image.open(BytesIO(png)).convert("RGBA")
+          emblem = rendered.crop((0, 0, 770, 200))
+          wordmark = rendered.crop((0, 268, 947, 321))
+
+          # Stack both parts at matching widths with a deliberate gap.
+          wordmark_width = 770
+          wordmark_height = round(wordmark.height * wordmark_width / wordmark.width)
+          wordmark = wordmark.resize(
+              (wordmark_width, wordmark_height),
+              Image.Resampling.LANCZOS,
+          )
+          gap = 22
+          lockup = Image.new(
+              "RGBA",
+              (770, emblem.height + gap + wordmark.height),
+              (0, 0, 0, 0),
+          )
+          lockup.alpha_composite(emblem, (0, 0))
+          lockup.alpha_composite(wordmark, (0, emblem.height + gap))
+
+          assets = Path("assets")
+          assets.mkdir(exist_ok=True)
+
+          # Legacy launchers use a complete opaque square icon.
+          legacy = Image.new("RGBA", (1024, 1024), (255, 255, 255, 255))
+          legacy_mark = lockup.copy()
+          legacy_mark.thumbnail((920, 920), Image.Resampling.LANCZOS)
+          legacy_x = (1024 - legacy_mark.width) // 2
+          legacy_y = (1024 - legacy_mark.height) // 2
+          legacy.alpha_composite(legacy_mark, (legacy_x, legacy_y))
+          legacy.convert("RGB").save(assets / "icon-only.png", optimize=True)
+
+          # Android adaptive icons mask the outer area. Keep the complete
+          # lockup inside the central 66% safe zone using a separate layer.
+          foreground = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
+          adaptive_mark = lockup.copy()
+          adaptive_mark.thumbnail((820, 820), Image.Resampling.LANCZOS)
+          adaptive_x = (1024 - adaptive_mark.width) // 2
+          adaptive_y = (1024 - adaptive_mark.height) // 2
+          foreground.alpha_composite(adaptive_mark, (adaptive_x, adaptive_y))
+          foreground.save(assets / "icon-foreground.png", optimize=True)
+
+          # Keep the background independent so Android can apply its mask
+          # without cropping or scaling the logo artwork.
+          background = Image.new("RGB", (1024, 1024), (255, 255, 255))
+          background.save(assets / "icon-background.png", optimize=True)
+
+          # Remove the Easy Mode source so Capacitor Assets must use the
+          # three explicit Custom Mode inputs above.
+          (assets / "icon.png").unlink(missing_ok=True)
+          print("Prepared explicit legacy, adaptive foreground, and adaptive background icon layers.")
           PY
           npx --yes @capacitor/assets generate --android
       - name: Sync app
         run: npx cap sync android
+      - name: Configure Firebase for Android push notifications
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON_BASE64" ]; then
+            echo "::warning::Firebase is not configured yet. APK will build, but real push notifications will not work until GOOGLE_SERVICES_JSON_BASE64 is added."
+          else
+            echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > android/app/google-services.json
+          fi
       - name: Build debug APK
         run: |
           chmod +x android/gradlew
           cd android
           ./gradlew assembleDebug
-      - name: Upload APK artifact
+      - name: Build and verify signed release APK
+        if: ${{ inputs.release == true }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing required GitHub Actions secret: $name"
+              exit 1
+            fi
+          done
+          umask 077
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/battleforge-upload.jks"
+          trap 'rm -f "$ANDROID_KEYSTORE_PATH"' EXIT
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_PATH"
+          test -s "$ANDROID_KEYSTORE_PATH"
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path("android/app/build.gradle")
+          s = p.read_text()
+          signing = '''
+              signingConfigs {
+                  release {
+                      storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                      storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                      keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                  }
+              }
+          '''
+          if "signingConfigs {" not in s:
+              s, n = re.subn(r'(android\s*\{)', r'\1\n' + signing, s, count=1)
+              if n != 1:
+                  raise SystemExit("Could not add Android release signing configuration")
+          s, n = re.subn(r'(buildTypes\s*\{\s*release\s*\{)', r'\1\n            signingConfig signingConfigs.release', s, count=1)
+          if n != 1:
+              raise SystemExit("Could not attach release signing config to buildTypes.release")
+          p.write_text(s)
+          PY
+          cd android
+          ./gradlew assembleRelease
+          APK="app/build/outputs/apk/release/app-release.apk"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+          test -n "$APKSIGNER"
+          "$APKSIGNER" verify --verbose --print-certs "$APK" | tee "$GITHUB_WORKSPACE/release-signature.txt"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)"
+          test -n "$AAPT"
+          "$AAPT" dump badging "$APK" | grep -F "package: name='com.battleforge.arena'"
+          sha256sum "$APK" | tee "$GITHUB_WORKSPACE/release-apk-sha256.txt"
+          cp "$APK" "$GITHUB_WORKSPACE/BattleForge-release.apk"
+      - name: Upload signed release APK
+        if: ${{ success() && inputs.release == true }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: BattleForge-signed-release-APK
+          path: |
+            BattleForge-release.apk
+            release-apk-sha256.txt
+          if-no-files-found: error
+      - name: Prepare signed production APK
+        if: ${{ inputs.release == true }}
+        run: cp BattleForge-release.apk BattleForge.apk
+      - name: Publish signed production APK
+        if: ${{ inputs.release == true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          TAG="battleforge-release-${BUILD_NUMBER}"
+          gh release create "$TAG" BattleForge.apk release-apk-sha256.txt release-signature.txt \\
+            --title "BattleForge signed Android release #${BUILD_NUMBER}" \\
+            --notes "Production-signed BattleForge APK. Signature verification passed in GitHub Actions. SHA-256 and signing certificate details are attached."
+      - name: Prepare debug APK artifact
+        if: ${{ inputs.release != true }}
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk BattleForge-debug.apk
+      - name: Upload debug APK artifact
+        if: ${{ inputs.release != true }}
         uses: actions/upload-artifact@v4
         with:
           name: BattleForge-debug-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: BattleForge-debug.apk
           if-no-files-found: error
