@@ -704,6 +704,79 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
  .launch-screen:after,.launch-spark,.launch-brand .brand-logo-plate{animation:none!important}
 }
 
+
+/* FORGE SEQUENCE II — kinetic shards + dimensional energy field */
+.launch-brand{isolation:isolate!important}
+.launch-brand:after{
+ content:"";position:absolute;z-index:1;left:50%;top:50%;width:105px;height:105px;
+ border:1px solid rgba(143,227,255,.72);border-radius:50%;
+ transform:translate(-50%,-50%) scale(.35);opacity:0;
+ box-shadow:0 0 30px rgba(99,219,255,.22),inset 0 0 24px rgba(125,114,255,.2);
+ animation:forgeShockwave 2.15s cubic-bezier(.12,.72,.2,1) infinite;
+}
+.launch-brand .brand-logo-plate{z-index:5!important}
+.launch-brand .brand-orbit{z-index:2}
+.launch-brand .brand-orbit-two{border-style:solid!important;border-width:1px!important}
+.launch-brand .brand-orbit-three{border-style:dotted!important}
+.forge-fragment{
+ position:absolute;z-index:4;left:50%;top:50%;width:36px;height:54px;
+ opacity:0;will-change:transform,opacity;
+ background:linear-gradient(145deg,rgba(126,231,255,.95),rgba(140,113,255,.25));
+ clip-path:polygon(50% 0,100% 72%,58% 100%,0 48%);
+ filter:drop-shadow(0 0 9px rgba(115,211,255,.55));
+ animation:forgeFragment 2.8s cubic-bezier(.2,.7,.2,1) infinite;
+}
+.fragment-a{--sx:-145px;--sy:-95px;--ex:-205px;--ey:-140px;animation-delay:0s}
+.fragment-b{--sx:145px;--sy:-105px;--ex:210px;--ey:-155px;transform:scale(.72);animation-delay:.24s;background:linear-gradient(145deg,#f4a8ff,rgba(140,113,255,.2))}
+.fragment-c{--sx:-175px;--sy:65px;--ex:-225px;--ey:95px;transform:scale(.58);animation-delay:.48s}
+.fragment-d{--sx:170px;--sy:75px;--ex:220px;--ey:110px;transform:scale(.82);animation-delay:.72s;background:linear-gradient(145deg,#fff,rgba(99,219,255,.2))}
+.fragment-e{--sx:0px;--sy:-145px;--ex:0px;--ey:-195px;transform:scale(.48);animation-delay:.96s}
+.fragment-f{--sx:0px;--sy:145px;--ex:0px;--ey:195px;transform:scale(.64);animation-delay:1.2s;background:linear-gradient(145deg,#f4a8ff,rgba(140,113,255,.2))}
+.launch-coordinate{
+ position:absolute;z-index:6;top:50%;font:7px/1.8 var(--mono);letter-spacing:.13em;
+ color:rgba(222,226,255,.72);text-align:left;transform:translateY(-50%);
+}
+.coordinate-left{left:0}
+.coordinate-right{right:0;text-align:right}
+.launch-scan{
+ position:absolute;z-index:3;left:50%;top:50%;width:min(74vw,390px);height:1px;
+ transform:translate(-50%,-50%) rotate(-22deg);
+ background:linear-gradient(90deg,transparent,rgba(125,232,255,.9),rgba(210,164,255,.75),transparent);
+ box-shadow:0 0 14px rgba(111,221,255,.55);
+ animation:forgeScan 2.7s ease-in-out infinite;pointer-events:none;
+}
+@keyframes forgeShockwave{
+ 0%{transform:translate(-50%,-50%) scale(.35);opacity:0}
+ 18%{opacity:.85}
+ 75%,100%{transform:translate(-50%,-50%) scale(3.8);opacity:0}
+}
+@keyframes forgeFragment{
+ 0%,12%{opacity:0;transform:translate(calc(-50% + var(--sx)),calc(-50% + var(--sy))) rotate(-35deg) scale(.35)}
+ 32%{opacity:.95}
+ 68%{opacity:.72}
+ 100%{opacity:0;transform:translate(calc(-50% + var(--ex)),calc(-50% + var(--ey))) rotate(85deg) scale(.12)}
+}
+@keyframes forgeScan{
+ 0%,100%{opacity:0;transform:translate(-70%,-50%) rotate(-22deg)}
+ 35%,68%{opacity:.75}
+ 55%{transform:translate(-30%,-50%) rotate(-22deg)}
+}
+@media(max-width:650px){
+ .launch-coordinate{font-size:6px;top:auto;bottom:2px;transform:none}
+ .coordinate-left{left:5px}.coordinate-right{right:5px}
+ .forge-fragment{width:25px;height:38px}
+ .fragment-a{--sx:-112px;--sy:-78px;--ex:-145px;--ey:-105px}
+ .fragment-b{--sx:112px;--sy:-78px;--ex:145px;--ey:-105px}
+ .fragment-c{--sx:-118px;--sy:48px;--ex:-150px;--ey:68px}
+ .fragment-d{--sx:118px;--sy:48px;--ex:150px;--ey:68px}
+ .fragment-e{--sy:-112px;--ey:-145px}
+ .fragment-f{--sy:112px;--ey:145px}
+ .launch-scan{width:82vw}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-brand:after,.forge-fragment,.launch-scan{animation:none!important;display:none!important}
+}
+
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
 <link rel="stylesheet" href="assets/apple-inspired.css?v=20261128-headingfix1">
@@ -795,7 +868,7 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 </style>
 </head>
 <body>
-<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
+<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i><i class="forge-fragment fragment-a"></i><i class="forge-fragment fragment-b"></i><i class="forge-fragment fragment-c"></i><i class="forge-fragment fragment-d"></i><i class="forge-fragment fragment-e"></i><i class="forge-fragment fragment-f"></i><span class="launch-coordinate coordinate-left">BF / 001<br>ARENA SYSTEM</span><span class="launch-coordinate coordinate-right">SYNCING<br>PLAYER ID</span><span class="launch-scan"></span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
 <div class="page-progress" aria-hidden="true"><span id="page-progress-bar"></span></div>
 <header><div class="wrap nav"><a class="logo" href="#top" aria-label="BattleForge home"><img src="assets/battleforge-logo.svg" alt="BattleForge"></a>
 <nav class="navlinks" id="navlinks"><a href="#identity">Manifesto</a><a href="#formats">Formats</a><a href="#inside">Inside BF</a><a href="#rewards">Rewards</a><a href="#how">How it works</a><a href="#faq">Info</a></nav>
