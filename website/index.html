@@ -1172,9 +1172,38 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 }
 </style>
 
+
+<style id="battleforge-white-prism-bloom-upgrade">
+/* A kinetic glass-flower burst: organic petals, no frame or orbit geometry */
+.launch-brand .prism-petal{
+  position:absolute;left:50%;top:50%;z-index:1;pointer-events:none;
+  width:clamp(66px,19vw,112px);height:clamp(145px,38vw,205px);
+  border-radius:58% 42% 62% 38% / 48% 55% 45% 52%;
+  opacity:0;transform-origin:50% 88%;mix-blend-mode:multiply;
+  border:1px solid rgba(255,255,255,.82);
+  background:linear-gradient(155deg,rgba(94,224,247,.06),rgba(100,210,255,.32) 28%,rgba(165,139,255,.24) 64%,rgba(255,157,218,.08));
+  box-shadow:inset 0 0 18px rgba(255,255,255,.65),0 5px 28px rgba(126,145,235,.10);
+  will-change:transform,opacity;
+}
+.launch-brand .petal-a{animation:glassPetalA 2.65s .04s cubic-bezier(.16,.8,.2,1) both}
+.launch-brand .petal-b{background:linear-gradient(155deg,rgba(255,159,219,.08),rgba(255,153,210,.30),rgba(166,140,255,.22));animation:glassPetalB 2.7s .09s cubic-bezier(.16,.8,.2,1) both}
+.launch-brand .petal-c{background:linear-gradient(155deg,rgba(161,143,255,.06),rgba(157,136,255,.3),rgba(91,221,246,.18));animation:glassPetalC 2.55s .14s cubic-bezier(.16,.8,.2,1) both}
+.launch-brand .petal-d{background:linear-gradient(155deg,rgba(94,224,247,.05),rgba(94,224,247,.28),rgba(255,158,216,.18));animation:glassPetalD 2.65s .19s cubic-bezier(.16,.8,.2,1) both}
+.launch-brand .petal-e{width:clamp(48px,13vw,76px);height:clamp(112px,29vw,158px);animation:glassPetalE 2.45s .24s cubic-bezier(.16,.8,.2,1) both}
+.launch-brand .petal-f{width:clamp(48px,13vw,76px);height:clamp(112px,29vw,158px);background:linear-gradient(155deg,rgba(255,159,219,.06),rgba(255,159,219,.3),rgba(156,138,255,.18));animation:glassPetalF 2.5s .29s cubic-bezier(.16,.8,.2,1) both}
+@keyframes glassPetalA{0%{opacity:0;transform:translate(-50%,-48%) rotate(-8deg) scale(.12,.25)}32%{opacity:.82}72%{opacity:.48;transform:translate(-50%,-90%) rotate(-28deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-110%) rotate(-42deg) scale(.8,.8)}}
+@keyframes glassPetalB{0%{opacity:0;transform:translate(-50%,-48%) rotate(52deg) scale(.12,.25)}35%{opacity:.78}72%{opacity:.42;transform:translate(-50%,-90%) rotate(24deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-110%) rotate(8deg) scale(.8,.8)}}
+@keyframes glassPetalC{0%{opacity:0;transform:translate(-50%,-48%) rotate(112deg) scale(.12,.25)}34%{opacity:.78}72%{opacity:.42;transform:translate(-50%,-90%) rotate(84deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-110%) rotate(68deg) scale(.8,.8)}}
+@keyframes glassPetalD{0%{opacity:0;transform:translate(-50%,-48%) rotate(172deg) scale(.12,.25)}34%{opacity:.78}72%{opacity:.42;transform:translate(-50%,-90%) rotate(144deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-110%) rotate(128deg) scale(.8,.8)}}
+@keyframes glassPetalE{0%{opacity:0;transform:translate(-50%,-48%) rotate(232deg) scale(.12,.25)}36%{opacity:.72}72%{opacity:.38;transform:translate(-50%,-88%) rotate(204deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-106%) rotate(188deg) scale(.78,.8)}}
+@keyframes glassPetalF{0%{opacity:0;transform:translate(-50%,-48%) rotate(292deg) scale(.12,.25)}36%{opacity:.72}72%{opacity:.38;transform:translate(-50%,-88%) rotate(264deg) scale(1,1)}100%{opacity:0;transform:translate(-50%,-106%) rotate(248deg) scale(.78,.8)}}
+@media(max-width:650px){.launch-brand .prism-petal{height:clamp(118px,35vw,165px)}}
+@media(prefers-reduced-motion:reduce){.launch-brand .prism-petal{display:none!important;animation:none!important}}
+</style>
+
 </head>
 <body>
-<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i><i class="forge-fragment fragment-a"></i><i class="forge-fragment fragment-b"></i><i class="forge-fragment fragment-c"></i><i class="forge-fragment fragment-d"></i><i class="forge-fragment fragment-e"></i><i class="forge-fragment fragment-f"></i><span class="launch-coordinate coordinate-left">BF / 001<br>ARENA SYSTEM</span><span class="launch-coordinate coordinate-right">SYNCING<br>PLAYER ID</span><span class="launch-scan"></span><span class="white-ribbon ribbon-a"></span><span class="white-ribbon ribbon-b"></span><span class="white-ribbon ribbon-c"></span><span class="white-ribbon ribbon-d"></span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
+<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i><i class="forge-fragment fragment-a"></i><i class="forge-fragment fragment-b"></i><i class="forge-fragment fragment-c"></i><i class="forge-fragment fragment-d"></i><i class="forge-fragment fragment-e"></i><i class="forge-fragment fragment-f"></i><span class="launch-coordinate coordinate-left">BF / 001<br>ARENA SYSTEM</span><span class="launch-coordinate coordinate-right">SYNCING<br>PLAYER ID</span><span class="launch-scan"></span><span class="prism-petal petal-a"></span><span class="prism-petal petal-b"></span><span class="prism-petal petal-c"></span><span class="prism-petal petal-d"></span><span class="prism-petal petal-e"></span><span class="prism-petal petal-f"></span><span class="white-ribbon ribbon-a"></span><span class="white-ribbon ribbon-b"></span><span class="white-ribbon ribbon-c"></span><span class="white-ribbon ribbon-d"></span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
 <div class="page-progress" aria-hidden="true"><span id="page-progress-bar"></span></div>
 <header><div class="wrap nav"><a class="logo" href="#top" aria-label="BattleForge home"><img src="assets/battleforge-logo.svg" alt="BattleForge"></a>
 <nav class="navlinks" id="navlinks"><a href="#identity">Manifesto</a><a href="#formats">Formats</a><a href="#inside">Inside BF</a><a href="#rewards">Rewards</a><a href="#how">How it works</a><a href="#faq">Info</a></nav>
