@@ -414,6 +414,59 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
   .hero-right:after{animation:none!important}
 }
 
+
+/* HEADLINE HIERARCHY — bold black + Siri spectrum accent */
+.hero h1,
+.social-head h2{
+  color:#171526!important;
+  -webkit-text-fill-color:#171526!important;
+  font-family:'Archivo Black',Impact,sans-serif!important;
+  font-weight:900!important;
+  text-shadow:none!important;
+  -webkit-text-stroke:0!important;
+}
+.hero h1 .hero-word{
+  color:#171526!important;
+  -webkit-text-fill-color:#171526!important;
+  font-family:'Archivo Black',Impact,sans-serif!important;
+  font-weight:900!important;
+  letter-spacing:-.055em!important;
+  line-height:.98!important;
+  margin:0!important;
+  white-space:nowrap!important;
+}
+.hero h1 .hero-accent,
+.social-head h2 em{
+  color:#7558e8!important;
+  background:linear-gradient(100deg,#6658e8 0%,#a15fe8 48%,#e18acb 72%,#55cfe7 100%)!important;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  -webkit-text-fill-color:transparent!important;
+  font-style:normal!important;
+}
+.social-head h2{
+  font-weight:900!important;
+  letter-spacing:-.055em!important;
+  line-height:.98!important;
+}
+.social-head h2 em{font-weight:900!important}
+@media(max-width:650px){
+  .hero h1{
+    font-size:clamp(52px,13.8vw,76px)!important;
+    font-weight:900!important;
+    letter-spacing:-.055em!important;
+    line-height:1!important;
+    margin:26px auto 28px!important;
+  }
+  .hero h1 .hero-word{font-size:inherit!important;font-weight:900!important;line-height:1!important}
+  .social-head h2{
+    font-size:clamp(46px,12.5vw,66px)!important;
+    font-weight:900!important;
+    letter-spacing:-.055em!important;
+    line-height:1!important;
+  }
+}
+
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
 <link rel="stylesheet" href="assets/apple-inspired.css?v=20261128-headingfix1">
