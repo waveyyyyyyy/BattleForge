@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f7fb"><meta name="description" content="BattleForge — Free Fire community tournaments, player profiles, match chat, rankings and wallet activity.">
+<meta name="theme-color" content="#f7f8ff"><meta name="description" content="BattleForge — Free Fire community tournaments, player profiles, match chat, rankings and wallet activity.">
 <meta property="og:title" content="BattleForge — Play with intent"><meta property="og:description" content="Solo. Duo. Squad. Find your arena.">
 <title>BattleForge — Play with intent</title><link rel="icon" href="assets/battleforge-logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -255,6 +255,163 @@ body{position:relative}
   }
   .hero h1 .hero-word{display:block!important;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;color:#111827!important;-webkit-text-fill-color:#111827!important;line-height:1.02!important}
   .hero h1 .hero-accent{color:#174ff5!important;-webkit-text-fill-color:#174ff5!important}
+}
+
+
+/* SIRI-INSPIRED VISUAL SYSTEM — luminous gradients, soft glass, fluid colour */
+:root{
+  --blue:#6658e8;
+  --blue-dark:#4d42c8;
+  --ink:#17182d;
+  --muted:#69708a;
+  --paper:#f7f8ff;
+  --line:rgba(111,112,168,.18);
+  --siri-violet:#8d62f5;
+  --siri-cyan:#54d8ed;
+  --siri-pink:#f18acb;
+}
+body{
+  background:
+    radial-gradient(ellipse at 12% 7%,rgba(151,132,255,.12),transparent 30%),
+    radial-gradient(ellipse at 88% 22%,rgba(91,211,239,.10),transparent 28%),
+    var(--paper)!important;
+  color:var(--ink)!important;
+}
+header{
+  background:rgba(250,250,255,.78)!important;
+  border-bottom:1px solid rgba(120,119,175,.16)!important;
+  box-shadow:0 8px 35px rgba(77,73,145,.045);
+}
+.navlinks a:hover,.foot-links a:hover{color:#755de9!important}
+.button,.download-inner .button{
+  color:#fff!important;
+  background:linear-gradient(110deg,#6658e8 0%,#9a63ee 48%,#e28bcf 100%)!important;
+  border:0!important;border-radius:999px!important;
+  box-shadow:0 10px 28px rgba(117,91,226,.25);
+}
+.button:hover,.download-inner .button:hover{
+  background:linear-gradient(110deg,#5849d8,#8854df,#d978c0)!important;
+  transform:translateY(-2px)!important;
+  box-shadow:0 14px 34px rgba(117,91,226,.32)!important;
+}
+.hero{
+  background:
+    radial-gradient(ellipse at 18% 40%,rgba(159,133,255,.16),transparent 42%),
+    radial-gradient(ellipse at 76% 70%,rgba(96,220,235,.13),transparent 38%),
+    #f8f8ff!important;
+}
+.hero-right{
+  background:
+    radial-gradient(ellipse at 22% 25%,rgba(255,255,255,.9),transparent 22%),
+    radial-gradient(ellipse at 75% 78%,rgba(100,222,238,.88),transparent 33%),
+    linear-gradient(135deg,#6c5ce7 0%,#9a65ec 42%,#df8acb 72%,#68d7e8 100%)!important;
+}
+.hero-right:before{
+  background:
+    radial-gradient(circle at 50% 48%,rgba(255,255,255,.55),transparent 2%),
+    radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.18),transparent 55%)!important;
+  background-size:auto!important;
+  mask-image:none!important;
+}
+.hero-right:after{
+  width:min(78%,560px)!important;
+  aspect-ratio:1!important;height:auto!important;
+  border:1px solid rgba(255,255,255,.48)!important;
+  border-radius:50%!important;
+  background:conic-gradient(from 20deg,rgba(255,255,255,.05),rgba(90,229,240,.82),rgba(176,107,246,.8),rgba(247,145,211,.85),rgba(255,255,255,.25),rgba(90,229,240,.82))!important;
+  filter:blur(26px) saturate(1.2)!important;
+  opacity:.78!important;
+  box-shadow:0 0 65px rgba(255,255,255,.42),0 0 130px rgba(151,105,242,.38)!important;
+  animation:siriAura 9s ease-in-out infinite alternate!important;
+}
+@keyframes siriAura{0%{transform:scale(.9) rotate(-12deg);filter:blur(26px) hue-rotate(0deg)}100%{transform:scale(1.08) rotate(18deg);filter:blur(34px) hue-rotate(35deg)}}
+.poster{
+  border-radius:26px!important;
+  border:1px solid rgba(255,255,255,.75)!important;
+  background:rgba(255,255,255,.76)!important;
+  backdrop-filter:blur(22px) saturate(1.3)!important;
+  box-shadow:0 28px 70px rgba(50,39,126,.24)!important;
+  transform:rotate(1deg)!important;
+}
+.poster-art{border-radius:17px!important;background:linear-gradient(145deg,#f1eaff,#dffaff)!important}
+.marquee{background:linear-gradient(100deg,#5146c9,#8060e7,#bd71d4)!important;border:0!important}
+.marquee b{color:#c9f8ff!important}
+.section,.section.white,.inside-section{
+  background:rgba(255,255,255,.58)!important;
+}
+.manifesto-card,.format-row,.step,.ledger-row,.feature-item,.social-card,.support-inner{
+  border-color:rgba(111,112,168,.17)!important;
+}
+.manifesto-card{
+  border-radius:24px!important;
+  box-shadow:0 14px 40px rgba(77,73,145,.07);
+}
+.manifesto-card:nth-child(1){background:linear-gradient(145deg,#f0edff,#e7faff)!important;color:#24213e}
+.manifesto-card:nth-child(2){background:linear-gradient(145deg,#6c5ce7,#a46be9)!important}
+.manifesto-card:nth-child(3){background:linear-gradient(145deg,#242345,#51427d)!important}
+.format-row{border-radius:16px;padding-left:16px!important;padding-right:16px!important}
+.format-row:hover{background:rgba(143,120,239,.09)!important}
+.format-row .plus{color:#715de8!important;border-color:rgba(113,93,232,.35)!important}
+.blueprint{
+  background:
+    radial-gradient(ellipse at 15% 15%,rgba(255,255,255,.24),transparent 34%),
+    radial-gradient(ellipse at 85% 80%,rgba(89,225,237,.4),transparent 34%),
+    linear-gradient(125deg,#5e53d9,#8a60e7 52%,#bd72d5)!important;
+}
+.blueprint:before{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.16),transparent 58%)!important}
+.bounty{
+  border-radius:26px!important;
+  background:rgba(255,255,255,.15)!important;
+  backdrop-filter:blur(18px)!important;
+  box-shadow:0 22px 55px rgba(47,35,120,.2)!important;
+  transform:rotate(-1deg)!important;
+}
+.step .big,.ledger-row .n,.section-label b,.feature-item>b{color:#7961e9!important}
+.download-band{
+  background:
+    radial-gradient(ellipse at 80% 0%,rgba(105,216,239,.28),transparent 35%),
+    linear-gradient(115deg,#272344,#40366d 58%,#6250a4)!important;
+}
+.download-inner h2 span{color:#c6b7ff!important}
+.faq-list details,.faq-list summary{border-color:rgba(111,112,168,.18)!important}
+summary:after,details a{color:#765de8!important}
+footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
+.feature-visual{
+  border-radius:26px!important;
+  box-shadow:0 24px 55px rgba(80,70,160,.18)!important;
+  transform:none!important;
+  background:linear-gradient(145deg,#272344,#4b3d7d 65%,#6255a8)!important;
+}
+.feature-visual:before{background:radial-gradient(ellipse at 85% 10%,rgba(100,218,241,.18),transparent 45%)!important}
+.screen-avatar{background:linear-gradient(135deg,#6b5ce7,#c17ce9)!important;box-shadow:0 8px 20px rgba(120,90,230,.28)!important}
+.loop-panel{
+  border-radius:26px!important;
+  background:linear-gradient(125deg,#272344,#51417e)!important;
+}
+.loop-number{color:#a99aff!important}
+.loop-tab.active{background:linear-gradient(110deg,#6658e8,#a36ce9)!important;border-radius:13px!important}
+.arena-display{border-radius:24px!important;background:linear-gradient(145deg,#f0edff,#e5faff)!important}
+.arena-display:before{background:radial-gradient(ellipse at 80% 20%,rgba(117,94,232,.12),transparent 50%)!important}
+.arena-tab.active{color:#6b58df!important;background:rgba(130,105,238,.10)!important}
+.social-hub{background:linear-gradient(135deg,#f1efff,#e9faff)!important}
+.social-card{border-radius:22px!important;box-shadow:0 12px 32px rgba(77,73,145,.06)}
+.social-card.soon{background:linear-gradient(135deg,#282445,#55447e)!important}
+.launch-screen{
+  background:
+    radial-gradient(ellipse at 25% 25%,rgba(103,225,240,.8),transparent 32%),
+    radial-gradient(ellipse at 80% 75%,rgba(225,127,216,.8),transparent 36%),
+    linear-gradient(135deg,#594fd3,#9864e9)!important;
+}
+.launch-mark{border-radius:24px!important;transform:rotate(-5deg)!important;box-shadow:0 16px 40px rgba(40,25,120,.22)!important}
+.page-progress span{background:linear-gradient(90deg,#6658e8,#d987d2,#61d9ed)!important}
+@media(max-width:650px){
+  .hero-right{min-height:360px!important}
+  .poster{transform:none!important}
+  .manifesto-card{border-radius:19px!important}
+  .social-card{border-radius:18px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-right:after{animation:none!important}
 }
 
 </style>
