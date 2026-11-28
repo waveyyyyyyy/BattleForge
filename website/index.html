@@ -1473,6 +1473,41 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
  .launch-brand:before,.launch-brand:after,.launch-brand .launch-blade,
  .launch-brand .brand-logo-plate,.launch-line span{animation:none!important}
 }
+
+/* VISIBILITY FIX — keep the actual BattleForge identity unmistakable */
+.launch-screen{background:#fbfcff!important;opacity:1!important}
+.launch-world{z-index:0!important;background:#fbfcff!important}
+.launch-backtype{
+  display:block!important;visibility:visible!important;opacity:.24!important;
+  color:#111827!important;-webkit-text-fill-color:#111827!important;
+  -webkit-text-stroke:1px rgba(17,24,39,.18)!important;
+  text-shadow:none!important;z-index:3!important;
+  font-size:clamp(94px,21vw,280px)!important;
+}
+.launch-backtype em{
+  color:#2457f5!important;-webkit-text-fill-color:#2457f5!important;
+  opacity:1!important;
+}
+.launch-brand{z-index:5!important;opacity:1!important;visibility:visible!important}
+.launch-brand .brand-logo-plate{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  width:min(78vw,430px)!important;
+  transform:translate(-50%,-50%) rotateY(0) rotateZ(0) scale(1)!important;
+  animation:bfLogoVisible .7s .28s cubic-bezier(.16,1,.3,1) both!important;
+}
+.launch-brand .brand-logo-plate img{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  width:100%!important;height:auto!important;filter:none!important;
+}
+@keyframes bfLogoVisible{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.78)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+@media(max-width:650px){
+  .launch-backtype{font-size:clamp(78px,23vw,158px)!important;line-height:.76!important}
+  .launch-brand .brand-logo-plate{width:min(84vw,330px)!important}
+}
+
 </style>
 </head>
 <body>
