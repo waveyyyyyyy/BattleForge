@@ -235,6 +235,28 @@ body{position:relative}
   .brand-logo-plate{width:min(76%,330px)!important}
 }
 
+
+/* HERO TYPE RESET: keep each word intact and readable */
+.hero h1 .hero-word{display:block;margin:0;padding:0;white-space:nowrap;word-break:keep-all;overflow-wrap:normal}
+.hero h1 .hero-word:not(.hero-accent){color:inherit}
+@media(max-width:650px){
+  .hero-left{padding:34px 18px 26px!important}
+  .hero h1{
+    width:100%!important;max-width:none!important;
+    margin:26px auto 28px!important;padding:0!important;
+    text-align:center!important;
+    font-family:Arial,Helvetica,sans-serif!important;
+    font-size:clamp(48px,12.5vw,62px)!important;
+    font-weight:800!important;line-height:1.02!important;
+    letter-spacing:-.055em!important;
+    color:#111827!important;-webkit-text-fill-color:#111827!important;
+    text-shadow:none!important;-webkit-text-stroke:0!important;
+    word-break:normal!important;overflow-wrap:normal!important;
+  }
+  .hero h1 .hero-word{display:block!important;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;color:#111827!important;-webkit-text-fill-color:#111827!important;line-height:1.02!important}
+  .hero h1 .hero-accent{color:#174ff5!important;-webkit-text-fill-color:#174ff5!important}
+}
+
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
 <link rel="stylesheet" href="assets/apple-inspired.css?v=20261128-headingfix1">
@@ -247,7 +269,7 @@ body{position:relative}
 <div class="nav-action"><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-release-553/BattleForge.apk">GET THE APP <span class="arr">↗</span></a><button class="menu" id="menu" aria-label="Open menu" aria-expanded="false">☰</button></div></div></header>
 <main id="top">
 <section class="hero"><div class="hero-grid wrap">
-<div class="hero-left"><div><div class="meta">Independent gaming culture / Est. 2026</div><h1>PLAY<br>WITH<span>INTENT.</span></h1></div><div class="hero-bottom"><div><div class="hero-copy">A competitive home for Free Fire and many more games. Find your format, bring your people and make every match count.</div><div class="hero-cta"><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-release-553/BattleForge.apk">ENTER BATTLEFORGE <span class="arr">↗</span></a></div></div><a class="text-link" href="#identity">SCROLL TO EXPLORE <span>↓</span></a></div></div>
+<div class="hero-left"><div><div class="meta">Independent gaming culture / Est. 2026</div><h1><span class="hero-word">PLAY</span><span class="hero-word">WITH</span><span class="hero-word hero-accent">INTENT.</span></h1></div><div class="hero-bottom"><div><div class="hero-copy">A competitive home for Free Fire and many more games. Find your format, bring your people and make every match count.</div><div class="hero-cta"><a class="button" href="https://github.com/waveyyyyyyy/BattleForge/releases/download/battleforge-release-553/BattleForge.apk">ENTER BATTLEFORGE <span class="arr">↗</span></a></div></div><a class="text-link" href="#identity">SCROLL TO EXPLORE <span>↓</span></a></div></div>
 <div class="hero-right"><div class="brand-motion" aria-label="Animated official BattleForge app logo">
   <div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div>
   <div class="brand-orbit brand-orbit-three"></div>
