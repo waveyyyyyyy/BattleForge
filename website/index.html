@@ -1508,20 +1508,85 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
   .launch-brand .brand-logo-plate{width:min(84vw,330px)!important}
 }
 
+
+/* BATTLEFORGE TYPE-ONLY LOADER — replace every previous loader visual */
+.launch-screen.bf-type-loader{
+  position:fixed!important;inset:0!important;z-index:1000!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  flex-direction:column!important;gap:0!important;overflow:hidden!important;
+  background:#fff!important;color:#080808!important;isolation:isolate!important;
+  pointer-events:none!important;
+  animation:bfTypeExit .48s 2.55s cubic-bezier(.76,0,.24,1) forwards!important;
+}
+.bf-type-stack{
+  position:relative!important;display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:center!important;
+  width:100%!important;padding:0 4vw!important;line-height:.77!important;
+  font-family:"Archivo Black",Impact,sans-serif!important;font-weight:950!important;
+  letter-spacing:-.105em!important;text-align:center!important;
+}
+.bf-type-stack span{
+  display:block!important;white-space:nowrap!important;
+  font-family:"Archivo Black",Impact,sans-serif!important;font-weight:950!important;
+  font-size:clamp(76px,19vw,230px)!important;line-height:.78!important;
+  letter-spacing:-.105em!important;
+}
+.bf-type-battle{
+  color:#080808!important;-webkit-text-fill-color:#080808!important;
+  animation:bfBattleImpact 1.18s cubic-bezier(.16,1,.3,1) both!important;
+}
+.bf-type-forge{
+  color:#2457f5!important;-webkit-text-fill-color:#2457f5!important;
+  animation:bfForgeImpact 1.22s .12s cubic-bezier(.16,1,.3,1) both!important;
+}
+.bf-type-rule{
+  display:block!important;width:min(54vw,330px)!important;height:5px!important;
+  margin-top:clamp(22px,4vh,42px)!important;
+  background:linear-gradient(90deg,#080808 0 50%,#2457f5 50% 100%)!important;
+  transform:scaleX(0)!important;transform-origin:center!important;
+  animation:bfRuleStrike .55s 1.08s cubic-bezier(.16,1,.3,1) forwards!important;
+}
+@keyframes bfBattleImpact{
+  0%{opacity:0;transform:translate3d(-110vw,0,0) skewX(-22deg) scaleX(1.3);clip-path:inset(0 100% 0 0)}
+  52%{opacity:1;transform:translate3d(3.5vw,0,0) skewX(7deg) scaleX(1.02);clip-path:inset(0)}
+  70%{transform:translate3d(-1.2vw,0,0) skewX(-3deg)}
+  86%{transform:translate3d(.5vw,0,0) skewX(1deg)}
+  100%{opacity:1;transform:translate3d(0,0,0) skewX(0)}
+}
+@keyframes bfForgeImpact{
+  0%{opacity:0;transform:translate3d(110vw,0,0) skewX(22deg) scaleX(1.3);clip-path:inset(0 0 0 100%)}
+  48%{opacity:1;transform:translate3d(-3.5vw,0,0) skewX(-7deg) scaleX(1.02);clip-path:inset(0)}
+  68%{transform:translate3d(1.2vw,0,0) skewX(3deg)}
+  84%{transform:translate3d(-.5vw,0,0) skewX(-1deg)}
+  100%{opacity:1;transform:translate3d(0,0,0) skewX(0)}
+}
+@keyframes bfRuleStrike{
+  0%{transform:scaleX(0);opacity:0}
+  55%{transform:scaleX(1.12);opacity:1}
+  100%{transform:scaleX(1);opacity:1}
+}
+@keyframes bfTypeExit{
+  to{opacity:0;visibility:hidden;transform:translateY(-3vh);pointer-events:none}
+}
+@media(max-width:650px){
+ .bf-type-stack span{font-size:clamp(62px,19vw,126px)!important;letter-spacing:-.11em!important}
+ .bf-type-rule{height:4px!important;width:58vw!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-screen.bf-type-loader{animation:bfTypeExit .01s 1.2s forwards!important}
+ .bf-type-battle,.bf-type-forge,.bf-type-rule{animation:none!important;opacity:1!important;transform:none!important;clip-path:none!important}
+}
+
 </style>
 </head>
 <body>
-<div class="launch-screen" aria-hidden="true">
-<div class="launch-world">
-  <div class="launch-backtype">BATTLE<br><em>FORGE</em></div>
-  <div class="launch-kicker"><span>INDEPENDENT GAMING CULTURE</span><i></i><span>EST. 2026</span></div>
-  <div class="launch-sweep sweep-one"></div><div class="launch-sweep sweep-two"></div><div class="launch-sweep sweep-three"></div>
-  <div class="launch-sparkscape"><i class="world-particle particle-1"></i><i class="world-particle particle-2"></i><i class="world-particle particle-3"></i><i class="world-particle particle-4"></i><i class="world-particle particle-5"></i><i class="world-particle particle-6"></i><i class="world-particle particle-7"></i><i class="world-particle particle-8"></i><i class="world-particle particle-9"></i><i class="world-particle particle-10"></i><i class="world-particle particle-11"></i><i class="world-particle particle-12"></i><i class="world-particle particle-13"></i><i class="world-particle particle-14"></i><i class="world-particle particle-15"></i><i class="world-particle particle-16"></i></div>
-  <div class="launch-side-note note-left">A NEW ARENA<br><b>IS FORMING</b></div>
-  <div class="launch-side-note note-right">BUILT FOR<br><b>THE BOLD</b></div>
-  <div class="launch-bottomline"><span>01 / 03</span><span>THE FORGE SEQUENCE</span><span>READY WHEN YOU ARE</span></div>
+<div class="launch-screen bf-type-loader" aria-hidden="true">
+  <div class="bf-type-stack">
+    <span class="bf-type-battle">BATTLE</span>
+    <span class="bf-type-forge">FORGE</span>
+  </div>
+  <span class="bf-type-rule"></span>
 </div>
-<div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><i class="launch-blade blade-1"></i><i class="launch-blade blade-2"></i><i class="launch-blade blade-3"></i><i class="launch-blade blade-4"></i><i class="launch-blade blade-5"></i><i class="launch-blade blade-6"></i><i class="launch-blade blade-7"></i><i class="launch-blade blade-8"></i><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i><i class="forge-fragment fragment-a"></i><i class="forge-fragment fragment-b"></i><i class="forge-fragment fragment-c"></i><i class="forge-fragment fragment-d"></i><i class="forge-fragment fragment-e"></i><i class="forge-fragment fragment-f"></i><span class="launch-coordinate coordinate-left">BF / 001<br>ARENA SYSTEM</span><span class="launch-coordinate coordinate-right">SYNCING<br>PLAYER ID</span><span class="launch-scan"></span><span class="prism-petal petal-a"></span><span class="prism-petal petal-b"></span><span class="prism-petal petal-c"></span><span class="prism-petal petal-d"></span><span class="prism-petal petal-e"></span><span class="prism-petal petal-f"></span><span class="white-ribbon ribbon-a"></span><span class="white-ribbon ribbon-b"></span><span class="white-ribbon ribbon-c"></span><span class="white-ribbon ribbon-d"></span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
 <div class="page-progress" aria-hidden="true"><span id="page-progress-bar"></span></div>
 <header><div class="wrap nav"><a class="logo" href="#top" aria-label="BattleForge home"><img src="assets/battleforge-logo.svg" alt="BattleForge"></a>
 <nav class="navlinks" id="navlinks"><a href="#identity">Manifesto</a><a href="#formats">Formats</a><a href="#inside">Inside BF</a><a href="#rewards">Rewards</a><a href="#how">How it works</a><a href="#faq">Info</a></nav>
