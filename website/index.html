@@ -567,6 +567,73 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
 <link rel="stylesheet" href="assets/apple-inspired.css?v=20261128-headingfix1">
+
+<style id="reactor-performance-pass">
+/* REACTOR V2 — cinematic look, compositor-friendly motion */
+.hero-right{
+  background:
+    radial-gradient(ellipse at 50% 50%,rgba(127,111,255,.28),transparent 42%),
+    radial-gradient(ellipse at 82% 18%,rgba(91,220,239,.18),transparent 34%),
+    linear-gradient(145deg,#29234f,#51428d 52%,#242044)!important;
+}
+.hero-right:before{opacity:.16!important}
+.brand-motion.forge-reactor{
+  contain:layout paint;
+  perspective:none!important;
+  transform:translateZ(0);
+}
+.reactor-backdrop{
+  filter:none!important;
+  background:radial-gradient(circle,rgba(255,255,255,.72),rgba(164,146,255,.22) 38%,transparent 70%)!important;
+  animation:reactorPulseLite 7s ease-in-out infinite!important;
+}
+.reactor-ring{
+  box-shadow:0 0 10px rgba(128,108,255,.18)!important;
+  transform-style:flat!important;
+}
+.ring-outer{animation:ringTurnA 32s linear infinite!important}
+.ring-middle{animation:ringTurnB 24s linear infinite!important}
+.ring-inner{animation:ringTurnC 19s linear infinite!important}
+.reactor-ribbon{
+  filter:none!important;mix-blend-mode:normal!important;
+  border-width:5px!important;opacity:.82;
+}
+.ribbon-one{animation:ribbonDriftA 12s ease-in-out infinite!important}
+.ribbon-two{animation:ribbonDriftB 15s ease-in-out infinite!important}
+.ribbon-three{animation:none!important;opacity:.48}
+.reactor-core{animation:coreHover 7s ease-in-out infinite!important;transform-style:flat!important}
+.core-glass{backdrop-filter:none!important;box-shadow:0 0 0 5px rgba(255,255,255,.07),0 0 24px rgba(157,132,255,.32)!important}
+.reactor-core img{filter:drop-shadow(0 4px 5px rgba(25,20,70,.28))!important;transform:none!important}
+.reactor-shard{filter:none!important}
+.shard-one{animation:shardDriftA 11s ease-in-out infinite!important}
+.shard-two{animation:shardDriftB 13s ease-in-out infinite!important}
+.shard-three{animation:shardDriftA 14s ease-in-out infinite reverse!important}
+.shard-four{animation:none!important;opacity:.72}
+.reactor-particle{box-shadow:0 0 6px 1px rgba(188,170,255,.65)!important;animation:particleLite 8s ease-in-out infinite!important}
+@keyframes reactorPulseLite{0%,100%{opacity:.58;transform:scale(.96)}50%{opacity:.9;transform:scale(1.04)}}
+@keyframes ringTurnA{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes ringTurnB{to{transform:translate(-50%,-50%) rotate(-360deg)}}
+@keyframes ringTurnC{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes ribbonDriftA{0%,100%{transform:translate(-50%,-50%) rotate(32deg) scale(1)}50%{transform:translate(-50%,-50%) rotate(42deg) scale(1.035)}}
+@keyframes ribbonDriftB{0%,100%{transform:translate(-50%,-50%) rotate(-48deg) scale(1)}50%{transform:translate(-50%,-50%) rotate(-38deg) scale(1.04)}}
+@keyframes coreHover{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes shardDriftA{0%,100%{transform:translate3d(0,0,0) rotate(24deg)}50%{transform:translate3d(0,-9px,0) rotate(34deg)}}
+@keyframes shardDriftB{0%,100%{transform:translate3d(0,0,0) rotate(68deg)}50%{transform:translate3d(0,8px,0) rotate(78deg)}}
+@keyframes particleLite{0%,100%{transform:translate3d(0,0,0);opacity:.45}50%{transform:translate3d(5px,-8px,0);opacity:.85}}
+@media(max-width:650px){
+ .brand-motion.forge-reactor{min-height:350px!important;height:350px!important;--reactor-size:min(78vw,300px)!important}
+ .reactor-ring{box-shadow:0 0 5px rgba(128,108,255,.14)!important}
+ .ring-middle{border-style:solid!important}
+ .ribbon-three,.shard-four,.particle-four,.particle-five,.particle-six{display:none!important}
+ .reactor-ribbon{border-width:3px!important}
+ .reactor-shard{width:18px!important;height:32px!important}
+ .reactor-particle{width:3px!important;height:3px!important}
+ .reactor-caption{font-size:6px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .reactor-backdrop,.reactor-ring,.reactor-ribbon,.reactor-core,.reactor-shard,.reactor-particle{animation:none!important}
+}
+</style>
 </head>
 <body>
 <div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">INITIALIZING PLAYER SYSTEM</div></div>
