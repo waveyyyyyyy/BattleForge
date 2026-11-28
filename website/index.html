@@ -1594,18 +1594,9 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 }
 
 
-/* PLAY WITH INTENT — visibility failsafe */
-.launch-screen.bf-type-loader .bf-type-tagline{
-  display:block!important;opacity:1!important;visibility:visible!important;
-  position:relative!important;z-index:20!important;transform:none!important;
-  clip-path:none!important;animation:none!important;
-  margin-top:clamp(22px,4vh,38px)!important;padding:13px 20px!important;
-  background:#174ff5!important;color:#fff!important;-webkit-text-fill-color:#fff!important;
-  border:2px solid #174ff5!important;border-radius:2px!important;
-  font:900 clamp(14px,3.2vw,21px)/1.15 "Manrope",Arial,sans-serif!important;
-  letter-spacing:.18em!important;text-align:center!important;
-  box-shadow:7px 7px 0 #101828!important;
-}
+/* PLAY WITH INTENT — timed visibility, never persistent */
+.launch-screen.bf-type-loader .bf-type-tagline{display:block!important;opacity:0!important;visibility:hidden!important;position:relative!important;z-index:20!important;transform:translateY(12px)!important;clip-path:none!important;animation:none!important;margin-top:clamp(22px,4vh,38px)!important;padding:13px 20px!important;background:#174ff5!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:2px solid #174ff5!important;border-radius:2px!important;font:900 clamp(14px,3.2vw,21px)/1.15 "Manrope",Arial,sans-serif!important;letter-spacing:.18em!important;text-align:center!important;box-shadow:7px 7px 0 #101828!important}
+.launch-screen.bf-type-loader .bf-type-tagline.bf-intent-visible{opacity:1!important;visibility:visible!important;transform:translateY(0)!important;transition:opacity .28s ease,transform .28s ease!important}
 </style>
 </head>
 <body>
@@ -1617,6 +1608,7 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
   <span class="bf-type-rule"></span>
   <span class="bf-type-tagline">PLAY WITH INTENT</span>
 </div>
+<script>(()=>{const loader=document.querySelector('.launch-screen.bf-type-loader');if(!loader)return;const intent=loader.querySelector('.bf-type-tagline');window.setTimeout(()=>{if(intent&&loader.isConnected)intent.classList.add('bf-intent-visible')},1550);window.setTimeout(()=>{if(loader.isConnected)loader.remove()},3350)})();</script>
 <div class="page-progress" aria-hidden="true"><span id="page-progress-bar"></span></div>
 <header><div class="wrap nav"><a class="logo" href="#top" aria-label="BattleForge home"><img src="assets/battleforge-logo.svg" alt="BattleForge"></a>
 <nav class="navlinks" id="navlinks"><a href="#identity">Manifesto</a><a href="#formats">Formats</a><a href="#inside">Inside BF</a><a href="#rewards">Rewards</a><a href="#how">How it works</a><a href="#faq">Info</a></nav>
