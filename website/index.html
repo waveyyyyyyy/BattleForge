@@ -564,6 +564,72 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
  .reactor-backdrop,.reactor-ring,.reactor-ribbon,.reactor-core,.reactor-shard,.reactor-particle{animation:none!important}
 }
 
+
+/* SEAMLESS HERO — remove the rectangular display panel and boxed logo */
+.hero{
+  background:
+    radial-gradient(ellipse at 78% 48%,rgba(126,105,245,.16),transparent 32%),
+    radial-gradient(ellipse at 88% 70%,rgba(82,215,235,.12),transparent 27%),
+    radial-gradient(ellipse at 72% 20%,rgba(235,139,215,.10),transparent 25%),
+    #f7f8ff!important;
+}
+.hero-grid{position:relative;isolation:isolate}
+.hero-right{
+  background:transparent!important;
+  color:var(--ink)!important;
+  overflow:visible!important;
+  min-height:620px!important;
+  position:relative!important;
+}
+.hero-right:before,.hero-right:after{display:none!important}
+.brand-motion.forge-reactor{
+  overflow:visible!important;
+  background:transparent!important;
+  min-height:620px!important;
+}
+.reactor-backdrop{
+  width:86%!important;
+  background:
+    radial-gradient(circle,rgba(255,255,255,.96) 0%,rgba(174,158,255,.30) 28%,rgba(91,218,237,.13) 48%,transparent 70%)!important;
+}
+.reactor-core{
+  width:44%!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.core-glass{
+  inset:-42%!important;
+  border-radius:50%!important;
+  transform:none!important;
+  border:1px solid rgba(255,255,255,.85)!important;
+  background:
+    radial-gradient(circle at 34% 26%,rgba(255,255,255,.94),rgba(185,170,255,.24) 42%,rgba(83,218,236,.10) 70%,transparent 73%)!important;
+  box-shadow:0 0 0 1px rgba(135,117,255,.10),0 0 32px rgba(133,112,255,.22),0 0 75px rgba(86,218,237,.13)!important;
+  backdrop-filter:none!important;
+}
+.reactor-core img{
+  width:100%!important;
+  filter:drop-shadow(0 10px 18px rgba(48,39,110,.22))!important;
+}
+.reactor-caption{color:rgba(65,57,120,.7)!important}
+.reactor-caption-left{left:3%!important;bottom:12%!important}
+.reactor-caption-right{right:3%!important;top:12%!important}
+.reactor-shard{filter:drop-shadow(0 4px 8px rgba(88,73,180,.18))!important}
+@media(max-width:900px){
+ .hero-right,.brand-motion.forge-reactor{min-height:580px!important}
+}
+@media(max-width:650px){
+ .hero{background:
+   radial-gradient(ellipse at 50% 78%,rgba(126,105,245,.14),transparent 43%),
+   radial-gradient(ellipse at 80% 92%,rgba(82,215,235,.12),transparent 30%),
+   #f7f8ff!important}
+ .hero-right{min-height:370px!important;height:370px!important;overflow:hidden!important}
+ .brand-motion.forge-reactor{min-height:370px!important;height:370px!important;overflow:hidden!important}
+ .reactor-core{width:40%!important}
+ .core-glass{inset:-50%!important}
+ .reactor-caption{color:rgba(65,57,120,.65)!important}
+}
+
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
 <link rel="stylesheet" href="assets/apple-inspired.css?v=20261128-headingfix1">
