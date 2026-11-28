@@ -178,6 +178,63 @@ body{position:relative}
   .hero h1 span{margin:0;line-height:.98}
 }
 
+
+/* MOBILE HERO VISIBILITY + PROPORTION FIX */
+@media(max-width:650px){
+  .hero{background:#f5f7fb!important}
+  .hero-grid{display:flex!important;flex-direction:column!important;min-height:0!important}
+  .hero-left{
+    display:flex!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    min-height:0!important;
+    padding:38px 20px 28px!important;
+    gap:0!important;
+  }
+  .hero-left>div:first-child{width:100%!important;max-width:none!important}
+  .hero .meta{font-size:9px!important;color:#566176!important}
+  .hero h1{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:30px auto 30px!important;
+    padding:0!important;
+    color:#101828!important;
+    -webkit-text-fill-color:#101828!important;
+    -webkit-text-stroke:0 transparent!important;
+    text-shadow:none!important;
+    filter:none!important;
+    opacity:1!important;
+    font-family:var(--display)!important;
+    font-size:clamp(54px,14.4vw,88px)!important;
+    font-weight:normal!important;
+    line-height:.98!important;
+    letter-spacing:-.065em!important;
+    text-align:center!important;
+    overflow:visible!important;
+  }
+  .hero h1 span{
+    display:block!important;
+    margin:0!important;
+    padding:0!important;
+    color:#174ff5!important;
+    -webkit-text-fill-color:#174ff5!important;
+    -webkit-text-stroke:0 transparent!important;
+    text-shadow:none!important;
+    filter:none!important;
+    opacity:1!important;
+    line-height:.98!important;
+  }
+  .hero-bottom{display:block!important;margin:0!important}
+  .hero-copy{max-width:100%!important;color:#4f5b70!important;font-size:13px!important;line-height:1.75!important}
+  .hero-cta{justify-content:center!important;margin-top:20px!important}
+  .hero-cta .button{min-height:52px!important;padding:15px 24px!important;font-size:11px!important}
+  .hero-bottom>.text-link{display:flex!important;width:max-content!important;margin:12px auto 0!important}
+  .hero-right{min-height:360px!important;height:360px!important}
+  .brand-motion{min-height:360px!important;height:360px!important}
+  .brand-logo-plate{width:min(76%,330px)!important}
+}
+
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
 <link rel="stylesheet" href="assets/apple-inspired.css?v=20261128-headingfix1">
