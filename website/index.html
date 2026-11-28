@@ -1103,9 +1103,78 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 }
 </style>
 
+
+<style id="battleforge-white-prism-motion-upgrade">
+/* WHITE PRISM / MOTION UPGRADE — flowing colour ribbons, not orbit rings */
+.launch-brand .white-ribbon{
+  position:absolute;left:50%;top:50%;z-index:2;pointer-events:none;
+  width:clamp(150px,43vw,245px);height:34px;border-radius:100%;
+  opacity:0;mix-blend-mode:multiply;will-change:transform,opacity;
+  background:linear-gradient(90deg,transparent 0%,rgba(88,220,247,.08) 12%,rgba(88,220,247,.78) 38%,rgba(159,135,255,.82) 62%,rgba(255,147,213,.7) 84%,transparent 100%);
+  clip-path:polygon(0 52%,15% 25%,38% 10%,62% 22%,83% 70%,100% 42%,94% 58%,76% 88%,53% 62%,30% 48%,10% 76%);
+  filter:blur(.25px);
+}
+.launch-brand .ribbon-a{animation:prismRibbonA 2.8s .05s cubic-bezier(.2,.7,.2,1) both}
+.launch-brand .ribbon-b{
+  width:clamp(130px,38vw,215px);height:27px;
+  background:linear-gradient(90deg,transparent,rgba(255,151,216,.7),rgba(165,143,255,.8),rgba(87,220,247,.7),transparent);
+  animation:prismRibbonB 2.65s .18s cubic-bezier(.2,.7,.2,1) both;
+}
+.launch-brand .ribbon-c{
+  width:clamp(110px,31vw,180px);height:21px;
+  background:linear-gradient(90deg,transparent,rgba(119,221,249,.65),rgba(186,151,255,.72),transparent);
+  animation:prismRibbonC 2.4s .32s cubic-bezier(.2,.7,.2,1) both;
+}
+.launch-brand .ribbon-d{
+  width:clamp(105px,28vw,165px);height:18px;
+  background:linear-gradient(90deg,transparent,rgba(255,172,220,.66),rgba(154,143,255,.7),transparent);
+  animation:prismRibbonD 2.5s .42s cubic-bezier(.2,.7,.2,1) both;
+}
+.launch-brand .brand-logo-plate{z-index:5!important}
+.launch-brand .forge-fragment{z-index:4!important}
+.launch-word{
+  background:linear-gradient(100deg,#25213d 10%,#6f61c9 34%,#299eb7 52%,#bd5c9e 70%,#25213d 90%);
+  background-size:220% 100%;background-clip:text;-webkit-background-clip:text;
+  color:transparent!important;animation:prismWordFlow 3.2s .3s ease-in-out infinite!important;
+}
+@keyframes prismRibbonA{
+  0%{opacity:0;transform:translate(-95%,-80%) rotate(-28deg) scale(.45)}
+  22%{opacity:.8}
+  58%{opacity:.62;transform:translate(-50%,-105%) rotate(18deg) scale(1.05)}
+  100%{opacity:0;transform:translate(-8%,-20%) rotate(48deg) scale(.72)}
+}
+@keyframes prismRibbonB{
+  0%{opacity:0;transform:translate(-8%,20%) rotate(35deg) scale(.4)}
+  25%{opacity:.78}
+  65%{opacity:.55;transform:translate(-50%,-2%) rotate(-22deg) scale(1.05)}
+  100%{opacity:0;transform:translate(-92%,-85%) rotate(-48deg) scale(.7)}
+}
+@keyframes prismRibbonC{
+  0%{opacity:0;transform:translate(-75%,85%) rotate(8deg) scale(.3)}
+  35%{opacity:.65;transform:translate(-50%,38%) rotate(-18deg) scale(1)}
+  100%{opacity:0;transform:translate(-20%,-110%) rotate(-40deg) scale(.65)}
+}
+@keyframes prismRibbonD{
+  0%{opacity:0;transform:translate(-20%,-115%) rotate(-12deg) scale(.35)}
+  38%{opacity:.62;transform:translate(-50%,-42%) rotate(22deg) scale(1)}
+  100%{opacity:0;transform:translate(-80%,95%) rotate(52deg) scale(.62)}
+}
+@keyframes prismWordFlow{0%,100%{background-position:100% 50%}50%{background-position:0 50%}}
+@media(max-width:650px){
+ .launch-brand .white-ribbon{height:24px}
+ .launch-brand .ribbon-b{height:20px}
+ .launch-brand .ribbon-c{height:16px}
+ .launch-brand .ribbon-d{height:14px}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-brand .white-ribbon{display:none!important;animation:none!important}
+ .launch-word{background:none!important;color:#25213d!important}
+}
+</style>
+
 </head>
 <body>
-<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i><i class="forge-fragment fragment-a"></i><i class="forge-fragment fragment-b"></i><i class="forge-fragment fragment-c"></i><i class="forge-fragment fragment-d"></i><i class="forge-fragment fragment-e"></i><i class="forge-fragment fragment-f"></i><span class="launch-coordinate coordinate-left">BF / 001<br>ARENA SYSTEM</span><span class="launch-coordinate coordinate-right">SYNCING<br>PLAYER ID</span><span class="launch-scan"></span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
+<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i><i class="forge-fragment fragment-a"></i><i class="forge-fragment fragment-b"></i><i class="forge-fragment fragment-c"></i><i class="forge-fragment fragment-d"></i><i class="forge-fragment fragment-e"></i><i class="forge-fragment fragment-f"></i><span class="launch-coordinate coordinate-left">BF / 001<br>ARENA SYSTEM</span><span class="launch-coordinate coordinate-right">SYNCING<br>PLAYER ID</span><span class="launch-scan"></span><span class="white-ribbon ribbon-a"></span><span class="white-ribbon ribbon-b"></span><span class="white-ribbon ribbon-c"></span><span class="white-ribbon ribbon-d"></span></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
 <div class="page-progress" aria-hidden="true"><span id="page-progress-bar"></span></div>
 <header><div class="wrap nav"><a class="logo" href="#top" aria-label="BattleForge home"><img src="assets/battleforge-logo.svg" alt="BattleForge"></a>
 <nav class="navlinks" id="navlinks"><a href="#identity">Manifesto</a><a href="#formats">Formats</a><a href="#inside">Inside BF</a><a href="#rewards">Rewards</a><a href="#how">How it works</a><a href="#faq">Info</a></nav>
