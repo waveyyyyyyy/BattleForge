@@ -867,104 +867,142 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 }
 </style>
 
-<style id="battleforge-rift-loader-v5">
-/* FORGE IGNITION — a focused light-aperture reveal, with no frame or orbit */
+<style id="battleforge-rift-loader-v6">
+/* PRISM IGNITION — vivid colour, kinetic shards and a clean unboxed logo */
 .launch-screen{
   gap:9px!important;overflow:hidden!important;
   background:
-    radial-gradient(ellipse at 50% 48%,rgba(123,105,255,.25),transparent 29%),
-    radial-gradient(ellipse at 50% 52%,rgba(70,215,255,.12),transparent 46%),
-    linear-gradient(135deg,#070916 0%,#0b1025 52%,#090817 100%)!important;
-  animation:launchExit .62s 1.95s cubic-bezier(.7,0,.2,1) forwards!important;
+    radial-gradient(ellipse at 50% 45%,rgba(255,255,255,.24),transparent 18%),
+    radial-gradient(ellipse at 24% 28%,rgba(56,224,255,.46),transparent 34%),
+    radial-gradient(ellipse at 78% 34%,rgba(255,91,205,.38),transparent 34%),
+    radial-gradient(ellipse at 52% 88%,rgba(119,91,255,.58),transparent 42%),
+    linear-gradient(125deg,#171b63 0%,#352078 38%,#632a83 68%,#153f75 100%)!important;
+  animation:launchExit .68s 2.55s cubic-bezier(.7,0,.2,1) forwards!important;
 }
 .launch-screen:before{
-  opacity:.075!important;background-size:84px 84px!important;
-  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 58%)!important;
+  opacity:.18!important;background-size:64px 64px!important;
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%)!important;
 }
-.launch-screen:after{display:none!important}
+.launch-screen:after{
+  content:""!important;display:block!important;position:absolute!important;inset:-35%!important;
+  z-index:0!important;pointer-events:none!important;
+  background:conic-gradient(from 10deg at 50% 50%,transparent 0deg,rgba(94,230,255,.15) 42deg,transparent 86deg,rgba(255,139,224,.17) 155deg,transparent 215deg,rgba(168,151,255,.2) 285deg,transparent 340deg);
+  filter:blur(22px)!important;opacity:.85!important;
+  animation:prismWash 8s linear infinite!important;
+}
 .launch-brand{
-  position:relative!important;width:min(90vw,450px)!important;height:244px!important;
-  min-height:0!important;flex:none!important;isolation:isolate!important;
+  position:relative!important;width:min(92vw,470px)!important;height:250px!important;
+  min-height:0!important;flex:none!important;isolation:isolate!important;z-index:1!important;
 }
 .launch-brand:before{
   content:""!important;position:absolute!important;z-index:0!important;
-  left:50%!important;top:50%!important;width:320px!important;height:190px!important;
+  left:50%!important;top:50%!important;width:360px!important;height:220px!important;
   border:0!important;border-radius:50%!important;
-  background:radial-gradient(ellipse,rgba(139,119,255,.30) 0%,rgba(72,210,255,.13) 36%,transparent 72%)!important;
-  box-shadow:none!important;transform:translate(-50%,-50%) scale(.78)!important;
-  animation:ignitionBloom 2.5s ease-out both!important;
+  background:radial-gradient(ellipse,rgba(255,255,255,.38) 0%,rgba(100,224,255,.28) 24%,rgba(186,105,255,.27) 48%,rgba(255,111,209,.13) 62%,transparent 76%)!important;
+  box-shadow:none!important;transform:translate(-50%,-50%) scale(.7)!important;
+  animation:prismBloom 2.6s cubic-bezier(.16,1,.3,1) both!important;
 }
 .launch-brand:after{
   content:""!important;position:absolute!important;z-index:2!important;
-  left:50%!important;top:50%!important;width:min(78vw,340px)!important;height:2px!important;
+  left:50%!important;top:50%!important;width:min(82vw,360px)!important;height:3px!important;
   border:0!important;border-radius:50%!important;
-  background:linear-gradient(90deg,transparent,rgba(115,224,255,.95),rgba(204,181,255,.95),transparent)!important;
-  box-shadow:0 0 12px rgba(119,207,255,.55),0 0 34px rgba(139,116,255,.32)!important;
+  background:linear-gradient(90deg,transparent,#79f2ff 20%,#fff 48%,#ffb4f1 76%,transparent)!important;
+  box-shadow:0 0 12px rgba(105,233,255,.9),0 0 30px rgba(244,130,255,.65)!important;
   transform:translate(-50%,-50%) scaleX(.02)!important;
-  animation:ignitionBeam 1.15s .12s cubic-bezier(.16,1,.3,1) both!important;
+  animation:prismBeam 1.25s .12s cubic-bezier(.16,1,.3,1) both!important;
   pointer-events:none!important;
 }
-.launch-brand .brand-orbit,.launch-brand .launch-spark,.launch-brand .forge-fragment,
+.launch-brand .brand-orbit{display:none!important}
+.launch-brand .launch-spark{
+  display:block!important;z-index:5!important;width:7px!important;height:7px!important;
+  background:#a7f7ff!important;box-shadow:0 0 10px 4px rgba(104,232,255,.9)!important;
+}
+.launch-brand .spark-one{left:18%!important;top:37%!important;animation:prismSparkA 2s ease-in-out infinite!important}
+.launch-brand .spark-two{left:80%!important;top:61%!important;background:#ffb0f2!important;box-shadow:0 0 12px 4px rgba(255,135,227,.9)!important;animation:prismSparkB 2.2s .2s ease-in-out infinite!important}
+.launch-brand .spark-three{left:26%!important;top:72%!important;background:#fff!important;box-shadow:0 0 11px 4px rgba(255,255,255,.8)!important;animation:prismSparkA 1.8s .45s ease-in-out infinite reverse!important}
+.launch-brand .forge-fragment{
+  display:block!important;z-index:3!important;opacity:0!important;
+  filter:drop-shadow(0 0 12px rgba(120,231,255,.85))!important;
+  animation:prismShard 2.35s cubic-bezier(.16,.75,.25,1) both!important;
+}
+.launch-brand .fragment-a{--sx:-88px!important;--sy:-55px!important;--ex:-185px!important;--ey:-118px!important}
+.launch-brand .fragment-b{--sx:88px!important;--sy:-62px!important;--ex:190px!important;--ey:-125px!important;animation-delay:.12s!important}
+.launch-brand .fragment-c{--sx:-100px!important;--sy:52px!important;--ex:-195px!important;--ey:104px!important;animation-delay:.22s!important}
+.launch-brand .fragment-d{--sx:100px!important;--sy:52px!important;--ex:195px!important;--ey:104px!important;animation-delay:.3s!important}
+.launch-brand .fragment-e{--sx:-12px!important;--sy:-92px!important;--ex:-28px!important;--ey:-158px!important;animation-delay:.08s!important}
+.launch-brand .fragment-f{--sx:14px!important;--sy:92px!important;--ex:35px!important;--ey:158px!important;animation-delay:.18s!important}
 .launch-brand .launch-coordinate,.launch-brand .launch-scan{display:none!important}
 .launch-brand .brand-logo-plate{
   position:relative!important;z-index:4!important;width:min(78vw,310px)!important;
   padding:0!important;background:transparent!important;border:0!important;outline:0!important;
   box-shadow:none!important;transform:none!important;
-  animation:ignitionLogo 1.12s .18s cubic-bezier(.16,1,.3,1) both!important;
+  animation:prismLogo 1.15s .18s cubic-bezier(.16,1,.3,1) both!important;
 }
 .launch-brand .brand-logo-plate:before{display:none!important}
 .launch-brand .brand-logo-plate img{
   display:block!important;width:100%!important;height:auto!important;
-  filter:drop-shadow(0 0 13px rgba(117,214,255,.27)) drop-shadow(0 9px 26px rgba(128,103,255,.28))!important;
+  filter:drop-shadow(0 0 15px rgba(112,236,255,.72)) drop-shadow(0 0 32px rgba(189,117,255,.55)) drop-shadow(0 8px 26px rgba(255,124,219,.32))!important;
 }
 .launch-word{
-  margin-top:-8px!important;font-size:11px!important;font-weight:800!important;
-  letter-spacing:.36em!important;color:rgba(250,250,255,.96)!important;
-  text-shadow:0 0 22px rgba(137,174,255,.24)!important;
+  position:relative!important;z-index:2!important;margin-top:-8px!important;
+  font-size:11px!important;font-weight:900!important;letter-spacing:.36em!important;
+  color:#fff!important;text-shadow:0 2px 16px rgba(22,17,91,.55),0 0 22px rgba(151,228,255,.6)!important;
   animation:ignitionText .7s .42s both!important;
 }
 .launch-line{
-  width:164px!important;height:2px!important;background:rgba(255,255,255,.13)!important;
-  border-radius:2px!important;overflow:hidden!important;
+  position:relative!important;z-index:2!important;width:170px!important;height:3px!important;
+  background:rgba(255,255,255,.25)!important;border-radius:4px!important;overflow:hidden!important;
+  box-shadow:0 0 14px rgba(120,219,255,.25)!important;
 }
 .launch-line span{
-  background:linear-gradient(90deg,#76e7ff,#9b91ff,#edb3f1)!important;
-  box-shadow:0 0 12px rgba(129,207,255,.6)!important;
-  animation:launchLoad 1.55s .2s ease both!important;
+  background:linear-gradient(90deg,#72f1ff,#b7a0ff,#ff9be9,#fff)!important;
+  box-shadow:0 0 14px rgba(129,231,255,.9)!important;
+  animation:launchLoad 1.75s .2s ease both!important;
 }
 .launch-caption{
-  font-size:7px!important;letter-spacing:.21em!important;
-  color:rgba(220,226,255,.66)!important;animation:ignitionText .7s .55s both!important;
+  position:relative!important;z-index:2!important;font-size:7px!important;letter-spacing:.21em!important;
+  color:rgba(255,255,255,.88)!important;text-shadow:0 1px 8px rgba(26,17,93,.5)!important;
+  animation:ignitionText .7s .55s both!important;
 }
-@keyframes ignitionBloom{
+@keyframes prismWash{to{transform:rotate(360deg)}}
+@keyframes prismBloom{
   0%{opacity:0;transform:translate(-50%,-50%) scale(.55)}
-  42%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
-  100%{opacity:.78;transform:translate(-50%,-50%) scale(1)}
+  45%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}
+  100%{opacity:.92;transform:translate(-50%,-50%) scale(1)}
 }
-@keyframes ignitionBeam{
+@keyframes prismBeam{
   0%{opacity:0;transform:translate(-50%,-50%) scaleX(.02)}
   42%{opacity:1;transform:translate(-50%,-50%) scaleX(1)}
-  100%{opacity:.3;transform:translate(-50%,-50%) scaleX(.78)}
+  100%{opacity:.72;transform:translate(-50%,-50%) scaleX(.82)}
 }
-@keyframes ignitionLogo{
-  0%{opacity:0;clip-path:inset(48% 42% 48% 42%);transform:scale(.96);filter:blur(8px)}
-  58%{opacity:1;clip-path:inset(0 0 0 0);transform:scale(1.025);filter:blur(0)}
+@keyframes prismLogo{
+  0%{opacity:0;clip-path:inset(48% 42% 48% 42%);transform:scale(.9);filter:blur(9px)}
+  55%{opacity:1;clip-path:inset(0 0 0 0);transform:scale(1.045);filter:blur(0)}
   100%{opacity:1;clip-path:inset(0 0 0 0);transform:scale(1);filter:blur(0)}
 }
+@keyframes prismShard{
+  0%,10%{opacity:0;transform:translate(calc(-50% + var(--sx)),calc(-50% + var(--sy))) rotate(-28deg) scale(.25)}
+  34%{opacity:1}
+  72%{opacity:.88}
+  100%{opacity:0;transform:translate(calc(-50% + var(--ex)),calc(-50% + var(--ey))) rotate(42deg) scale(.72)}
+}
+@keyframes prismSparkA{0%,100%{opacity:.25;transform:translate3d(0,0,0) scale(.7)}50%{opacity:1;transform:translate3d(10px,-15px,0) scale(1.35)}}
+@keyframes prismSparkB{0%,100%{opacity:.3;transform:translate3d(0,0,0) scale(.65)}50%{opacity:1;transform:translate3d(-12px,13px,0) scale(1.4)}}
 @keyframes ignitionText{
   from{opacity:0;transform:translateY(7px);letter-spacing:.48em}
   to{opacity:1;transform:translateY(0);letter-spacing:.36em}
 }
 @media(max-width:650px){
  .launch-brand{width:94vw!important;height:218px!important}
- .launch-brand:before{width:255px!important;height:155px!important}
+ .launch-brand:before{width:270px!important;height:165px!important}
  .launch-brand .brand-logo-plate{width:min(80vw,275px)!important}
+ .launch-brand .fragment-a,.launch-brand .fragment-b,.launch-brand .fragment-c,.launch-brand .fragment-d{transform:scale(.75)!important}
  .launch-word{font-size:10px!important;letter-spacing:.29em!important}
  .launch-caption{font-size:6px!important;letter-spacing:.16em!important}
 }
 @media(prefers-reduced-motion:reduce){
  .launch-screen{animation:none!important;display:none!important}
- .launch-brand:before,.launch-brand:after,.launch-word,.launch-caption,.launch-brand .brand-logo-plate{animation:none!important}
+ .launch-screen:after,.launch-brand:before,.launch-brand:after,.launch-word,.launch-caption,.launch-brand .brand-logo-plate,.launch-brand .launch-spark,.launch-brand .forge-fragment{animation:none!important}
 }
 </style>
 
