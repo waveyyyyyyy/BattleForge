@@ -638,6 +638,72 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
   outline: 0 !important;
   box-shadow: none !important;
 }
+
+/* CINEMATIC FORGE ENTRY — lightweight, GPU-friendly */
+.launch-screen{
+  isolation:isolate;overflow:hidden;gap:13px;
+  background:
+    radial-gradient(ellipse at 50% 46%,rgba(101,91,255,.27),transparent 34%),
+    radial-gradient(ellipse at 18% 18%,rgba(75,220,255,.20),transparent 35%),
+    radial-gradient(ellipse at 82% 82%,rgba(241,105,211,.18),transparent 36%),
+    linear-gradient(145deg,#080b20 0%,#17133d 48%,#080b20 100%)!important;
+  animation:launchExit .7s 1.65s cubic-bezier(.7,0,.2,1) forwards;
+}
+.launch-screen:before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.24;
+  background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);
+  background-size:54px 54px;
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 72%);
+}
+.launch-screen:after{
+  content:"";position:absolute;z-index:-1;width:min(82vw,620px);aspect-ratio:1;border-radius:50%;
+  border:1px solid rgba(148,139,255,.18);
+  box-shadow:0 0 0 22px rgba(115,106,255,.035),0 0 0 54px rgba(115,106,255,.025),inset 0 0 80px rgba(90,210,255,.045);
+  animation:forgePulse 3.8s ease-in-out infinite;
+}
+.launch-brand{width:min(82vw,430px)!important;height:245px!important;min-height:0!important;flex:none!important}
+.launch-brand:before{
+  width:160px!important;border-color:rgba(142,220,255,.38)!important;
+  box-shadow:0 0 0 22px rgba(117,105,255,.09),0 0 0 48px rgba(117,105,255,.055),0 0 0 78px rgba(117,105,255,.025)!important;
+}
+.launch-brand .brand-orbit{width:285px!important;border-color:rgba(130,224,255,.56)!important;animation-duration:19s}
+.launch-brand .brand-orbit-two{width:230px!important;border-color:rgba(220,151,255,.48)!important;animation-duration:14s}
+.launch-brand .brand-orbit-three{width:180px!important;border-color:rgba(255,255,255,.22)!important;animation-duration:27s}
+.launch-brand .brand-logo-plate{
+  width:min(76vw,315px)!important;padding:0!important;background:transparent!important;
+  box-shadow:none!important;border:0!important;transform:none!important;
+  animation:forgeLogoFloat 4.2s ease-in-out infinite!important;
+}
+.launch-brand .brand-logo-plate:before{display:none!important}
+.launch-brand .brand-logo-plate img{
+  width:100%;filter:brightness(0) invert(1) drop-shadow(0 0 16px rgba(104,218,255,.42))!important;
+}
+.launch-spark{position:absolute;z-index:4;display:block;width:7px;height:7px;border-radius:50%;background:#a8f3ff;box-shadow:0 0 10px 3px rgba(104,218,255,.65);will-change:transform}
+.spark-one{animation:sparkOrbit 5.5s linear infinite}
+.spark-two{width:5px;height:5px;background:#f2a9ff;box-shadow:0 0 11px 3px rgba(218,129,255,.7);animation:sparkOrbit 7s linear infinite reverse}
+.spark-three{width:4px;height:4px;background:#fff;animation:sparkOrbit 8.5s linear infinite}
+.launch-word{font:600 12px var(--mono)!important;letter-spacing:.34em!important;color:#fff!important;text-shadow:0 0 22px rgba(126,201,255,.4)}
+.launch-line{width:190px!important;height:2px!important;background:rgba(255,255,255,.16)!important;border-radius:9px;overflow:hidden}
+.launch-line span{background:linear-gradient(90deg,#63e5ff,#9b8aff,#f19de5)!important;box-shadow:0 0 12px rgba(118,206,255,.65)}
+.launch-caption{font:8px var(--mono)!important;letter-spacing:.2em!important;color:#c9c9f4!important}
+.launch-caption span{color:#83eaff;padding:0 5px}
+@keyframes forgePulse{0%,100%{transform:scale(.94);opacity:.55}50%{transform:scale(1.06);opacity:1}}
+@keyframes forgeLogoFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-9px) scale(1.018)}}
+@keyframes sparkOrbit{from{transform:rotate(0deg) translateX(154px) rotate(0deg)}to{transform:rotate(360deg) translateX(154px) rotate(-360deg)}}
+@media(max-width:650px){
+ .launch-brand{width:310px!important;height:210px!important}
+ .launch-brand .brand-orbit{width:235px!important}
+ .launch-brand .brand-orbit-two{width:190px!important}
+ .launch-brand .brand-orbit-three{width:150px!important}
+ .launch-brand .brand-logo-plate{width:245px!important}
+ .launch-screen:after{width:88vw}
+ .spark-one{animation-duration:6s}.spark-two{animation-duration:7.5s}.spark-three{animation-duration:9s}
+}
+@media(prefers-reduced-motion:reduce){
+ .launch-screen{animation:none!important;display:none!important}
+ .launch-screen:after,.launch-spark,.launch-brand .brand-logo-plate{animation:none!important}
+}
+
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
 <link rel="stylesheet" href="assets/apple-inspired.css?v=20261128-headingfix1">
@@ -729,7 +795,7 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
 </style>
 </head>
 <body>
-<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">INITIALIZING PLAYER SYSTEM</div></div>
+<div class="launch-screen" aria-hidden="true"><div class="launch-brand brand-motion"><div class="brand-orbit brand-orbit-one"></div><div class="brand-orbit brand-orbit-two"></div><div class="brand-orbit brand-orbit-three"></div><div class="brand-logo-plate"><img src="assets/battleforge-logo.svg" alt=""></div><i class="launch-spark spark-one"></i><i class="launch-spark spark-two"></i><i class="launch-spark spark-three"></i></div><div class="launch-word">BATTLEFORGE</div><div class="launch-line"><span></span></div><div class="launch-caption">FORGING YOUR ARENA <span> / </span> GET READY</div></div>
 <div class="page-progress" aria-hidden="true"><span id="page-progress-bar"></span></div>
 <header><div class="wrap nav"><a class="logo" href="#top" aria-label="BattleForge home"><img src="assets/battleforge-logo.svg" alt="BattleForge"></a>
 <nav class="navlinks" id="navlinks"><a href="#identity">Manifesto</a><a href="#formats">Formats</a><a href="#inside">Inside BF</a><a href="#rewards">Rewards</a><a href="#how">How it works</a><a href="#faq">Info</a></nav>
