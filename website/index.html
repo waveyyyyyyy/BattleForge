@@ -638,6 +638,58 @@ footer{background:rgba(255,255,255,.82)!important;backdrop-filter:blur(18px)}
   outline: 0 !important;
   box-shadow: none !important;
 }
+
+/* HERO LOGO ONLY — remove the planet/orbit composition; keep the emblem floating freely. */
+.hero-right,
+.brand-motion.forge-reactor {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+.brand-motion.forge-reactor {
+  min-height: 500px !important;
+  height: 100% !important;
+  perspective: none !important;
+}
+.reactor-backdrop,
+.reactor-ring,
+.reactor-ribbon,
+.reactor-shard,
+.reactor-particle,
+.reactor-caption,
+.core-glass {
+  display: none !important;
+}
+.reactor-core {
+  width: clamp(190px, 30vw, 340px) !important;
+  aspect-ratio: auto !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  animation: freeLogoFloat 5.5s ease-in-out infinite !important;
+  transform-style: flat !important;
+}
+.reactor-core img {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  transform: none !important;
+  filter: drop-shadow(0 18px 24px rgba(70, 58, 150, .2)) !important;
+}
+@keyframes freeLogoFloat {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-2deg); }
+  50% { transform: translate3d(0, -18px, 0) rotate(2deg); }
+}
+@media (max-width: 650px) {
+  .brand-motion.forge-reactor { min-height: 350px !important; }
+  .reactor-core { width: clamp(175px, 58vw, 250px) !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reactor-core { animation: none !important; }
+}
+
 </style>
 <link rel="stylesheet" href="assets/immersive-3d.css?v=20261118-reveal1">
 <link rel="stylesheet" href="assets/apple-inspired.css?v=20261128-headingfix1">
