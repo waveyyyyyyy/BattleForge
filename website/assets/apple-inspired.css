@@ -546,3 +546,16 @@ details[open] p{animation:bfFadeUp .24s ease both}
   .feature-item h3 { font-size: clamp(17px, 5.2vw, 20px); }
   .feature-item p { font-size: 11px; }
 }
+
+
+/* HEADING VISIBILITY + SMALL-SCREEN WRAPPING FIX (2026-11-28) */
+/* Gradient words remain intact in the typing script so background-clip:text renders on Android browsers. */
+.hero h1{max-width:100%;overflow-wrap:anywhere;word-break:normal}
+.hero h1>span{display:block;max-width:100%;overflow-wrap:anywhere}
+.section-title,.social-head h2,.download-inner h2,.blueprint h2{max-width:100%;overflow-wrap:anywhere;word-break:normal}
+@media(max-width:650px){
+ .hero h1{font-size:clamp(58px,17vw,100px);line-height:.9;letter-spacing:-.09em;max-width:100%}
+ .hero h1>span{margin-left:clamp(14px,7vw,28px)}
+ .section-title{font-size:clamp(44px,13vw,70px);line-height:.98;letter-spacing:-.065em}
+ .social-head h2{font-size:clamp(48px,13vw,76px);line-height:1;letter-spacing:-.055em}
+}
